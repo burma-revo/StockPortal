@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Reflection</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --b:#185FA5;--b-bg:#E6F1FB;--b-t:#0C447C;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-btn{padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px;}
+.tb-btn:hover{background:var(--bg);}
+
+/* ── Tabs ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;}
+.tab{flex:1;padding:12px 10px;text-align:center;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--g);border-bottom-color:var(--g);}
+
+/* ── Pages ── */
+.tab-page{display:none;padding:18px;}
+.tab-page.active{display:block;}
+
+/* ── Form ── */
+.form-wrap{max-width:720px;margin:0 auto;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.ph{padding:12px 16px;border-bottom:1px solid var(--border);}
+.pt{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.ps{font-size:11px;color:var(--text3);margin-top:2px;}
+.pb{padding:14px 16px;}
+.fg{margin-bottom:14px;}
+.fg:last-child{margin-bottom:0;}
+.fg-lbl{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.fg-hint{font-size:10px;color:var(--text3);font-weight:400;}
+.fg-prompt{font-size:11px;color:var(--text3);line-height:1.55;margin-bottom:5px;padding:7px 10px;background:var(--bg);border-radius:6px;border-left:2px solid var(--b);}
+.fg-in{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:14px;color:var(--text);outline:none;background:var(--bg);font-family:inherit;transition:border .2s;}
+.fg-in:focus{border-color:rgba(0,0,0,.25);background:var(--surface);}
+.fg-in::placeholder{color:var(--text3);}
+.fg-ta{resize:vertical;min-height:80px;line-height:1.6;}
+.fg-radio{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-opt{padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;transition:all .15s;color:var(--text2);}
+.radio-opt:hover{background:var(--bg);}
+.radio-opt.selected{font-weight:500;}
+.radio-opt.win.selected{background:var(--g-bg);color:var(--g-t);border-color:rgba(59,109,17,.25);}
+.radio-opt.loss.selected{background:var(--r-bg);color:var(--r-t);border-color:rgba(163,45,45,.25);}
+.radio-opt.breakeven.selected{background:var(--a-bg);color:var(--a-t);border-color:rgba(133,79,11,.25);}
+.fg-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.save-bar{display:flex;gap:8px;margin-top:16px;}
+.save-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--g-bg);font-size:13px;font-weight:500;cursor:pointer;color:var(--g-t);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
+.save-btn:hover{background:rgba(59,109,17,.2);}
+.cancel-btn{padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;color:var(--text2);transition:background .15s;}
+.cancel-btn:hover{background:var(--bg);}
+
+/* ── Past reflections list ── */
+.ref-list{display:grid;gap:8px;}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:box-shadow .15s;}
+.ref-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.rc-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);}
+.rc-code{font-size:15px;font-weight:600;font-family:monospace;}
+.rc-dates{font-size:11px;color:var(--text3);}
+.rc-result{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;margin-left:auto;}
+.rc-body{padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rc-expand{padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--b);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.rc-expand:hover{background:var(--bg);}
+.empty{text-align:center;padding:60px 20px;color:var(--text3);}
+.empty i{font-size:36px;display:block;margin-bottom:10px;}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);gap:10px;}
+.loading i{font-size:26px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Success message ── */
+.success-msg{background:var(--g-bg);border:1px solid rgba(59,109,17,.15);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--g-t);}
+
+@media(max-width:600px){
+  .fg-split{grid-template-columns:1fr;}
+  .tab-page{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Trade Reflection</div>
+    <div class="tb-sub">取引の振り返り — Learn from every trade</div>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="newReflection()"><i class="ti ti-plus" aria-hidden="true"></i> New reflection</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('new',this)"><i class="ti ti-edit" style="font-size:14px;vertical-align:-1px;" aria-hidden="true"></i> New reflection</div>
+  <div class="tab" onclick="switchTab('past',this)"><i class="ti ti-history" style="font-size:14px;vertical-align:-1px;" aria-hidden="true"></i> Past reflections</div>
+</div>
+
+<!-- NEW REFLECTION -->
+<div class="tab-page active" id="tab-new">
+  <div class="form-wrap">
+    <div id="success-box"></div>
+
+    <!-- Trade basics -->
+    <div class="panel">
+      <div class="ph"><div class="pt"><i class="ti ti-file-text" style="font-size:16px;color:var(--b);" aria-hidden="true"></i> Trade details</div><div class="ps">基本情報</div></div>
+      <div class="pb">
+        <div class="fg-split">
+          <div class="fg"><div class="fg-lbl">Stock code 銘柄コード</div><input class="fg-in" id="code" type="text" placeholder="e.g. 7203"></div>
+          <div class="fg"><div class="fg-lbl">Stock name 銘柄名<span class="fg-hint">optional</span></div><input class="fg-in" id="stock_name" type="text" placeholder="e.g. Toyota"></div>
+        </div>
+        <div class="fg-split">
+          <div class="fg"><div class="fg-lbl">Entry date 買付日</div><input class="fg-in" id="entry_date" type="date"></div>
+          <div class="fg"><div class="fg-lbl">Exit date 売却日</div><input class="fg-in" id="exit_date" type="date"></div>
+        </div>
+        <div class="fg-split">
+          <div class="fg"><div class="fg-lbl">Entry price 買付価格<span class="fg-hint">円</span></div><input class="fg-in" id="entry_price" type="number" placeholder="¥3,850" step="any"></div>
+          <div class="fg"><div class="fg-lbl">Exit price 売却価格<span class="fg-hint">円</span></div><input class="fg-in" id="exit_price" type="number" placeholder="¥4,200" step="any"></div>
+        </div>
+        <div class="fg">
+          <div class="fg-lbl">Shares bought 株数</div>
+          <input class="fg-in" id="shares" type="number" placeholder="100" step="1">
+        </div>
+        <div class="fg">
+          <div class="fg-lbl">Result 結果</div>
+          <div class="fg-radio">
+            <div class="radio-opt win" onclick="setResult('win',this)">Win 利益</div>
+            <div class="radio-opt loss" onclick="setResult('loss',this)">Loss 損失</div>
+            <div class="radio-opt breakeven" onclick="setResult('breakeven',this)">Break-even 無損益</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-trade setup -->
+    <div class="panel">
+      <div class="ph"><div class="pt"><i class="ti ti-target" style="font-size:16px;color:var(--a);" aria-hidden="true"></i> Pre-trade setup</div><div class="ps">What was your plan going in?</div></div>
+      <div class="pb">
+        <div class="fg">
+          <div class="fg-prompt">Why did you enter this trade? What signal or pattern triggered it?<br>どうしてこの取引に入ったのか？どのシグナルやパターンが引き金となったのか？</div>
+          <textarea class="fg-in fg-ta" id="reason" placeholder="e.g. RSI oversold + Hammer pattern at support level. Expected bounce to MA20..."></textarea>
+        </div>
+        <div class="fg">
+          <div class="fg-lbl">Pattern or term that influenced decision<span class="fg-hint">optional</span></div>
+          <input class="fg-in" id="pattern" type="text" placeholder="e.g. Hammer, RSI divergence, 押し目買い">
+        </div>
+        <div class="fg-split">
+          <div class="fg"><div class="fg-lbl">Planned entry<span class="fg-hint">円</span></div><input class="fg-in" id="planned_entry" type="number" placeholder="Target price" step="any"></div>
+          <div class="fg"><div class="fg-lbl">Stop-loss level<span class="fg-hint">円</span></div><input class="fg-in" id="stop_loss" type="number" placeholder="¥3,500" step="any"></div>
+        </div>
+        <div class="fg"><div class="fg-lbl">Target exit<span class="fg-hint">円</span></div><input class="fg-in" id="target_exit" type="number" placeholder="¥4,500" step="any"></div>
+      </div>
+    </div>
+
+    <!-- What went right -->
+    <div class="panel">
+      <div class="ph"><div class="pt"><i class="ti ti-circle-check" style="font-size:16px;color:var(--g);" aria-hidden="true"></i> What went right</div><div class="ps">うまくいったこと</div></div>
+      <div class="pb">
+        <div class="fg">
+          <div class="fg-prompt">What did you do well? What part of your analysis was correct?<br>何がうまくいったのか？分析のどの部分が正しかったのか？</div>
+          <textarea class="fg-in fg-ta" id="went_right" placeholder="e.g. Pattern recognition was correct — the hammer did signal a bounce. Entered at the planned level with discipline..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- What went wrong -->
+    <div class="panel">
+      <div class="ph"><div class="pt"><i class="ti ti-alert-triangle" style="font-size:16px;color:var(--r);" aria-hidden="true"></i> What went wrong</div><div class="ps">間違ったこと</div></div>
+      <div class="pb">
+        <div class="fg">
+          <div class="fg-prompt">What mistakes did you make? What would you do differently?<br>どんな間違いを犯したのか？何を違うようにするのか？</div>
+          <textarea class="fg-in fg-ta" id="went_wrong" placeholder="e.g. Exited too early out of fear when price dipped slightly. Should have trusted the stop-loss level..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lessons learned -->
+    <div class="panel">
+      <div class="ph"><div class="pt"><i class="ti ti-bulb" style="font-size:16px;color:var(--a);" aria-hidden="true"></i> Lessons learned</div><div class="ps">学んだこと</div></div>
+      <div class="pb">
+        <div class="fg">
+          <div class="fg-prompt">What is the one thing you will remember from this trade?<br>この取引から覚えておくべきことは何か？</div>
+          <textarea class="fg-in fg-ta" id="lessons" placeholder="e.g. Fear is just as destructive as greed. Set the stop-loss and trust it — don't exit manually based on emotion..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save/Clear bar -->
+    <div class="save-bar">
+      <button class="save-btn" onclick="saveReflection()"><i class="ti ti-device-floppy" style="font-size:15px;" aria-hidden="true"></i> Save reflection</button>
+      <button class="cancel-btn" onclick="clearForm()">Clear form</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAST REFLECTIONS -->
+<div class="tab-page" id="tab-past">
+  <div class="form-wrap">
+    <div class="loading" id="loading"><i class="ti ti-loader-2"></i><span>Loading your reflections...</span></div>
+    <div class="ref-list" id="ref-list" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+var S = {
+  currentTab: 'new',
+  result: null,
+  reflections: [],
+};
+
+// ════════════════════════════════════════════════
+//  FORM INTERACTIONS
+// ════════════════════════════════════════════════
+function setResult(r,el){
+  S.result = r;
+  document.querySelectorAll('.radio-opt').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');
+}
+
+function getFormData(){
+  var calc = calcPL();
+  return {
+    timestamp: new Date().toISOString(),
+    code: document.getElementById('code').value.trim(),
+    stock_name: document.getElementById('stock_name').value.trim(),
+    entry_date: document.getElementById('entry_date').value,
+    exit_date: document.getElementById('exit_date').value,
+    entry_price: parseFloat(document.getElementById('entry_price').value)||null,
+    exit_price: parseFloat(document.getElementById('exit_price').value)||null,
+    shares: parseInt(document.getElementById('shares').value)||null,
+    result: S.result,
+    pl_yen: calc.pl_yen,
+    pl_pct: calc.pl_pct,
+    reason: document.getElementById('reason').value.trim(),
+    pattern: document.getElementById('pattern').value.trim(),
+    planned_entry: parseFloat(document.getElementById('planned_entry').value)||null,
+    stop_loss: parseFloat(document.getElementById('stop_loss').value)||null,
+    target_exit: parseFloat(document.getElementById('target_exit').value)||null,
+    went_right: document.getElementById('went_right').value.trim(),
+    went_wrong: document.getElementById('went_wrong').value.trim(),
+    lessons: document.getElementById('lessons').value.trim(),
+  };
+}
+
+function calcPL(){
+  var ep = parseFloat(document.getElementById('entry_price').value);
+  var xp = parseFloat(document.getElementById('exit_price').value);
+  var sh = parseInt(document.getElementById('shares').value);
+  if(!ep||!xp||!sh) return {pl_yen:null,pl_pct:null};
+  var pl = (xp-ep)*sh;
+  var pct = ((xp-ep)/ep)*100;
+  return {pl_yen:pl, pl_pct:pct};
+}
+
+function saveReflection(){
+  var data = getFormData();
+  if(!data.code){alert('Stock code is required.');return;}
+  if(!data.entry_date||!data.exit_date){alert('Entry and exit dates are required.');return;}
+
+  var btn = document.querySelector('.save-btn');
+  btn.innerHTML = '<i class="ti ti-loader-2" style="font-size:15px;animation:spin 1s linear infinite;" aria-hidden="true"></i> Saving...';
+  btn.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res.success){
+        showSuccess('Reflection saved to Google Sheets.');
+        clearForm();
+        btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px;" aria-hidden="true"></i> Save reflection';
+        btn.disabled = false;
+      } else {
+        alert('Error: '+(res.error||'Could not save.'));
+        btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px;" aria-hidden="true"></i> Save reflection';
+        btn.disabled = false;
+      }
+    })
+    .withFailureHandler(function(e){
+      alert('Error: '+e.message);
+      btn.innerHTML = '<i class="ti ti-device-floppy" style="font-size:15px;" aria-hidden="true"></i> Save reflection';
+      btn.disabled = false;
+    })
+    .saveReflection(data);
+}
+
+function clearForm(){
+  ['code','stock_name','entry_date','exit_date','entry_price','exit_price','shares','reason','pattern','planned_entry','stop_loss','target_exit','went_right','went_wrong','lessons'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  S.result=null;
+  document.querySelectorAll('.radio-opt').forEach(function(o){o.classList.remove('selected');});
+}
+
+function showSuccess(msg){
+  var box = document.getElementById('success-box');
+  box.innerHTML = '<div class="success-msg"><i class="ti ti-circle-check" style="font-size:16px;" aria-hidden="true"></i><span>'+msg+'</span></div>';
+  setTimeout(function(){ box.innerHTML=''; }, 5000);
+}
+
+function newReflection(){
+  switchTab('new',document.querySelectorAll('.tab')[0]);
+  clearForm();
+}
+
+// ════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════
+function switchTab(tab,el){
+  S.currentTab=tab;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active');});
+  if(el) el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='past') loadReflections();
+}
+
+// ════════════════════════════════════════════════
+//  PAST REFLECTIONS
+// ════════════════════════════════════════════════
+function loadReflections(){
+  if(S.reflections.length){renderReflections();return;}
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('ref-list').style.display='none';
+  google.script.run
+    .withSuccessHandler(function(raw){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('ref-list').style.display='grid';
+      if(!raw){
+        document.getElementById('ref-list').innerHTML='<div class="empty"><i class="ti ti-alert-circle" aria-hidden="true"></i><p>Error: getReflections() returned null. Redeploy with New version in Manage deployments.</p></div>';
+        return;
+      }
+      var data;
+      try{ data = typeof raw==='string' ? JSON.parse(raw) : raw; }
+      catch(e){ data = { reflections:[], error:'Parse error: '+e.message }; }
+      if(data.error){
+        document.getElementById('ref-list').innerHTML='<div class="empty"><i class="ti ti-alert-circle" aria-hidden="true"></i><p>'+data.error+'</p></div>';
+        return;
+      }
+      S.reflections = data.reflections||[];
+      renderReflections();
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('ref-list').style.display='grid';
+      document.getElementById('ref-list').innerHTML='<div class="empty"><i class="ti ti-alert-circle" aria-hidden="true"></i><p>'+e.message+'</p></div>';
+    })
+    .getReflections();
+}
+
+function renderReflections(){
+  var list = document.getElementById('ref-list');
+  if(!S.reflections.length){
+    list.innerHTML='<div class="empty"><i class="ti ti-notebook" aria-hidden="true"></i><p>No reflections yet. Log your first trade above.</p></div>';
+    return;
+  }
+  var html='';
+  S.reflections.forEach(function(ref,i){
+    var resColor = ref.result==='win'?'background:var(--g-bg);color:var(--g-t)':ref.result==='loss'?'background:var(--r-bg);color:var(--r-t)':'background:var(--a-bg);color:var(--a-t)';
+    var resLabel = ref.result==='win'?'Win 利益':ref.result==='loss'?'Loss 損失':'Break-even';
+    var plText = ref.pl_yen?'¥'+(ref.pl_yen>=0?'+':'')+ref.pl_yen.toLocaleString():' ';
+    html+='<div class="ref-card" onclick="expandRef('+i+')">'
+        +'<div class="rc-head">'
+        +  '<div><div class="rc-code">'+(ref.code||'—')+(ref.stock_name?' ('+ref.stock_name+')':'')+'</div>'
+        +  '<div class="rc-dates">'+(ref.entry_date||'—')+' → '+(ref.exit_date||'—')+'</div></div>'
+        +  '<span class="rc-result" style="'+resColor+'">'+resLabel+'</span>'
+        +'</div>'
+        +'<div class="rc-body"><strong>Why entered:</strong> '+(ref.reason||'—')+'</div>'
+        +'<div class="rc-expand"><i class="ti ti-chevron-right" aria-hidden="true"></i> View full reflection</div>'
+        +'</div>';
+  });
+  list.innerHTML=html;
+}
+
+function expandRef(idx){
+  var ref=S.reflections[idx];
+  if(!ref) return;
+  var resColor=ref.result==='win'?'var(--g)':ref.result==='loss'?'var(--r)':'var(--a)';
+  var plText=ref.pl_yen?'¥'+(ref.pl_yen>=0?'+':'')+ref.pl_yen.toLocaleString()+' ('+(ref.pl_pct>=0?'+':'')+ref.pl_pct.toFixed(1)+'%)':'—';
+  alert(
+    'TRADE: '+(ref.code||'—')+' '+(ref.stock_name||'')+'\n'
+    +'Entry: ¥'+(ref.entry_price||'—')+' × '+(ref.shares||'—')+' shares on '+(ref.entry_date||'—')+'\n'
+    +'Exit: ¥'+(ref.exit_price||'—')+' on '+(ref.exit_date||'—')+'\n'
+    +'P&L: '+plText+'\n'
+    +'Pattern: '+(ref.pattern||'—')+'\n\n'
+    +'WHY ENTERED:\n'+(ref.reason||'—')+'\n\n'
+    +'WHAT WENT RIGHT:\n'+(ref.went_right||'—')+'\n\n'
+    +'WHAT WENT WRONG:\n'+(ref.went_wrong||'—')+'\n\n'
+    +'LESSONS LEARNED:\n'+(ref.lessons||'—')
+  );
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+document.getElementById('entry_date').valueAsDate = new Date();
+</script>
+</body>
+</html>

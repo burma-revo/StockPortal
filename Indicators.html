@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Indicators</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+  --b:#185FA5;--b-bg:#E6F1FB;--b-t:#0C447C;
+  --p:#534AB7;--p-bg:#EEEDFE;--p-t:#3C3489;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.tb-search{position:relative;display:flex;align-items:center;}
+.tb-search input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px 6px 30px;font-size:13px;color:var(--text);outline:none;width:170px;transition:border .2s;}
+.tb-search input:focus{border-color:rgba(0,0,0,.2);}
+.tb-search .si{position:absolute;left:9px;font-size:14px;color:var(--text3);pointer-events:none;}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;padding:16px 18px 14px;}
+.fb{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.fb:hover{background:var(--bg);}
+.fb.fa{background:var(--surface);color:var(--text);border-color:var(--border2);font-weight:500;}
+.fb.fm{background:var(--b-bg);color:var(--b-t);border-color:rgba(24,95,165,.2);}
+.fb.fmo{background:var(--g-bg);color:var(--g-t);border-color:rgba(59,109,17,.2);}
+.fb.fo{background:var(--a-bg);color:var(--a-t);border-color:rgba(133,79,11,.2);}
+.fb.fv{background:var(--p-bg);color:var(--p-t);border-color:rgba(83,74,183,.2);}
+
+/* ── Section ── */
+.section{padding:0 18px 28px;}
+.sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+
+/* ── Indicator card ── */
+.ic{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.ic:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.07);}
+.ic.selected{box-shadow:0 0 0 2px var(--sel,#3B6D11) inset;border-color:var(--sel,#3B6D11);}
+.ic-svg{background:#f8f8f6;padding:12px 16px;display:flex;align-items:center;justify-content:center;min-height:96px;}
+.ic-info{padding:9px 12px;}
+.ic-badges{display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;}
+.ibadge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
+.ic-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.3;}
+.ic-jp{font-size:10px;color:var(--text3);}
+.ic-lrn{font-size:10px;color:var(--g);margin-top:3px;display:none;}
+.ic-lrn.show{display:block;}
+
+/* ── Drawer ── */
+.drawer{display:none;grid-column:1/-1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:4px;}
+.drawer.open{display:grid;grid-template-columns:280px 1fr;}
+.dw-vis{background:#f8f8f6;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.dw-body{padding:18px 20px;overflow:auto;}
+.dw-close{float:right;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;transition:color .15s;}
+.dw-close:hover{color:var(--text);}
+.dw-jp{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.dw-name{font-size:19px;font-weight:700;margin-bottom:6px;line-height:1.2;}
+.dw-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.dw-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px;}
+.dw-exp{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:10px;}
+.dw-mm{font-size:12px;color:var(--text3);line-height:1.7;background:var(--bg);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-style:italic;}
+.dw-how{font-size:12px;line-height:1.65;margin-bottom:8px;}
+.dw-tip{font-size:12px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:8px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;margin-bottom:4px;}
+.dw-tip-mm{font-size:11px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:6px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;font-style:italic;margin-bottom:10px;}
+.mark-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+.mark-btn:hover{background:rgba(59,109,17,.08);}
+.mark-btn.on{background:var(--g-bg);color:var(--g);border-color:rgba(59,109,17,.2);}
+.dw-vis-lbl{font-size:10px;color:var(--text3);margin-top:8px;text-align:center;}
+
+/* ── Mobile ── */
+@media(max-width:600px){
+  .drawer.open{grid-template-columns:1fr;}
+  .dw-vis{border-right:none;border-bottom:1px solid var(--border);}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .filter-bar{padding:12px 14px 10px;}
+  .section{padding:0 14px 20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Technical Indicators</div>
+    <div class="tb-sub">テクニカル指標 — click any chart to learn</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-search">
+      <i class="ti ti-search si" aria-hidden="true"></i>
+      <input type="text" id="search" placeholder="Search indicators..." oninput="doSearch()">
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="fb fa" onclick="setFilter('all',this)">All</button>
+  <button class="fb" onclick="setFilter('momentum',this)">Momentum</button>
+  <button class="fb" onclick="setFilter('trend',this)">Trend</button>
+  <button class="fb" onclick="setFilter('oscillator',this)">Oscillator</button>
+  <button class="fb" onclick="setFilter('volume',this)">Volume</button>
+</div>
+
+<div id="body"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  SVG DRAWING HELPERS
+// ════════════════════════════════════════════════
+var CG='#26a65b',CR='#c0392b',CB='#2980b9',CP='#8e44ad',CO='#d35400',CGY='#95a5a6';
+
+function svgWrap(inner,vw,vh,bg){
+  bg=bg||'none';
+  return '<svg viewBox="0 0 '+vw+' '+vh+'" width="'+vw+'" height="'+vh+'" xmlns="http://www.w3.org/2000/svg">'
+        +(bg!=='none'?'<rect width="'+vw+'" height="'+vh+'" fill="'+bg+'"/>':'')
+        +inner+'</svg>';
+}
+
+function gridH(vw,vh,rows,col){
+  col=col||'rgba(0,0,0,0.05)';
+  var s=''; for(var i=1;i<rows;i++) s+='<line x1="0" y1="'+Math.round(vh*i/rows)+'" x2="'+vw+'" y2="'+Math.round(vh*i/rows)+'" stroke="'+col+'" stroke-width="0.5"/>';
+  return s;
+}
+
+function polyline(pts,col,w,dash){
+  var d=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  return '<polyline points="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(w||1.5)+'" stroke-linecap="round" stroke-linejoin="round"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+}
+
+function fillArea(pts,vw,vh,col){
+  var top=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  var bot=pts[pts.length-1][0]+','+vh+' '+pts[0][0]+','+vh;
+  return '<polygon points="'+top+' '+bot+'" fill="'+col+'" opacity="0.15"/>';
+}
+
+function candleRow(data,x0,gap,scaleY,baseY){
+  var s='';
+  data.forEach(function(d,i){
+    var x=x0+i*(gap);
+    var bT=Math.min(d.o,d.c)*scaleY+baseY, bB=Math.max(d.o,d.c)*scaleY+baseY;
+    var bH=Math.max(bB-bT,2);
+    var col=d.c>=d.o?CG:CR;
+    var cx=x+5;
+    s+='<rect x="'+x+'" y="'+bT+'" width="10" height="'+bH+'" rx="1" fill="'+col+'" opacity=".9"/>'
+      +'<line x1="'+cx+'" y1="'+(d.h*scaleY+baseY)+'" x2="'+cx+'" y2="'+bT+'" stroke="'+col+'" stroke-width="1.2"/>'
+      +'<line x1="'+cx+'" y1="'+bB+'" x2="'+cx+'" y2="'+(d.l*scaleY+baseY)+'" stroke="'+col+'" stroke-width="1.2"/>';
+  });
+  return s;
+}
+
+function label(x,y,txt,col,anchor,size){
+  return '<text x="'+x+'" y="'+y+'" fill="'+(col||'rgba(0,0,0,0.35)')+'" font-size="'+(size||8)+'" text-anchor="'+(anchor||'start')+'" font-family="system-ui,sans-serif">'+txt+'</text>';
+}
+
+function hline(x1,y,x2,col,dash){
+  return '<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+col+'" stroke-width="1"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+}
+
+// ════════════════════════════════════════════════
+//  INDICATOR SVG BUILDERS — small & large scale
+// ════════════════════════════════════════════════
+
+// ── RSI ─────────────────────────────────────────
+function svgRSI(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var pts=[[6,60],[16,55],[26,48],[36,38],[46,28],[56,22],[66,32],[76,42],[86,52],[96,38],[106,26],[116,30],[126,40],[136,36],[146,44]];
+  pts=pts.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var ob=22*sc, os=58*sc;
+  return svgWrap(
+    gridH(vw,vh,4)
+    +hline(0,ob,vw,CR,'3,2')
+    +hline(0,os,vw,CG,'3,2')
+    +fillArea(pts,vw,vh,'rgba(150,150,150,0.08)')
+    +polyline(pts,CB,1.6*sc)
+    +label(4*sc,(ob-2*sc),'Overbought 70',CR,'start',7*sc)
+    +label(4*sc,(os+9*sc),'Oversold 30',CG,'start',7*sc)
+    +'<circle cx="'+(106*sc)+'" cy="'+(26*sc)+'" r="'+(3.5*sc)+'" fill="'+CR+'" opacity=".8"/>'
+    ,vw,vh
+  );
+}
+
+// ── MACD ────────────────────────────────────────
+function svgMACD(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=90*sc;
+  var macd=[[6,52],[18,50],[30,46],[42,40],[54,34],[66,30],[78,36],[90,42],[102,48],[114,44],[126,38],[138,34],[150,38]];
+  var sig= [[6,54],[18,52],[30,49],[42,44],[54,38],[66,33],[78,35],[90,40],[102,46],[114,44],[126,40],[138,36],[150,37]];
+  macd=macd.map(function(p){return[p[0]*sc,p[1]*sc];});
+  sig=sig.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var zeroY=58*sc;
+  var bars=[[6,4],[18,3],[30,2],[42,-3],[54,-6],[66,-8],[78,4],[90,5],[102,3],[114,2],[126,-1],[138,-3],[150,3]];
+  var barS='';
+  bars.forEach(function(b){
+    var x=b[0]*sc, h=Math.abs(b[1])*sc, y=b[1]<0?zeroY:zeroY-h;
+    var col=b[1]>=0?'rgba(38,166,91,0.5)':'rgba(192,57,43,0.5)';
+    barS+='<rect x="'+(x-5*sc)+'" y="'+y+'" width="'+(10*sc)+'" height="'+(Math.max(h,1))+'" fill="'+col+'"/>';
+  });
+  return svgWrap(
+    gridH(vw,vh,4)
+    +hline(0,zeroY,vw,'rgba(0,0,0,0.15)')
+    +barS
+    +polyline(macd,CB,1.6*sc)
+    +polyline(sig,CO,1.4*sc,'4,2')
+    +label(4*sc,12*sc,'MACD',CB,'start',8*sc)
+    +label(4*sc,22*sc,'Signal',CO,'start',8*sc)
+    ,vw,vh
+  );
+}
+
+// ── Bollinger Bands ──────────────────────────────
+function svgBB(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=85*sc;
+  var mid=[[6,55],[20,50],[34,44],[48,40],[62,36],[76,38],[90,44],[104,50],[118,48],[132,42],[146,38]];
+  var up= [[6,42],[20,36],[34,30],[48,26],[62,22],[76,24],[90,30],[104,36],[118,34],[132,28],[146,24]];
+  var dn= [[6,68],[20,64],[34,58],[48,54],[62,50],[76,52],[90,58],[104,64],[118,62],[132,56],[146,52]];
+  mid=mid.map(function(p){return[p[0]*sc,p[1]*sc];});
+  up=up.map(function(p){return[p[0]*sc,p[1]*sc];});
+  dn=dn.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var priceP=[[6,58],[20,52],[34,48],[48,38],[62,28],[76,36],[90,48],[104,54],[118,52],[132,46],[146,40]];
+  priceP=priceP.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var bandFill='';
+  var pts=up.concat(dn.slice().reverse()).map(function(p){return p[0]+','+p[1];}).join(' ');
+  bandFill='<polygon points="'+pts+'" fill="rgba(41,128,185,0.08)"/>';
+  return svgWrap(
+    gridH(vw,vh,4)
+    +bandFill
+    +polyline(up,CB,1.2*sc,'4,3')
+    +polyline(dn,CB,1.2*sc,'4,3')
+    +polyline(mid,CB,1.4*sc)
+    +polyline(priceP,'rgba(0,0,0,0.5)',1.2*sc)
+    +label(4*sc,12*sc,'Upper band',CB,'start',7*sc)
+    +label(4*sc,(mid[Math.floor(mid.length/2)][1]+4*sc),'MA20',CB,'start',7*sc)
+    +label(4*sc,(vh-6*sc),'Lower band',CB,'start',7*sc)
+    ,vw,vh
+  );
+}
+
+// ── Moving Average ───────────────────────────────
+function svgMA(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var price=[[6,60],[16,56],[26,52],[36,44],[46,36],[56,28],[66,24],[76,30],[86,36],[96,32],[106,24],[116,18],[126,22],[136,28],[146,22]];
+  var ma20= [[6,58],[16,55],[26,51],[36,46],[46,40],[56,34],[66,28],[76,28],[86,32],[96,31],[106,27],[116,22],[126,21],[136,24],[146,22]];
+  var ma50= [[6,58],[16,57],[26,55],[36,53],[46,50],[56,46],[66,42],[76,40],[86,38],[96,36],[106,33],[116,30],[126,28],[136,26],[146,24]];
+  price=price.map(function(p){return[p[0]*sc,p[1]*sc];});
+  ma20=ma20.map(function(p){return[p[0]*sc,p[1]*sc];});
+  ma50=ma50.map(function(p){return[p[0]*sc,p[1]*sc];});
+  return svgWrap(
+    gridH(vw,vh,4)
+    +polyline(price,'rgba(0,0,0,0.18)',1*sc)
+    +polyline(ma50,CO,1.6*sc,'4,2')
+    +polyline(ma20,CB,1.6*sc)
+    +label(4*sc,12*sc,'MA 20',CB,'start',8*sc)
+    +label(4*sc,22*sc,'MA 50',CO,'start',8*sc)
+    ,vw,vh
+  );
+}
+
+// ── Golden Cross ─────────────────────────────────
+function svgGolden(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=85*sc;
+  var ma50=[[6,70],[20,67],[34,64],[48,60],[62,56],[76,52],[90,48],[104,44],[118,42],[132,40],[146,38]];
+  var ma200=[[6,72],[20,70],[34,68],[48,66],[62,63],[76,60],[90,56],[104,52],[118,48],[132,44],[146,40]];
+  ma50=ma50.map(function(p){return[p[0]*sc,p[1]*sc];});
+  ma200=ma200.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var crossX=75*sc, crossY=52*sc;
+  return svgWrap(
+    gridH(vw,vh,4)
+    +polyline(ma200,CO,1.8*sc,'5,3')
+    +polyline(ma50,CG,1.8*sc)
+    +'<circle cx="'+crossX+'" cy="'+crossY+'" r="'+(5*sc)+'" fill="none" stroke="'+CG+'" stroke-width="'+(1.5*sc)+'"/>'
+    +'<circle cx="'+crossX+'" cy="'+crossY+'" r="'+(2.5*sc)+'" fill="'+CG+'"/>'
+    +label((crossX+8*sc),(crossY+4*sc),'Golden Cross',CG,'start',8*sc)
+    +label(4*sc,12*sc,'MA 50',CG,'start',8*sc)
+    +label(4*sc,22*sc,'MA 200',CO,'start',8*sc)
+    +'<polygon points="'+(crossX+30*sc)+','+(crossY-14*sc)+' '+(crossX+24*sc)+','+(crossY-8*sc)+' '+(crossX+36*sc)+','+(crossY-8*sc)+'" fill="'+CG+'" opacity=".7"/>'
+    ,vw,vh
+  );
+}
+
+// ── Death Cross ──────────────────────────────────
+function svgDeath(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=85*sc;
+  var ma50=[[6,30],[20,33],[34,36],[48,40],[62,44],[76,48],[90,52],[104,56],[118,58],[132,60],[146,62]];
+  var ma200=[[6,28],[20,30],[34,32],[48,35],[62,38],[76,42],[90,46],[104,50],[118,53],[132,57],[146,60]];
+  ma50=ma50.map(function(p){return[p[0]*sc,p[1]*sc];});
+  ma200=ma200.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var crossX=75*sc, crossY=48*sc;
+  return svgWrap(
+    gridH(vw,vh,4)
+    +polyline(ma200,CO,1.8*sc,'5,3')
+    +polyline(ma50,CR,1.8*sc)
+    +'<circle cx="'+crossX+'" cy="'+crossY+'" r="'+(5*sc)+'" fill="none" stroke="'+CR+'" stroke-width="'+(1.5*sc)+'"/>'
+    +'<circle cx="'+crossX+'" cy="'+crossY+'" r="'+(2.5*sc)+'" fill="'+CR+'"/>'
+    +label((crossX+8*sc),(crossY+4*sc),'Death Cross',CR,'start',8*sc)
+    +label(4*sc,12*sc,'MA 50',CR,'start',8*sc)
+    +label(4*sc,22*sc,'MA 200',CO,'start',8*sc)
+    +'<polygon points="'+(crossX+30*sc)+','+(crossY+14*sc)+' '+(crossX+24*sc)+','+(crossY+8*sc)+' '+(crossX+36*sc)+','+(crossY+8*sc)+'" fill="'+CR+'" opacity=".7"/>'
+    ,vw,vh
+  );
+}
+
+// ── Stochastic ───────────────────────────────────
+function svgStoch(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var k=[[6,24],[16,20],[26,30],[36,50],[46,62],[56,68],[66,62],[76,50],[86,40],[96,30],[106,24],[116,28],[126,40],[136,56],[146,64]];
+  var d=[[6,26],[16,23],[26,28],[36,44],[46,56],[56,64],[66,60],[76,52],[86,44],[96,36],[106,28],[116,28],[126,36],[136,48],[146,58]];
+  k=k.map(function(p){return[p[0]*sc,p[1]*sc];});
+  d=d.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var ob=20*sc, os=60*sc;
+  return svgWrap(
+    gridH(vw,vh,4)
+    +hline(0,ob,vw,CR,'3,2')
+    +hline(0,os,vw,CG,'3,2')
+    +polyline(k,CB,1.6*sc)
+    +polyline(d,CO,1.3*sc,'4,2')
+    +label(4*sc,(ob-2*sc),'%K',CB,'start',8*sc)
+    +label(30*sc,(ob-2*sc),'%D',CO,'start',8*sc)
+    +'<circle cx="'+(126*sc)+'" cy="'+(40*sc)+'" r="'+(3*sc)+'" fill="'+CG+'" opacity=".7"/>'
+    ,vw,vh
+  );
+}
+
+// ── ATR ──────────────────────────────────────────
+function svgATR(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var atr=[[6,60],[16,58],[26,55],[36,50],[46,42],[56,36],[66,28],[76,24],[86,28],[96,38],[106,48],[116,54],[126,50],[136,44],[146,40]];
+  atr=atr.map(function(p){return[p[0]*sc,p[1]*sc];});
+  return svgWrap(
+    gridH(vw,vh,4)
+    +fillArea(atr,vw,vh,'rgba(142,68,173,0.2)')
+    +polyline(atr,CP,1.6*sc)
+    +label(4*sc,12*sc,'ATR',CP,'start',8*sc)
+    +label(4*sc,22*sc,'High volatility →',CR,'start',7*sc)
+    ,vw,vh
+  );
+}
+
+// ── OBV ─────────────────────────────────────────
+function svgOBV(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var obv=[[6,64],[16,60],[26,56],[36,50],[46,44],[56,40],[66,34],[76,36],[86,40],[96,44],[106,40],[116,34],[126,28],[136,22],[146,18]];
+  obv=obv.map(function(p){return[p[0]*sc,p[1]*sc];});
+  return svgWrap(
+    gridH(vw,vh,4)
+    +fillArea(obv,vw,vh,'rgba(39,174,96,0.15)')
+    +polyline(obv,CG,1.6*sc)
+    +label(4*sc,12*sc,'OBV rising = strong buying',CG,'start',7*sc)
+    ,vw,vh
+  );
+}
+
+// ── VWAP ─────────────────────────────────────────
+function svgVWAP(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=85*sc;
+  var candles=[
+    {o:3,c:2,h:1,l:4},{o:2.5,c:1.5,h:0.5,l:3.5},{o:1.5,c:0.5,h:0,l:2.5},
+    {o:1,c:2,h:0,l:3},{o:2,c:3,h:1,l:4},{o:3,c:4,h:2,l:5},
+    {o:4,c:3.5,h:3,l:5},{o:3.5,c:2.5,h:2,l:4},{o:2.5,c:3,h:1.5,l:4},
+  ];
+  var scale=11*sc, base=18*sc;
+  var s=candleRow(candles,8*sc,16*sc,scale,base);
+  var vwap=[[8,46],[24,43],[40,40],[56,37],[72,36],[88,38],[104,40],[120,41],[136,40]];
+  vwap=vwap.map(function(p){return[p[0]*sc,p[1]*sc];});
+  return svgWrap(
+    gridH(vw,vh,4)
+    +s
+    +polyline(vwap,CP,2*sc)
+    +label(4*sc,12*sc,'VWAP',CP,'start',8*sc)
+    ,vw,vh
+  );
+}
+
+// ── Williams %R ──────────────────────────────────
+function svgWilliams(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=80*sc;
+  var pts=[[6,18],[16,22],[26,30],[36,50],[46,58],[56,64],[66,56],[76,44],[86,32],[96,22],[106,18],[116,22],[126,38],[136,56],[146,62]];
+  pts=pts.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var ob=20*sc, os=60*sc;
+  return svgWrap(
+    gridH(vw,vh,4)
+    +hline(0,ob,vw,CR,'3,2')
+    +hline(0,os,vw,CG,'3,2')
+    +polyline(pts,CP,1.6*sc)
+    +label(4*sc,(ob-2*sc),'−20 Overbought',CR,'start',7*sc)
+    +label(4*sc,(os+9*sc),'−80 Oversold',CG,'start',7*sc)
+    ,vw,vh
+  );
+}
+
+// ── Parabolic SAR ────────────────────────────────
+function svgSAR(sc){
+  sc=sc||1;
+  var vw=160*sc, vh=85*sc;
+  var price=[[6,68],[16,63],[26,56],[36,48],[46,40],[56,34],[66,28],[76,26],[86,30],[96,38],[106,46],[116,52],[126,58],[136,62],[146,66]];
+  price=price.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var sarUp=[[86,22],[96,20],[106,19],[116,18],[126,17],[136,16],[146,15]];
+  var sarDn=[[6,75],[16,74],[26,72],[36,68],[46,62],[56,56],[66,50],[76,44]];
+  sarUp=sarUp.map(function(p){return[p[0]*sc,p[1]*sc];});
+  sarDn=sarDn.map(function(p){return[p[0]*sc,p[1]*sc];});
+  var dots='';
+  sarUp.forEach(function(p){dots+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(2.5*sc)+'" fill="'+CG+'"/>';});
+  sarDn.forEach(function(p){dots+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(2.5*sc)+'" fill="'+CR+'"/>';});
+  return svgWrap(
+    gridH(vw,vh,4)
+    +polyline(price,'rgba(0,0,0,0.2)',1.2*sc)
+    +dots
+    +label(4*sc,12*sc,'Dots below = uptrend ('+CG.slice(1)+')',CG,'start',7*sc)
+    +label(4*sc,22*sc,'Dots above = downtrend ('+CR.slice(1)+')',CR,'start',7*sc)
+    ,vw,vh
+  );
+}
+
+// ════════════════════════════════════════════════
+//  INDICATOR DATA
+// ════════════════════════════════════════════════
+var INDICATORS = [
+  // ── MOMENTUM ──
+  {
+    id:'rsi', group:'momentum', name:'RSI', jp:'相対力指数',
+    mm:'ヒン：ซ้ำซ้อนหรือไม่？Relative Strength Index',
+    mm_name:'Relative Strength Index — 過買い・過売りシグナル',
+    badge:'Oscillator', bcolor:'var(--b-bg)', btcolor:'var(--b-t)',
+    accent:'#185FA5', sel:'#185FA5',
+    svg:function(s){return svgRSI(s||0.85);},
+    exp_en:'Measures the speed and magnitude of recent price changes on a 0–100 scale. Traditionally: above 70 = overbought (price may be due for a pullback), below 30 = oversold (price may be due for a bounce). Works best in ranging markets, less reliable in strong trends.',
+    exp_mm:'ဈေးနှုန်းလှုပ်ရှားမှု အမြန်နှုန်းနှင့် ပမာဏကို 0–100 အကြားတွင် တိုင်းတာသည်။ 70 အထက် = Overbought (ဈေးကျနိုင်သည်)၊ 30 အောက် = Oversold (ဈေးပြန်တက်နိုင်သည်)။ Ranging Market တွင် အကောင်းဆုံးဖြစ်ပြီး ပြင်းထန်သော Trend တွင် အားနည်းသည်။',
+    how:'RSI 70+ = watch for reversal or tighten stop. RSI 30− = watch for bounce entry. RSI divergence (price makes new high but RSI does not) = strong warning signal.',
+    tip_en:'RSI above 70 does not mean "sell now" — in a strong uptrend RSI can stay above 70 for weeks. Wait for it to turn DOWN from above 70 before acting.',
+    tip_mm:'RSI 70 အထက် = ချက်ချင်းရောင်းဆိုသည်မဟုတ်ဘဲ — ပြင်းထန်သော Uptrend တွင် RSI သည် 70 အထက် ရက်သတ္တပတ်များ ကြာရှိနိုင်သည်။ 70 အထက်မှ ကျဆင်းချိန်မှသာ ဆောင်ရွက်ပါ။',
+  },
+  {
+    id:'stoch', group:'momentum', name:'Stochastic', jp:'ストキャスティクス',
+    mm_name:'Stochastic Oscillator — %K / %D',
+    badge:'Oscillator', bcolor:'var(--b-bg)', btcolor:'var(--b-t)',
+    accent:'#185FA5', sel:'#185FA5',
+    svg:function(s){return svgStoch(s||0.85);},
+    exp_en:'Compares a closing price to its price range over a given period. The %K line (fast) and %D line (slow signal) are plotted on 0–100. When %K crosses above %D in oversold territory — potential buy signal. When %K crosses below %D in overbought territory — potential sell signal.',
+    exp_mm:'ပိတ်ဈေးကို သတ်မှတ်ကာလ ဈေးနှုန်းအပိုင်းအခြားနှင့် ယှဉ်ပါသည်။ %K (မြန်) %D (နှေး) ကို 0–100 တွင် ပြသသည်။ Oversold ဧရိယာတွင် %K သည် %D ကိုကျော်တက်သောအခါ ဝင်ဝယ်ရမည့် Signal ဖြစ်နိုင်သည်။',
+    how:'Best used with RSI for confirmation. Stochastic crosses in oversold/overbought zones + RSI agreement = stronger signal.',
+    tip_en:'Stochastic is more sensitive (faster) than RSI — it generates more signals but also more false ones. Always confirm with price action.',
+    tip_mm:'Stochastic သည် RSI ထက် အမြန်ပိုသောကြောင့် Signal ပိုများသော်လည်း False Signal လည်း ပိုများသည်။ Price Action ဖြင့် အမြဲ Confirm ပါ။',
+  },
+  {
+    id:'williams', group:'momentum', name:'Williams %R', jp:'ウィリアムズ%R',
+    mm_name:'Williams %R — Momentum Oscillator',
+    badge:'Oscillator', bcolor:'var(--p-bg)', btcolor:'var(--p-t)',
+    accent:'#534AB7', sel:'#534AB7',
+    svg:function(s){return svgWilliams(s||0.85);},
+    exp_en:'Similar to Stochastic but plotted on an inverted −100 to 0 scale. Above −20 = overbought, below −80 = oversold. Very sensitive — best used on higher timeframes (daily or weekly) to reduce noise.',
+    exp_mm:'Stochastic နှင့် ဆင်တူသော်လည်း −100 မှ 0 ပြောင်းပြန်ကြေးနှင့် ပြသသည်။ −20 အထက် = Overbought၊ −80 အောက် = Oversold ဖြစ်သည်။',
+    how:'Williams %R crossing back above −80 from below (coming out of oversold) = potential buy. Crossing below −20 from above = potential sell.',
+    tip_en:'Williams %R reacts quickly — it can reach extreme levels and stay there. Use it alongside trend direction, not as a standalone signal.',
+    tip_mm:'Williams %R သည် မြန်မြန်ဆန်ဆန် Extreme Level ရောက်ပြီး ကြာရှည်နေနိုင်သည်။ Trend Direction နှင့် ပေါင်းသုံးပါ — တစ်ခုတည်း မသုံးပါနှင့်။',
+  },
+  // ── TREND ──
+  {
+    id:'ma', group:'trend', name:'Moving Average', jp:'移動平均線',
+    mm_name:'Moving Average — MA20 / MA50 / MA200',
+    badge:'Trend', bcolor:'var(--g-bg)', btcolor:'var(--g-t)',
+    accent:'#3B6D11', sel:'#3B6D11',
+    svg:function(s){return svgMA(s||0.85);},
+    exp_en:'Smooths out price noise by calculating the average closing price over N periods. MA20 (short-term), MA50 (medium-term), MA200 (long-term). Price above MA = bullish, below = bearish. The slope direction of the MA tells you the trend.',
+    exp_mm:'N ကာလ ပျမ်းမျှ ပိတ်ဈေးကို တွက်ကာ ဈေးနှုန်း Noise ကို ဖယ်ရှားသည်。MA20 (တိုင်း)၊ MA50 (အလတ်)၊ MA200 (ရေရှည်) ဖြစ်သည်။ ဈေး MA အထက် = Bullish၊ အောက် = Bearish ဖြစ်သည်。',
+    how:'Price crosses above MA → bullish signal. Price crosses below MA → bearish signal. MA slope direction tells you the trend, not just the cross.',
+    tip_en:'MA is a lagging indicator — it follows price, not leads it. Use it to confirm trend direction, not to predict exact turning points.',
+    tip_mm:'MA သည် Lagging Indicator ဖြစ်သည် — ဈေးနှုန်းကို လိုက်သည်၊ ကြိုမပြဘဲ။ Trend Direction Confirm ရန်သာ သုံးပါ — တိကျသော Turning Point ကြိုတင်ခန့်မှန်းရန် မဟုတ်ဘဲ。',
+  },
+  {
+    id:'golden', group:'trend', name:'Golden Cross', jp:'ゴールデンクロス',
+    mm_name:'Golden Cross — Bullish MA Crossover',
+    badge:'Bullish Signal', bcolor:'var(--g-bg)', btcolor:'var(--g-t)',
+    accent:'#3B6D11', sel:'#3B6D11',
+    svg:function(s){return svgGolden(s||0.85);},
+    exp_en:'When the MA50 (short-term) crosses ABOVE the MA200 (long-term) — considered a major bullish signal indicating a potential long-term uptrend is beginning. Widely watched by institutional investors. More reliable on daily and weekly charts.',
+    exp_mm:'MA50 (တိုင်) သည် MA200 (ရေရှည်) ကို ကျော်ပြီး အပေါ်သို့ ဖြတ်ကျော်သောအခါ — ရေရှည် Uptrend စတင်နိုင်ကြောင်း ညွှန်ပြသော ကြီးမားသော Bullish Signal ဖြစ်သည်。Institutional Investor များ အကြည့်ဆုံး Signal တစ်ခုဖြစ်သည်。',
+    how:'When MA50 crosses above MA200 → consider entering long positions. Most powerful when accompanied by high volume and confirmed by RSI above 50.',
+    tip_en:'Golden Cross on low volume is a weak signal. High volume confirms that institutional money is moving in — that is when the signal has real teeth.',
+    tip_mm:'Volume နည်းနှင့် Golden Cross သည် Signal အားနည်းသည်。Volume ကြီးပါမှ Institutional Money ဝင်နေကြောင်း အတည်ပြုသည် — ထိုအချိန်မှ Signal စစ်မှန်သည်。',
+  },
+  {
+    id:'death', group:'trend', name:'Death Cross', jp:'デッドクロス',
+    mm_name:'Death Cross — Bearish MA Crossover',
+    badge:'Bearish Signal', bcolor:'var(--r-bg)', btcolor:'var(--r-t)',
+    accent:'#A32D2D', sel:'#A32D2D',
+    svg:function(s){return svgDeath(s||0.85);},
+    exp_en:'When the MA50 crosses BELOW the MA200 — the opposite of the Golden Cross. Considered a major bearish signal warning of a potential long-term downtrend. Often precedes or confirms bear markets.',
+    exp_mm:'MA50 သည် MA200 ကို ကျော်ပြီး အောက်သို့ ဖြတ်ကျော်သောအခါ — Golden Cross ၏ ဆန့်ကျင်ဘက်ဖြစ်သည်。ရေရှည် Downtrend ကြိုတင်သတိပေးသော ကြီးမားသော Bearish Signal ဖြစ်သည်。Bear Market ကို မကြာမီ ဖြစ်နိုင်ကြောင်း ညွှန်ပြသည်。',
+    how:'When MA50 crosses below MA200 → consider reducing long positions or tightening stop-losses. Strongest as a confirmation tool, not a timing tool.',
+    tip_en:'Death Cross often appears AFTER a significant decline has already happened — it is a confirmation signal, not an early warning. Do not wait for it to start protecting yourself.',
+    tip_mm:'Death Cross သည် မကြာခဏ ကြီးမားသော ကျဆင်းမှု ဖြစ်ပြီးနောက်မှ ပေါ်တတ်သည် — မစောသောသတိပေးချက်မဟုတ်ဘဲ Confirmation Signal ဖြစ်သည်。မိမိကိုယ်ကိုကာကွယ်ရန် Death Cross ကိုမစောင့်ပါနှင့်。',
+  },
+  {
+    id:'sar', group:'trend', name:'Parabolic SAR', jp:'パラボリックSAR',
+    mm_name:'Parabolic SAR — Stop and Reverse',
+    badge:'Trend', bcolor:'var(--g-bg)', btcolor:'var(--g-t)',
+    accent:'#3B6D11', sel:'#3B6D11',
+    svg:function(s){return svgSAR(s||0.85);},
+    exp_en:'Places dots above or below the price — dots BELOW the price indicate an uptrend (stay long), dots ABOVE indicate a downtrend (stay short or exit). When the dots flip sides, that is the SAR signal — the trend may be reversing.',
+    exp_mm:'ဈေးနှုန်းအပေါ် သို့မဟုတ် အောက်တွင် Dot များဖြင့် ပြသသည်。Dot များ ဈေး အောက်တွင် = Uptrend (Long ကိုင်ထားပါ)、ဈေး အပေါ်တွင် = Downtrend (ထွက်ပါ)。Dot ဘက်ပြောင်းသောအခါ Trend ပြောင်းနိုင်သည်。',
+    how:'Parabolic SAR is excellent for trailing stop-losses in trending markets. Move your stop to the current SAR dot level as the trend progresses.',
+    tip_en:'Parabolic SAR performs poorly in sideways/ranging markets — it generates many false signals. Only use it in clear trending conditions.',
+    tip_mm:'Parabolic SAR သည် Sideways/Ranging Market တွင် False Signal များများ ဖြစ်ပေါ်သောကြောင့် ညံ့ဖျင်းသည်。ရှင်းလင်းသော Trending Market တွင်သာ သုံးပါ。',
+  },
+  // ── OSCILLATOR (Volatility) ──
+  {
+    id:'bb', group:'oscillator', name:'Bollinger Bands', jp:'ボリンジャーバンド',
+    mm_name:'Bollinger Bands — Volatility Channel',
+    badge:'Volatility', bcolor:'var(--a-bg)', btcolor:'var(--a-t)',
+    accent:'#854F0B', sel:'#854F0B',
+    svg:function(s){return svgBB(s||0.85);},
+    exp_en:'Three lines: a middle MA20 with an upper and lower band at 2 standard deviations. Bands widen in volatile markets, narrow when quiet. Price touching the upper band = overbought territory. Price touching lower band = oversold. A "squeeze" (very narrow bands) often precedes a large breakout move.',
+    exp_mm:'အလယ် MA20 နှင့် 2 Standard Deviation ဖြင့် အပေါ်နှင့် အောက် Band သုံးမျဉ်းဖြင့် ပြသသည်。ဈေးမြင့်ချိန် Band ကျယ်ပြန့်ပြီး တိတ်ဆိတ်ချိန် ကျဉ်းလာသည်。Band ကျဉ်းလာသောအခါ (Squeeze) ကြီးမားသော Breakout ဖြစ်တတ်သည်。',
+    how:'Price at upper band = consider taking some profit. Price at lower band = consider buying. Band squeeze = prepare for breakout in either direction.',
+    tip_en:'Bollinger Band squeeze is one of the best "something is about to happen" signals in technical analysis. Volume direction during the squeeze determines which way the breakout goes.',
+    tip_mm:'Bollinger Band Squeeze သည် Technical Analysis ထဲတွင် "တစ်ခုခု ဖြစ်တော့မည်" ဆိုသော Signal အကောင်းဆုံးတစ်ခုဖြစ်သည်。Squeeze အတွင်း Volume လမ်းကြောင်းသည် Breakout ဘယ်ဘက်သွားမည်ကို ဆုံးဖြတ်သည်。',
+  },
+  {
+    id:'atr', group:'oscillator', name:'ATR', jp:'平均真の値幅',
+    mm_name:'Average True Range — Volatility Measure',
+    badge:'Volatility', bcolor:'var(--p-bg)', btcolor:'var(--p-t)',
+    accent:'#534AB7', sel:'#534AB7',
+    svg:function(s){return svgATR(s||0.85);},
+    exp_en:'Measures market volatility — how much a stock typically moves per day. Does not tell you direction, only magnitude. High ATR = large daily swings (wider stop-losses needed). Low ATR = quiet period. ATR rising sharply signals increasing volatility.',
+    exp_mm:'ဈေးကွက် Volatility ကို တိုင်းတာသည် — တစ်ရက်တွင် စတော့ပုံမှန်ဘယ်လောက်လှုပ်ရှားသည်ကို ပြသသည်。လမ်းကြောင်းမပြဘဲ ပမာဏသာ ပြသည်。ATR မြင့် = ကြီးမားသော တစ်နေ့တာ လှုပ်ရှားမှု (Stop-Loss ကျယ်ကျယ်ထားရမည်)。',
+    how:'Use ATR to set your stop-loss distance. A common rule: stop-loss = entry price minus 2× ATR. This prevents getting stopped out by normal volatility noise.',
+    tip_en:'If ATR is ¥200 and you set a ¥50 stop-loss, you will be stopped out constantly by normal price noise. ATR tells you the minimum meaningful stop distance.',
+    tip_mm:'ATR ¥200 ဖြစ်နေချိန် Stop-Loss ¥50 သတ်မှတ်ပါက ပုံမှန် Noise ကြောင့် ဆက်တိုက် ထွက်မိနေမည်。ATR သည် Meaningful Minimum Stop Distance ကို ပြသသည်。',
+  },
+  // ── VOLUME ──
+  {
+    id:'macd', group:'volume', name:'MACD', jp:'移動平均収束拡散法',
+    mm_name:'MACD — Moving Average Convergence Divergence',
+    badge:'Momentum+Trend', bcolor:'var(--b-bg)', btcolor:'var(--b-t)',
+    accent:'#185FA5', sel:'#185FA5',
+    svg:function(s){return svgMACD(s||0.85);},
+    exp_en:'Calculates the difference between MA12 and MA26, then plots a signal line (MA9 of MACD). Histogram bars show the gap between MACD and signal. MACD crossing above signal line = bullish. Crossing below = bearish. MACD crossing zero = trend change.',
+    exp_mm:'MA12 နှင့် MA26 ၏ ကွာဟချက်ကို တွက်ကာ Signal Line (MACD ၏ MA9) ကို ပြသသည်。MACD သည် Signal Line ကိုကျော်တက်သောအခါ = Bullish。ကျော်ကျသောအခါ = Bearish。MACD Zero ဖြတ်ကျော်သောအခါ = Trend ပြောင်းနိုင်သည်。',
+    how:'MACD crossover + RSI confirmation = stronger signal. MACD histogram shrinking = momentum fading. MACD divergence from price = potential reversal ahead.',
+    tip_en:'MACD divergence is its most powerful signal: price makes new high but MACD makes lower high = warning that the uptrend is weakening even if price has not fallen yet.',
+    tip_mm:'MACD Divergence သည် အားကောင်းဆုံး Signal ဖြစ်သည် — ဈေး New High ပြုနေသော်လည်း MACD Lower High ဖြစ်နေပါက Uptrend အားနည်းလာကြောင်း သတိပေးသည် — ဈေးမကျသေးသော်လည်း。',
+  },
+  {
+    id:'obv', group:'volume', name:'OBV', jp:'出来高移動平均',
+    mm_name:'On-Balance Volume — Volume Trend',
+    badge:'Volume', bcolor:'var(--g-bg)', btcolor:'var(--g-t)',
+    accent:'#3B6D11', sel:'#3B6D11',
+    svg:function(s){return svgOBV(s||0.85);},
+    exp_en:'Adds volume on up days and subtracts it on down days to create a running total. OBV rising = buyers are absorbing supply (bullish). OBV falling = sellers are distributing (bearish). OBV divergence from price is a powerful early signal of trend change.',
+    exp_mm:'ဈေးတက်သောနေ့ Volume ပေါင်းပြီး ကျသောနေ့ နုတ်ကာ Running Total ပြသသည်。OBV တက် = ဝယ်သူများ Supply ကိုစုပ်ယူနေ (Bullish)。OBV ကျ = ရောင်းသူများ ဖြန့်ကျက်နေ (Bearish)。',
+    how:'OBV rising while price is flat = accumulation happening quietly (bullish). OBV falling while price is flat = distribution (bearish). A breakout confirmed by OBV is much more reliable.',
+    tip_en:'OBV is one of the few indicators that can show you what Whales are doing BEFORE the price moves. Rising OBV with flat price often precedes a price breakout.',
+    tip_mm:'OBV သည် ဈေးနှုန်း မရွေ့မီ Whale များ ဘာလုပ်နေသည်ကို ပြနိုင်သော Indicator တစ်ချိုု့ တစ်ခုဖြစ်သည်。OBV တက်ပြီး ဈေး Flat ဖြစ်နေပါက Breakout မတိုင်မီ Accumulation ဖြစ်နေနိုင်သည်。',
+  },
+  {
+    id:'vwap', group:'volume', name:'VWAP', jp:'出来高加重平均価格',
+    mm_name:'Volume Weighted Average Price',
+    badge:'Volume', bcolor:'var(--p-bg)', btcolor:'var(--p-t)',
+    accent:'#534AB7', sel:'#534AB7',
+    svg:function(s){return svgVWAP(s||0.85);},
+    exp_en:'The average price weighted by volume during the trading session. Resets each day at open. Institutional traders use it as a benchmark — price above VWAP = bullish intraday sentiment, below = bearish. Stocks often "respect" VWAP as dynamic support/resistance.',
+    exp_mm:'取引セッション中の出来高加重平均価格。毎日の始値でリセットされる。機関投資家はベンチマークとして使用 — VWAP上 = 日中強気、VWAP下 = 弱気。',
+    how:'VWAP used by institutions as a fair-value line for the day. If price is above VWAP and bounces up off it — strong bullish signal. Below VWAP and rejects at it — bearish.',
+    tip_en:'VWAP is most useful for intraday (day-trading) decisions, not for end-of-day swing trading. For swing traders, use MA200 or Bollinger Bands instead.',
+    tip_mm:'VWAP သည် Intraday (Day Trading) ဆုံးဖြတ်ချက်များအတွက် အသုံးဝင်ဆုံးဖြစ်ပြီး End-of-Day Swing Trading အတွက် မဟုတ်ဘဲ。Swing Trader များအတွက် MA200 သို့မဟုတ် Bollinger Bands ကို အစားသုံးပါ。',
+  },
+];
+
+// ════════════════════════════════════════════════
+//  STATE & FILTER
+// ════════════════════════════════════════════════
+var S = {
+  filter:'all',
+  search:'',
+  openId:null,
+  learned: JSON.parse(localStorage.getItem('ind_learned_'+(localStorage.getItem('slp_uid')||'guest'))||'{}'),
+  userId: localStorage.getItem('slp_uid')||'guest'
+};
+
+function save(){ localStorage.setItem('ind_learned_'+S.userId, JSON.stringify(S.learned)); }
+
+function filtered(){
+  var items = INDICATORS;
+  if(S.filter!=='all') items = items.filter(function(x){return x.group===S.filter;});
+  if(S.search){ var q=S.search.toLowerCase(); items=items.filter(function(x){return x.name.toLowerCase().includes(q)||x.jp.includes(q)||(x.exp_mm||'').toLowerCase().includes(q);}); }
+  return items;
+}
+
+function setFilter(f,btn){
+  S.filter=f; S.openId=null;
+  document.querySelectorAll('.fb').forEach(function(b){b.className='fb';});
+  if(btn){
+    var cls={all:'fa',momentum:'fm',trend:'fmo',oscillator:'fo',volume:'fv'};
+    btn.className='fb '+(cls[f]||'fa');
+  }
+  render();
+}
+
+function doSearch(){
+  S.search=document.getElementById('search').value;
+  S.openId=null;
+  render();
+}
+
+// ════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════
+var GROUPS=[
+  {key:'momentum',label:'Momentum & oscillators',ids:['rsi','macd','stoch','williams']},
+  {key:'trend',   label:'Trend following',ids:['ma','golden','death','sar']},
+  {key:'oscillator',label:'Volatility',ids:['bb','atr']},
+  {key:'volume',  label:'Volume based',ids:['obv','vwap']},
+];
+
+function render(){
+  var body=document.getElementById('body');
+  var items=filtered();
+  if(!items.length){body.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:13px;">No indicators match your search.</div>';return;}
+
+  var byGroup={};
+  items.forEach(function(x){if(!byGroup[x.group])byGroup[x.group]=[];byGroup[x.group].push(x);});
+
+  var html='';
+  GROUPS.forEach(function(g,gi){
+    var list=byGroup[g.key];
+    if(!list||!list.length) return;
+    html+='<div class="section"><div class="sec-lbl">'+g.label+' ('+list.length+')</div>';
+    html+='<div class="item-drawer" id="dr-'+gi+'"></div>';
+    html+='<div class="grid">';
+    list.forEach(function(ind){
+      var isL=!!S.learned[ind.id];
+      var sel=S.openId===ind.id?'selected':'';
+      html+='<div class="ic '+sel+'" id="ic-'+ind.id+'" onclick="openDrawer(\''+ind.id+'\','+gi+')" style="--sel:'+ind.sel+';">'
+          +'<div class="ic-svg">'+ind.svg(0.78)+'</div>'
+          +'<div class="ic-info">'
+          +  '<div class="ic-badges"><span class="ibadge" style="background:'+ind.bcolor+';color:'+ind.btcolor+';">'+ind.badge+'</span></div>'
+          +  '<div class="ic-name">'+ind.name+'</div>'
+          +  '<div class="ic-jp">'+ind.jp+'</div>'
+          +  '<div class="ic-lrn '+(isL?'show':'')+'" >✓ learned</div>'
+          +'</div>'
+          +'</div>';
+    });
+    html+='</div></div>';
+  });
+
+  body.innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+//  DRAWER
+// ════════════════════════════════════════════════
+function openDrawer(id,gi){
+  var ind=INDICATORS.find(function(x){return x.id===id;});
+  if(!ind) return;
+  if(S.openId===id){
+    S.openId=null;
+    closeAllDrawers();
+    document.querySelectorAll('.ic').forEach(function(c){c.classList.remove('selected');});
+    return;
+  }
+  S.openId=id;
+  closeAllDrawers();
+  document.querySelectorAll('.ic').forEach(function(c){c.classList.remove('selected');});
+  var card=document.getElementById('ic-'+id);
+  if(card) card.classList.add('selected');
+
+  var isL=!!S.learned[id];
+  var drawer=document.getElementById('dr-'+gi);
+  if(!drawer) return;
+
+  drawer.innerHTML=
+    '<div class="dw-vis">'
+    +  ind.svg(1.5)
+    +  '<div class="dw-vis-lbl">'+ind.jp+'</div>'
+    +'</div>'
+    +'<div class="dw-body">'
+    +  '<button class="dw-close" onclick="closeAllDrawers(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+    +  '<div class="dw-jp">'+ind.jp+'</div>'
+    +  '<div class="dw-name" style="color:'+ind.accent+'">'+ind.name+'</div>'
+    +  '<div class="dw-badges"><span class="ibadge" style="background:'+ind.bcolor+';color:'+ind.btcolor+';">'+ind.badge+'</span></div>'
+    +  '<div class="dw-lbl">What it measures</div>'
+    +  '<div class="dw-exp">'+ind.exp_en+'</div>'
+    +  '<div class="dw-mm">'+ind.exp_mm+'</div>'
+    +  '<div class="dw-lbl">How to use it</div>'
+    +  '<div class="dw-how">'+ind.how+'</div>'
+    +  '<div class="dw-tip">'+ind.tip_en+'</div>'
+    +  '<div class="dw-tip-mm">'+ind.tip_mm+'</div>'
+    +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleLearned(event,\''+id+'\')">'
+    +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+    +    (isL?'Learned':'Mark as learned')
+    +  '</button>'
+    +'</div>';
+
+  drawer.className='item-drawer drawer open';
+  drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeAllDrawers(e){
+  if(e) e.stopPropagation();
+  S.openId=null;
+  document.querySelectorAll('.item-drawer').forEach(function(d){d.className='item-drawer';d.innerHTML='';});
+  document.querySelectorAll('.ic').forEach(function(c){c.classList.remove('selected');});
+}
+
+function toggleLearned(e,id){
+  e.stopPropagation();
+  S.learned[id]=!S.learned[id];
+  save();
+  render();
+  var ind=INDICATORS.find(function(x){return x.id===id;});
+  if(ind){
+    var gi=GROUPS.findIndex(function(g){return g.ids.indexOf(id)>-1;});
+    if(gi>=0) setTimeout(function(){openDrawer(id,gi);},40);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>

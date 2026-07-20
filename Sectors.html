@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japan TSE Sector Map</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --def:#185FA5;--def-bg:#E6F1FB;--def-t:#0C447C;
+  --cyc:#993C1D;--cyc-bg:#FAECE7;--cyc-t:#712B13;
+  --gro:#3B6D11;--gro-bg:#EAF3DE;--gro-t:#27500A;
+  --fin:#534AB7;--fin-bg:#EEEDFE;--fin-t:#3C3489;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+
+/* ── Page layout ── */
+.page{padding:18px;}
+
+/* ── Legend ── */
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.leg{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;transition:all .15s;color:var(--text2);}
+.leg:hover{border-color:var(--border2);}
+.leg.active-def{background:var(--def-bg);color:var(--def-t);border-color:rgba(24,95,165,.25);}
+.leg.active-cyc{background:var(--cyc-bg);color:var(--cyc-t);border-color:rgba(153,60,29,.25);}
+.leg.active-gro{background:var(--gro-bg);color:var(--gro-t);border-color:rgba(59,109,17,.25);}
+.leg.active-fin{background:var(--fin-bg);color:var(--fin-t);border-color:rgba(83,74,183,.25);}
+.leg.active-all{background:var(--surface);color:var(--text);border-color:var(--border2);font-weight:500;}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── Cycle strip ── */
+.cycle-wrap{margin-bottom:20px;}
+.cycle-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;}
+.cycle-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.cycle-phase{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;}
+.cycle-phase:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.cycle-phase.selected{border-color:var(--ph-color,#185FA5);box-shadow:0 0 0 2px var(--ph-color,#185FA5) inset;}
+.cp-num{font-size:22px;font-weight:700;opacity:.12;position:absolute;top:8px;right:10px;font-variant-numeric:tabular-nums;}
+.cp-phase{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.cp-name{font-size:14px;font-weight:600;margin-bottom:4px;}
+.cp-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+.cp-mm{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic;}
+.cp-sectors{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;}
+.cp-sector-tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;}
+
+/* ── Sectors grid ── */
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.sec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;}
+.sec-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.07);}
+.sec-card.selected{box-shadow:0 0 0 2px var(--sc-color) inset;border-color:var(--sc-color);}
+.sec-card.dimmed{opacity:.35;}
+.sc-top{padding:12px 14px 0;}
+.sc-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.sc-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sc-right{flex:1;}
+.sc-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.sc-jp{font-size:10px;color:var(--text3);margin-top:1px;}
+.sc-type{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;display:inline-block;margin-top:4px;}
+.sc-examples{display:flex;flex-wrap:wrap;gap:4px;padding:0 14px 10px;}
+.sc-ex{font-size:10px;background:var(--bg);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:var(--text3);}
+.sc-strip{height:3px;width:100%;}
+.sc-phases{display:flex;gap:3px;padding:6px 14px 10px;flex-wrap:wrap;}
+.sc-ph{font-size:9px;padding:2px 6px;border-radius:20px;font-weight:500;}
+
+/* ── Drawer ── */
+.drawer-wrap{margin-top:10px;}
+.drawer{display:none;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.drawer.open{display:grid;grid-template-columns:1fr 1fr;}
+.dw-left{padding:18px 20px;border-right:1px solid var(--border);}
+.dw-right{padding:18px 20px;}
+.dw-close{float:right;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;}
+.dw-close:hover{color:var(--text);}
+.dw-name{font-size:19px;font-weight:700;margin-bottom:3px;}
+.dw-jp{font-size:11px;color:var(--text3);margin-bottom:10px;}
+.dw-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px;margin-top:12px;}
+.dw-lbl:first-of-type{margin-top:0;}
+.dw-text{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:6px;}
+.dw-mm{font-size:12px;color:var(--text3);line-height:1.65;font-style:italic;background:var(--bg);border-radius:7px;padding:8px 11px;margin-bottom:8px;}
+.dw-tip{font-size:12px;background:#FAEEDA;border-left:3px solid #EF9F27;padding:8px 11px;border-radius:0 6px 6px 0;color:#633806;line-height:1.6;margin-bottom:4px;}
+.dw-tip-mm{font-size:11px;background:#FAEEDA;border-left:3px solid #EF9F27;padding:6px 11px;border-radius:0 6px 6px 0;color:#854F0B;line-height:1.6;font-style:italic;}
+.dw-stocks{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.dw-stock{font-size:11px;background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:6px;color:var(--text2);}
+.phase-matrix{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.pm-cell{padding:9px 10px;border-radius:8px;border:1px solid var(--border);}
+.pm-ph{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.pm-rating{font-size:15px;font-weight:700;}
+.pm-note{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;}
+.mark-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;margin-top:12px;}
+.mark-btn:hover{background:rgba(59,109,17,.08);}
+.mark-btn.on{background:#EAF3DE;color:#3B6D11;border-color:rgba(59,109,17,.2);}
+
+/* ── Section label ── */
+.grp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;margin-top:20px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.grp-lbl:first-child{margin-top:0;}
+
+@media(max-width:600px){
+  .cycle-strip{grid-template-columns:repeat(2,1fr);}
+  .sec-grid{grid-template-columns:1fr 1fr;}
+  .drawer.open{grid-template-columns:1fr;}
+  .dw-left{border-right:none;border-bottom:1px solid var(--border);}
+  .page{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Japan TSE Sector Map</div>
+    <div class="tb-sub">東証セクター — tap a phase or sector to explore</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg active-all" onclick="filterType('all',this)"><div class="leg-dot" style="background:#888;"></div>All sectors</div>
+    <div class="leg" onclick="filterType('defensive',this)"><div class="leg-dot" style="background:var(--def);"></div>Defensive</div>
+    <div class="leg" onclick="filterType('cyclical',this)"><div class="leg-dot" style="background:var(--cyc);"></div>Cyclical</div>
+    <div class="leg" onclick="filterType('growth',this)"><div class="leg-dot" style="background:var(--gro);"></div>Growth</div>
+    <div class="leg" onclick="filterType('financial',this)"><div class="leg-dot" style="background:var(--fin);"></div>Financial / Rate sensitive</div>
+  </div>
+
+  <!-- Economic cycle phases -->
+  <div class="cycle-wrap">
+    <div class="cycle-lbl">Economic cycle — tap a phase to highlight which sectors do well</div>
+    <div class="cycle-strip" id="cycle-strip"></div>
+  </div>
+
+  <!-- Drawer for sector detail -->
+  <div class="drawer-wrap"><div class="drawer" id="main-drawer"></div></div>
+
+  <!-- Sectors grid -->
+  <div id="sectors-body"></div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════
+var TYPE_COLORS={
+  defensive:{bg:'var(--def-bg)',text:'var(--def-t)',bar:'var(--def)',dot:'#185FA5',label:'Defensive'},
+  cyclical:  {bg:'var(--cyc-bg)',text:'var(--cyc-t)',bar:'var(--cyc)',dot:'#993C1D',label:'Cyclical'},
+  growth:    {bg:'var(--gro-bg)',text:'var(--gro-t)',bar:'var(--gro)',dot:'#3B6D11',label:'Growth'},
+  financial: {bg:'var(--fin-bg)',text:'var(--fin-t)',bar:'var(--fin)',dot:'#534AB7',label:'Financial'},
+};
+
+var PHASE_COLORS={
+  recovery:{bg:'#EAF3DE',text:'#27500A',bar:'#3B6D11'},
+  expansion:{bg:'#E6F1FB',text:'#0C447C',bar:'#185FA5'},
+  peak:{bg:'#FAEEDA',text:'#633806',bar:'#854F0B'},
+  contraction:{bg:'#FCEBEB',text:'#791F1F',bar:'#A32D2D'},
+};
+
+var PHASES=[
+  {
+    id:'recovery',num:'01',phase:'Phase 1',name:'Recovery',jp:'景気回復',
+    color:'#3B6D11',
+    desc:'Economy bottoms out. Central bank rates low. Consumer confidence recovering.',
+    desc_mm:'ဈေးကွက် အောက်ခြေမှ ပြန်တက်လာချိန်။ ဗဟိုဘဏ် အတိုးနှုန်း နိမ့်သည်။ Consumer Confidence ပြန်တက်နေသည်။',
+    best:['cyclical','growth'],
+    sectors:['auto','electronics','retail','property','finance'],
+    macro:'Low rates → borrow cheap → invest. Early cyclicals lead.',
+  },
+  {
+    id:'expansion',num:'02',phase:'Phase 2',name:'Expansion',jp:'景気拡大',
+    color:'#185FA5',
+    desc:'GDP growing, earnings rising, employment strong, inflation emerging.',
+    desc_mm:'GDP ကြီးထွားနေသည်၊ Earnings တက်သည်၊ အလုပ်အကိုင် ကောင်းသည်၊ ငွေကြေးဖောင်းပွမှု စပြနေသည်။',
+    best:['cyclical','growth','financial'],
+    sectors:['electronics','machinery','chemicals','finance','telecom'],
+    macro:'Broad rally. Most sectors do well. Financials benefit from rising rates.',
+  },
+  {
+    id:'peak',num:'03',phase:'Phase 3',name:'Peak',jp:'景気ピーク',
+    color:'#854F0B',
+    desc:'Growth slowing, inflation high, central bank raising rates, yield curve flattening.',
+    desc_mm:'ကြီးထွားမှု နှေးလာသည်၊ ငွေကြေးဖောင်းပွမှု မြင့်သည်၊ ဗဟိုဘဏ် အတိုးနှုန်းတင်နေသည်၊ Yield Curve ပြားလာသည်။',
+    best:['defensive'],
+    sectors:['pharma','food','utilities','energy','telecom'],
+    macro:'Rotate to defensives. Avoid high-PE growth. Energy benefits from high inflation.',
+  },
+  {
+    id:'contraction',num:'04',phase:'Phase 4',name:'Contraction',jp:'景気後退',
+    color:'#A32D2D',
+    desc:'Recession. GDP shrinking, unemployment rising, earnings falling, stocks declining.',
+    desc_mm:'Recession ဖြစ်သည်။ GDP ကျဆင်းနေသည်၊ အလုပ်လက်မဲ့ တက်သည်၊ Earnings ကျသည်၊ ဈေးကွက် ကျဆင်းနေသည်။',
+    best:['defensive'],
+    sectors:['pharma','food','utilities','telecom'],
+    macro:'Capital preservation. Hold cash or defensives. Avoid cyclicals and banks.',
+  },
+];
+
+var SECTORS=[
+  // ── DEFENSIVE ──
+  {
+    id:'pharma',type:'defensive',name:'Pharmaceuticals',jp:'医薬品',icon:'ti-pill',
+    examples:['4503 Astellas','4568 Daiichi Sankyo','4519 Chugai'],
+    phases:{recovery:'★★★',expansion:'★★★',peak:'★★★★★',contraction:'★★★★★'},
+    phase_notes:{recovery:'Steady regardless of cycle',expansion:'Stable earnings support',peak:'Investors rotate in',contraction:'Best safe haven — people always need medicine'},
+    exp_en:'Pharmaceuticals are the classic defensive sector. Drug demand is inelastic — people need medicine regardless of the economic cycle. Japanese pharma is globally competitive with strong R&D pipelines. Often holds value or rises when the market falls.',
+    exp_mm:'ဆေးဝါး Sector သည် ဒေသပုံ Defensive Sector ဖြစ်သည်။ ဆေးဝါးလိုအပ်မှုသည် Inelastic ဖြစ်ပြီး — စီးပွားရေး Cycle မည်သို့ပင်ဖြစ်စေ လူများ ဆေးလိုသည်။ ဂျပန် Pharma သည် R&D ပိုလိုင်းကောင်းဖြင့် ကမ္ဘာ့ဈေးကွက်တွင် ယှဉ်ပြိုင်နိုင်သည်။',
+    tip_en:'Watch for patent cliff risk — when a blockbuster drug loses patent protection, generics flood in and revenue falls sharply. Check pipeline health before buying.',
+    tip_mm:'Patent Cliff Risk ကို သတိပြုပါ — ထိပ်တန်းဆေး Patent ကုန်ဆုံးချိန် Generic ဆေးများ ဝင်ရောက်ပြီး Revenue ချက်ချင်းကျဆင်းနိုင်သည်။ ဝင်ဝယ်မတိုင်မီ Pipeline ကျန်းမာရေး စစ်ဆေးပါ။',
+  },
+  {
+    id:'food',type:'defensive',name:'Food & Beverages',jp:'食料品',icon:'ti-salad',
+    examples:['2802 Ajinomoto','2914 JT','2503 Kirin'],
+    phases:{recovery:'★★★',expansion:'★★★',peak:'★★★★',contraction:'★★★★★'},
+    phase_notes:{recovery:'Stable baseline',expansion:'Steady performer',peak:'Rotation target',contraction:'Essential demand — non-discretionary'},
+    exp_en:'Food and beverage companies serve non-discretionary demand — people eat regardless of the economy. Japanese food companies often have strong brand moats domestically and growing Asian market presence. Dividends tend to be stable and growing.',
+    exp_mm:'Food & Beverage ကုမ္ပဏီများသည် Non-Discretionary Demand ကို ဝန်ဆောင်မှုပေးသည် — စီးပွားရေး မည်သို့ပင်ဖြစ်စေ လူများ စားသောက်ကြသည်။ ဂျပန် Food ကုမ္ပဏီများသည် ပြည်တွင်း Brand Moat ကောင်းပြီး အာရှ ဈေးကွက် ချဲ့ထွင်နေသည်။',
+    tip_en:'Food inflation is a double-edged sword — input costs rise but pricing power allows companies to pass it on. Strong brands pass through inflation better than weak ones.',
+    tip_mm:'Food Inflation သည် နှစ်ဘက်မြှောင် ဓားလောင်းဖြစ်သည် — Input Cost တက်သော်လည်း Brand ကောင်းသော ကုမ္ပဏီများ ဈေးတင်၍ ဖောက်သည်များထံ လွှဲပြောင်းနိုင်သည်။',
+  },
+  {
+    id:'utilities',type:'defensive',name:'Utilities',jp:'電気・ガス',icon:'ti-bolt',
+    examples:['9501 Tokyo Electric','9503 Kansai Electric','9531 Tokyo Gas'],
+    phases:{recovery:'★★★',expansion:'★★',peak:'★★★★',contraction:'★★★★★'},
+    phase_notes:{recovery:'Underperforms in early rally',expansion:'Lags growth',peak:'Safe haven buying begins',contraction:'Essential — regulated monopolies'},
+    exp_en:'Electric and gas utilities are government-regulated monopolies in Japan. Revenue is predictable and stable. High dividend yields attract income investors. They underperform in strong markets but protect capital in downturns. Note: sensitive to energy policy and nuclear restart decisions.',
+    exp_mm:'ဂျပန်တွင် လျှပ်စစ်နှင့် ဓာတ်ငွေ့ Utility များသည် အစိုးရ ထိန်းချုပ်သော Monopoly ဖြစ်သည်။ Revenue ဖြင့်ချ တည်ငြိမ်ပြီး မြင့်မားသော Dividend Yield သည် Income Investor များ ဆွဲဆောင်သည်။',
+    tip_en:'Japanese utilities are sensitive to nuclear energy policy. Reactor restart approvals can dramatically improve earnings. Watch for NRA (Nuclear Regulation Authority) decisions.',
+    tip_mm:'ဂျပန် Utility များသည် Nuclear Energy မူဝါဒကို Sensitive ဖြစ်သည်။ Reactor ပြန်ဖွင့်ခွင့် Approve ဖြစ်ပါက Earnings သိသိသာသာ တိုးတက်နိုင်သည်。NRA ဆုံးဖြတ်ချက်များ စောင့်ကြည့်ပါ。',
+  },
+  {
+    id:'telecom',type:'defensive',name:'Telecommunications',jp:'情報通信',icon:'ti-wifi',
+    examples:['9432 NTT','9433 KDDI','9984 SoftBank'],
+    phases:{recovery:'★★★',expansion:'★★★',peak:'★★★★',contraction:'★★★★'},
+    phase_notes:{recovery:'Stable base',expansion:'5G investment theme',peak:'Rotation target',contraction:'Subscription revenue is recession-resistant'},
+    exp_en:'Mobile and internet subscription revenue is highly recurring and resistant to recession. Japanese telecoms (NTT, KDDI, SoftBank) are quasi-monopolies with massive network infrastructure. Government pressure on pricing is a key risk to watch.',
+    exp_mm:'Mobile နှင့် Internet Subscription Revenue သည် Recurring Revenue ဖြစ်ပြီး Recession ကို ခံနိုင်ရည်ရှိသည်。ဂျပန် Telecom (NTT, KDDI, SoftBank) များသည် ကြီးမားသော Network Infrastructure ပိုင်ဆိုင်သော Quasi-Monopoly ဖြစ်သည်。',
+    tip_en:'NTT is one of Japan\'s largest dividend payers and is partially government-owned. KDDI has an exceptional 20+ year track record of consecutive dividend increases.',
+    tip_mm:'NTT သည် ဂျပန်တွင် Dividend အကြီးဆုံးပေးသောကုမ္ပဏီများတွင် တစ်ခုဖြစ်ပြီး အစိုးရ တစ်စိတ်တစ်ပိုင်း ပိုင်ဆိုင်သည်。KDDI သည် ဆက်တိုက် Dividend တိုးမြင့်မှု 20+ နှစ် မှတ်တမ်းကောင်း ရှိသည်。',
+  },
+  // ── CYCLICAL ──
+  {
+    id:'auto',type:'cyclical',name:'Automobiles',jp:'輸送用機器',icon:'ti-car',
+    examples:['7203 Toyota','7267 Honda','7201 Nissan'],
+    phases:{recovery:'★★★★★',expansion:'★★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Pent-up demand releases',expansion:'Peak auto sales',peak:'Slowing demand, rising input costs',contraction:'Big-ticket purchases deferred'},
+    exp_en:'Automobiles are the quintessential cyclical sector — cars are large purchases that consumers defer in bad times and splurge on in good times. Toyota is Japan\'s most valuable company and the world\'s largest automaker. The EV transition is the sector\'s most important structural theme.',
+    exp_mm:'Automobile သည် ဒေသပုံ Cyclical Sector ဖြစ်သည် — ကားများသည် ကြီးမားသော ဝယ်ယူမှုဖြစ်ပြီး ဆိုးသောအချိန် ရွှေ့ဆိုင်းပြီး ကောင်းသောအချိန် ဝင်ဝယ်ကြသည်。Toyota သည် ဂျပန်တွင် Market Cap အကြီးဆုံးပြီး ကမ္ဘာ့ Automaker အကြီးဆုံးဖြစ်သည်。EV Transition သည် Sector ၏ အရေးကြီးဆုံး Structural Theme ဖြစ်သည်。',
+    tip_en:'Auto stocks are heavily influenced by USD/JPY. A weaker yen is good for Toyota and Honda (export earnings translate back at higher values). Watch the yen rate.',
+    tip_mm:'Auto Stock များသည် USD/JPY ဖြင့် ပြင်းထန်စွာ သက်ရောက်ခံရသည်。ယန်းပျော့ပါက Toyota, Honda (Export Earnings ပြန်ပြောင်းချိန် ပိုတန်ဖိုးများ) အတွက် ကောင်းသည်。ယန်းနှုန်း စောင့်ကြည့်ပါ。',
+  },
+  {
+    id:'electronics',type:'cyclical',name:'Electronics & Tech',jp:'電気機器',icon:'ti-cpu',
+    examples:['6758 Sony','6501 Hitachi','6861 Keyence'],
+    phases:{recovery:'★★★★',expansion:'★★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Early recovery leader',expansion:'Capex boom benefits',peak:'Margin pressure starts',contraction:'Enterprise spending cuts hit hard'},
+    exp_en:'Japan\'s electronics sector spans consumer electronics (Sony), industrial equipment (Keyence, Fanuc), and semiconductors. Keyence, a sensor/measurement giant, trades at a premium due to exceptional margins. The sector is highly sensitive to global capex cycles.',
+    exp_mm:'ဂျပန် Electronics Sector သည် Consumer Electronics (Sony)၊ Industrial Equipment (Keyence, Fanuc)၊ Semiconductor များပါဝင်သည်。Keyence (Sensor/Measurement) သည် ထူးချွန်သော Margin ကြောင့် Premium ဈေးဖြင့် ရောင်းချရသည်。Sector သည် ကမ္ဘာ့ Capex Cycle ကို Sensitive ဖြစ်သည်。',
+    tip_en:'Keyence (6861) has one of the highest operating margins (~55%) of any industrial company in the world. It rarely goes on sale but when it does it is worth noting.',
+    tip_mm:'Keyence (6861) သည် ကမ္ဘာ့ Industrial ကုမ္ပဏီများတွင် Operating Margin (~55%) အမြင့်ဆုံး တစ်ခုဖြစ်သည်。ပေါသောအချိန် ရှားသော်လည်း ဖြစ်လာပါက သတိပြုရန် တန်ဖိုးရှိသည်。',
+  },
+  {
+    id:'chemicals',type:'cyclical',name:'Chemicals',jp:'化学',icon:'ti-flask',
+    examples:['4063 Shin-Etsu','4183 Mitsui Chem','4188 Mitsubishi Chem'],
+    phases:{recovery:'★★★★',expansion:'★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Input costs normalize, margins recover',expansion:'Demand broad-based',peak:'Oil price risk rises',contraction:'Industrial demand collapses first'},
+    exp_en:'Japanese chemicals range from commodity plastics to highly specialized materials. Shin-Etsu Chemical (4063) is the world\'s largest PVC producer and a dominant silicon wafer supplier to the semiconductor industry. Specialty chemicals are less cyclical than commodity chemicals.',
+    exp_mm:'ဂျပန် Chemicals သည် ပုံမှန် Plastic မှ အထူးပြု Materials အထိ ကျယ်ပြန့်သည်。Shin-Etsu Chemical (4063) သည် ကမ္ဘာ့ PVC ထုတ်လုပ်သူ အကြီးဆုံးပြီး Semiconductor Silicon Wafer ဈေးကွက်တွင် လွှမ်းမိုးသည်。',
+    tip_en:'Shin-Etsu (4063) benefits from semiconductor cycle tailwinds. When chip makers announce capacity expansion — that is good news for Shin-Etsu silicon wafers.',
+    tip_mm:'Shin-Etsu (4063) သည် Semiconductor Cycle မှ အကျိုးခံစားသည်。Chip Maker များ Capacity ချဲ့ကြောင်း ကြေညာပါက — Shin-Etsu Silicon Wafer အတွက် ကောင်းသောသတင်းဖြစ်သည်。',
+  },
+  {
+    id:'machinery',type:'cyclical',name:'Machinery',jp:'機械',icon:'ti-settings',
+    examples:['6954 Fanuc','7741 Hoya','6367 Daikin'],
+    phases:{recovery:'★★★★',expansion:'★★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Order books start recovering',expansion:'Factory automation boom',peak:'Lead times stretch',contraction:'Orders dry up fast'},
+    exp_en:'Industrial machinery includes factory automation (Fanuc), HVAC (Daikin), and medical optics (Hoya). Fanuc is the global leader in industrial robots and CNC machines — a direct play on global manufacturing capex. The sector leads economic expansions and falls early in downturns.',
+    exp_mm:'Industrial Machinery တွင် Factory Automation (Fanuc)၊ HVAC (Daikin)၊ Medical Optics (Hoya) ပါဝင်သည်。Fanuc သည် Industrial Robot နှင့် CNC Machine တွင် ကမ္ဘာ့ Leader ဖြစ်ပြီး ကမ္ဘာ့ Manufacturing Capex ကို တိုက်ရိုက် ကိုယ်စားပြုသည်。',
+    tip_en:'Fanuc\'s order book is watched as a leading indicator for global manufacturing health. When Fanuc orders fall, factories worldwide are cutting capex — a warning for the whole market.',
+    tip_mm:'Fanuc ၏ Order Book သည် ကမ္ဘာ့ Manufacturing ကျန်းမာရေး Leading Indicator အဖြစ် စောင့်ကြည့်ခံနေရသည်。Fanuc Order ကျပါက — ကမ္ဘာ့ Factory များ Capex ဖြတ်တောက်နေကြောင်းဖြစ်ပြီး ဈေးကွက်တစ်ခုလုံးအတွက် သတိပေးချက်ဖြစ်သည်。',
+  },
+  {
+    id:'retail',type:'cyclical',name:'Retail & Consumer',jp:'小売業',icon:'ti-shopping-cart',
+    examples:['9983 Fast Retailing','8267 AEON','3382 Seven & i'],
+    phases:{recovery:'★★★★',expansion:'★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Pent-up spending releases',expansion:'Consumer confidence peak',peak:'Spending caution starts',contraction:'Discretionary spending cuts first'},
+    exp_en:'Japan\'s retail sector is dominated by convenience stores (Seven-Eleven, FamilyMart, Lawson) and fashion (Fast Retailing / Uniqlo). Convenience stores are unusually resilient — Japanese consumers use them daily. Uniqlo\'s fast-fashion model with quality positioning is globally unique.',
+    exp_mm:'ဂျပန် Retail Sector ကို Convenience Store (Seven-Eleven, FamilyMart, Lawson) နှင့် Fashion (Fast Retailing/Uniqlo) တို့ လွှမ်းမိုးသည်。Convenience Store များသည် ပုံမှန်မဟုတ်ဘဲ ခံနိုင်ရည်ကောင်းသည် — ဂျပန်လူများ နေ့တိုင်းသုံးသောကြောင့်ဖြစ်သည်。',
+    tip_en:'Fast Retailing (9983) / Uniqlo is one of Japan\'s highest-priced stocks. It has the largest weighting in the Nikkei 225 — meaning Uniqlo alone can move the entire index.',
+    tip_mm:'Fast Retailing (9983)/Uniqlo သည် ဂျပန်တွင် ဈေး အမြင့်ဆုံးစတော့များတွင် တစ်ခုဖြစ်သည်。Nikkei 225 တွင် Weight အမြင့်ဆုံးဖြစ်ပြီး — Uniqlo တစ်ခုတည်း Index တစ်ခုလုံးကို ရွှေ့နိုင်သည်。',
+  },
+  // ── GROWTH ──
+  {
+    id:'property',type:'growth',name:'Real Estate',jp:'不動産',icon:'ti-building',
+    examples:['8801 Mitsui Fudosan','8802 Mitsubishi Estate','3659 Nexon'],
+    phases:{recovery:'★★★★★',expansion:'★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Low rates boost property demand',expansion:'Rent rises, development active',peak:'Rate risk emerges',contraction:'Financing dries up'},
+    exp_en:'Real estate in Japan is heavily influenced by BOJ interest rate policy. Low rates = cheap mortgages = property demand. REITs (J-REIT) provide an accessible way to invest in commercial property with dividend income. Japan\'s long-term demographic decline (shrinking population) is a structural headwind for residential property outside major cities.',
+    exp_mm:'ဂျပန် Real Estate သည် BOJ အတိုးနှုန်းမူဝါဒဖြင့် ပြင်းစွာ သက်ရောက်ခံနေရသည်。အတိုးနိမ့် = ချေးငွေပေါ = Property Demand မြင့်သည်。J-REIT သည် Commercial Property တွင် Dividend Income နှင့် ရင်းနှီးမြှုပ်နှံနိုင်သောနည်းလမ်းဖြစ်သည်。',
+    tip_en:'When BOJ raises interest rates, real estate and REIT stocks typically fall — rising rates mean higher mortgage costs and lower property values. Watch BOJ policy closely.',
+    tip_mm:'BOJ အတိုးနှုန်းတင်သောအခါ Real Estate နှင့် REIT Stock များ ကျဆင်းတတ်သည် — အတိုးမြင့်ခြင်းသည် Mortgage ကုန်ကျစရိတ်မြင့်ပြီး Property တန်ဖိုးကျဆင်းသည်ဆိုလိုသည်。BOJ မူဝါဒ အနီးကပ် စောင့်ကြည့်ပါ。',
+  },
+  {
+    id:'energy',type:'growth',name:'Energy & Resources',jp:'石油・石炭',icon:'ti-flame',
+    examples:['5019 Idemitsu','5020 ENEOS','1605 INPEX'],
+    phases:{recovery:'★★★',expansion:'★★★★',peak:'★★★★★',contraction:'★★★'},
+    phase_notes:{recovery:'Oil demand recovery',expansion:'Demand and price rise',peak:'Peak oil price, inflation hedge',contraction:'Energy stocks volatile but oil persists'},
+    exp_en:'Japanese energy companies are mainly refiners and oil importers (Japan has minimal domestic oil production). INPEX is an exception as an upstream oil & gas explorer. Energy stocks act as an inflation hedge — when commodity prices rise due to inflation, energy earnings and share prices follow.',
+    exp_mm:'ဂျပန် Energy ကုမ္ပဏီများသည် အဓိကအားဖြင့် Refinery နှင့် Oil Importer ဖြစ်သည် (ဂျပန်တွင် ပြည်တွင်း Oil ထုတ်လုပ်မှု အနည်းငယ်သာရှိသည်)。INPEX သည် Upstream Oil & Gas Explorer ဖြစ်သောကြောင့် မတူကွဲပြားသည်。Energy Stock သည် Inflation Hedge အဖြစ် ဆောင်ရွက်သည်。',
+    tip_en:'Japanese energy stocks are heavily influenced by crude oil prices (Brent/WTI) and USD/JPY. Both going up simultaneously = very bullish for Japanese energy companies.',
+    tip_mm:'ဂျပန် Energy Stock များသည် Crude Oil ဈေးနှုန်း (Brent/WTI) နှင့် USD/JPY ဖြင့် ပြင်းစွာ သက်ရောက်ခံနေရသည်。နှစ်ခုစလုံး တက်သောအခါ = ဂျပန် Energy ကုမ္ပဏီများအတွက် အလွန် Bullish ဖြစ်သည်。',
+  },
+  {
+    id:'shipping',type:'growth',name:'Shipping & Trading',jp:'海運・商社',icon:'ti-ship',
+    examples:['9101 NYK','9104 MOL','8031 Mitsui & Co'],
+    phases:{recovery:'★★★★',expansion:'★★★★★',peak:'★★★★',contraction:'★★'},
+    phase_notes:{recovery:'Trade volumes recover',expansion:'Global trade boom',peak:'Freight rates peak',contraction:'Trade volumes collapse'},
+    exp_en:'Japan\'s major trading houses (Mitsubishi, Mitsui, Itochu, Sumitomo, Marubeni) are unique conglomerates that span commodities, energy, food, and finance globally. Warren Buffett\'s purchase of the five major trading houses in 2020 put them on the global investment map. Shipping companies benefit from global trade volume growth.',
+    exp_mm:'ဂျပန် Major Trading House (Mitsubishi, Mitsui, Itochu, Sumitomo, Marubeni) များသည် ကမ္ဘာ့ Commodity, Energy, Food, Finance တို့ကို ခြုံသော ထူးခြားသော Conglomerate ဖြစ်သည်。Warren Buffett ၏ 2020 ဝင်ဝယ်မှုသည် ၎င်းတို့ကို ကမ္ဘာ့ Investment Map ပေါ် တင်ခဲ့သည်。',
+    tip_en:'The five major trading companies are Buffett\'s Japan play. He bought them as a diversified bet on the global commodity cycle and Japanese shareholder returns improvement.',
+    tip_mm:'Major Trading Company ငါးခုသည် Buffett ၏ ဂျပန် Investment ဖြစ်သည်。ကမ္ဘာ့ Commodity Cycle နှင့် ဂျပန် Shareholder Return တိုးတက်မှုအပေါ် Diversified Bet အဖြစ် ဝင်ဝယ်ခဲ့သည်。',
+  },
+  // ── FINANCIAL ──
+  {
+    id:'finance',type:'financial',name:'Banks',jp:'銀行業',icon:'ti-building-bank',
+    examples:['8306 MUFG','8316 SMFG','8411 Mizuho'],
+    phases:{recovery:'★★★★',expansion:'★★★★★',peak:'★★★★',contraction:'★★'},
+    phase_notes:{recovery:'Low rates compress margins',expansion:'Loan growth strong',peak:'Best phase — rising rates improve NIM',contraction:'Bad loans rise, credit risk surge'},
+    exp_en:'Japanese megabanks (MUFG, SMFG, Mizuho) are among the world\'s largest by assets. For years they suffered under BOJ\'s zero-rate policy (low rates compress net interest margins). The shift away from zero rates is the most transformative change for Japanese banks in decades.',
+    exp_mm:'ဂျပန် Megabank (MUFG, SMFG, Mizuho) များသည် Asset ပိုင်ဆိုင်မှုအပေါ် ကမ္ဘာ့ အကြီးဆုံးများဖြစ်သည်。နှစ်ပေါင်းများစွာ BOJ Zero Rate မူဝါဒ (နိမ့်သောအတိုးနှုန်းသည် Net Interest Margin ကျဆင်းစေသည်) အောက်တွင် ခံနေရသည်。Zero Rate မှ ပြောင်းလဲမှုသည် ဂျပန်ဘဏ်များအတွက် ဆယ်စုနှစ်ကျော်တွင် အရေးကြီးဆုံး ပြောင်းလဲမှုဖြစ်သည်。',
+    tip_en:'MUFG (8306) is one of the prime beneficiaries of BOJ rate normalization. Every 10bp rise in Japanese long-term rates adds significantly to MUFG\'s net interest income. Watch BOJ meetings closely.',
+    tip_mm:'MUFG (8306) သည် BOJ Rate Normalization မှ အကျိုးခံစားရဆုံးကုမ္ပဏီများတွင် တစ်ခုဖြစ်သည်。ဂျပန် ရေရှည်အတိုးနှုန်း 10bp တိုင်း တက်တိုင်း MUFG Net Interest Income သိသိသာသာ တိုးသည်。BOJ အစည်းအဝေးများ အနီးကပ် စောင့်ကြည့်ပါ。',
+  },
+  {
+    id:'insurance',type:'financial',name:'Insurance',jp:'保険',icon:'ti-shield',
+    examples:['8725 MS&AD','8630 Sompo','8750 Dai-ichi Life'],
+    phases:{recovery:'★★★',expansion:'★★★★',peak:'★★★★',contraction:'★★★'},
+    phase_notes:{recovery:'Investment income improving',expansion:'Premium growth steady',peak:'Float generates returns',contraction:'Claims risk from economic stress'},
+    exp_en:'Japanese insurance companies (non-life: MS&AD, Tokio Marine; life: Dai-ichi, Nippon Life) hold massive investment portfolios. They benefit from rising interest rates (higher returns on bond portfolios) and economic expansion (more assets to insure). Cross-shareholding reduction is releasing hidden value.',
+    exp_mm:'ဂျပန် Insurance ကုမ္ပဏီများ (Non-Life: MS&AD, Tokio Marine; Life: Dai-ichi, Nippon Life) သည် ကြီးမားသော Investment Portfolio ကိုင်ထားသည်。အတိုးနှုန်းမြင့်ခြင်း (Bond Portfolio Return မြင့်သည်) နှင့် စီးပွားရေးချဲ့ထွင်မှုမှ အကျိုးခံစားသည်。',
+    tip_en:'Japanese insurance companies have historically held massive cross-shareholdings in client companies. Regulatory pressure to unwind these is releasing substantial value — watch for announcements of share disposal.',
+    tip_mm:'ဂျပန် Insurance ကုမ္ပဏီများသည် သူဖောက်သည် ကုမ္ပဏီများတွင် ကြီးမားသော Cross-Shareholding ကိုင်ထားသောသမိုင်းရှိသည်。ဖြတ်တောက်ရန် Regulatory Pressure သည် သိသိသာသာ တန်ဖိုး ထွက်ပေါ်စေနေသည် — ရှယ်ယာ Disposal ကြေညာချက်များ စောင့်ကြည့်ပါ。',
+  },
+  {
+    id:'brokers',type:'financial',name:'Securities & Brokers',jp:'証券',icon:'ti-chart-bar',
+    examples:['8604 Nomura','8601 Daiwa','8630 Sompo'],
+    phases:{recovery:'★★★★',expansion:'★★★★★',peak:'★★★',contraction:'★★'},
+    phase_notes:{recovery:'Trading volumes recover',expansion:'Bull market lifts all boats',peak:'IPO and M&A peak',contraction:'Trading revenue collapses'},
+    exp_en:'Securities companies earn from trading commissions, underwriting, and asset management. They are highly leveraged to bull markets — when markets rise, retail and institutional activity surges and their revenues follow. Nomura is Japan\'s largest investment bank.',
+    exp_mm:'Securities ကုမ္ပဏီများသည် Trading Commission, Underwriting, Asset Management မှ ဝင်ငွေရရှိသည်。Bull Market တွင် Retail နှင့် Institutional Activity မြင့်ပြီး Revenue လိုက်တက်သောကြောင့် Bull Market ကို Leverage ပြင်းစွာ ရှိသည်。Nomura သည် ဂျပန်တွင် Investment Bank အကြီးဆုံးဖြစ်သည်。',
+    tip_en:'Securities stocks are highly cyclical — they amplify market moves. In bull markets they outperform; in bear markets they fall harder than the index. Not for risk-averse investors.',
+    tip_mm:'Securities Stock များသည် အလွန် Cyclical ဖြစ်ပြီး ဈေးကွက်လှုပ်ရှားမှုကို ချဲ့ပေးသည်。Bull Market တွင် Outperform ဖြစ်ပြီး Bear Market တွင် Index ထက် ပိုကျသည်。Risk မမြင့်ချင်သောသူများအတွက် မဟုတ်ဘဲ。',
+  },
+];
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+var S={
+  typeFilter:'all',
+  phaseFilter:null,
+  openId:null,
+  learned:JSON.parse(localStorage.getItem('sec_learned_'+(localStorage.getItem('slp_uid')||'guest'))||'{}'),
+  userId:localStorage.getItem('slp_uid')||'guest',
+};
+function saveL(){localStorage.setItem('sec_learned_'+S.userId,JSON.stringify(S.learned));}
+
+// ════════════════════════════════════════════════
+//  RENDER CYCLE PHASES
+// ════════════════════════════════════════════════
+function renderCycle(){
+  var html='';
+  PHASES.forEach(function(ph){
+    var col=PHASE_COLORS[ph.id];
+    var sel=S.phaseFilter===ph.id?' selected':'';
+    var tagHtml=ph.sectors.map(function(s){
+      var sec=SECTORS.find(function(x){return x.id===s;});
+      if(!sec)return'';
+      var tc=TYPE_COLORS[sec.type];
+      return'<span class="cp-sector-tag" style="background:'+tc.bg+';color:'+tc.text+';">'+sec.name+'</span>';
+    }).join('');
+    html+='<div class="cycle-phase'+sel+'" style="--ph-color:'+ph.color+';" onclick="togglePhase(\''+ph.id+'\')">'
+        +'<div class="cp-num">'+ph.num+'</div>'
+        +'<div class="cp-phase" style="color:'+ph.color+'">'+ph.phase+'</div>'
+        +'<div class="cp-name">'+ph.name+' / '+ph.jp+'</div>'
+        +'<div class="cp-desc">'+ph.desc+'</div>'
+        +'<div class="cp-mm">'+ph.desc_mm+'</div>'
+        +'<div class="cp-sectors">'+tagHtml+'</div>'
+        +'</div>';
+  });
+  document.getElementById('cycle-strip').innerHTML=html;
+}
+
+function togglePhase(id){
+  S.phaseFilter=S.phaseFilter===id?null:id;
+  renderCycle();
+  renderSectors();
+}
+
+// ════════════════════════════════════════════════
+//  RENDER SECTORS
+// ════════════════════════════════════════════════
+var GROUPS2=[
+  {key:'defensive',label:'Defensive — stable in all conditions'},
+  {key:'cyclical', label:'Cyclical — follow the economic cycle'},
+  {key:'growth',   label:'Growth & Resources'},
+  {key:'financial',label:'Financial & Rate sensitive'},
+];
+
+function getSectorPhaseRating(sec,phaseId){
+  var ph=PHASES.find(function(x){return x.id===phaseId;});
+  if(!ph) return null;
+  return ph.best.indexOf(sec.type)>-1?'good':'neutral';
+}
+
+function renderSectors(){
+  var body=document.getElementById('sectors-body');
+  var activePhase=S.phaseFilter?PHASES.find(function(p){return p.id===S.phaseFilter;}):null;
+  var html='';
+
+  GROUPS2.forEach(function(g,gi){
+    var list=SECTORS.filter(function(s){return s.type===g.key;});
+    if(S.typeFilter!=='all'&&S.typeFilter!==g.key) return;
+
+    html+='<div class="grp-lbl">'+g.label+'</div>';
+    html+='<div class="drawer-wrap" id="dw-'+gi+'"><div class="drawer" id="dr-'+gi+'"></div></div>';
+    html+='<div class="sec-grid">';
+
+    list.forEach(function(sec){
+      var tc=TYPE_COLORS[sec.type];
+      var dimmed=activePhase&&activePhase.best.indexOf(sec.type)===-1;
+      var sel=S.openId===sec.id?' selected':'';
+      var isL=!!S.learned[sec.id];
+      // Phase ratings bar
+      var phaseHtml=PHASES.map(function(ph){
+        var rating=sec.phases[ph.id]||'★';
+        var highlight=S.phaseFilter===ph.id;
+        var phc=PHASE_COLORS[ph.id];
+        return'<span class="sc-ph" style="background:'+(highlight?phc.bg:'var(--bg)')+';color:'+(highlight?phc.text:'var(--text3)')+';">'+ph.name+' '+rating+'</span>';
+      }).join('');
+      html+='<div class="sec-card'+sel+(dimmed?' dimmed':'')+'" id="sc-'+sec.id+'" onclick="openSector(\''+sec.id+'\','+gi+')" style="--sc-color:'+tc.dot+';">'
+          +'<div class="sc-strip" style="background:'+tc.bar+';"></div>'
+          +'<div class="sc-top">'
+          +  '<div class="sc-head">'
+          +    '<div class="sc-icon" style="background:'+tc.bg+'"><i class="ti '+sec.icon+'" style="font-size:17px;color:'+tc.dot+';" aria-hidden="true"></i></div>'
+          +    '<div class="sc-right">'
+          +      '<div class="sc-name">'+sec.name+'</div>'
+          +      '<div class="sc-jp">'+sec.jp+'</div>'
+          +      '<span class="sc-type" style="background:'+tc.bg+';color:'+tc.text+';">'+TYPE_COLORS[sec.type].label+'</span>'
+          +      (isL?'<div class="ic-lrn show" style="display:block;font-size:10px;color:var(--gro);margin-top:3px;">✓ learned</div>':'')
+          +    '</div>'
+          +  '</div>'
+          +'</div>'
+          +'<div class="sc-phases">'+phaseHtml+'</div>'
+          +'<div class="sc-examples">'+sec.examples.map(function(e){return'<span class="sc-ex">'+e+'</span>';}).join('')+'</div>'
+          +'</div>';
+    });
+    html+='</div>';
+  });
+  body.innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+//  SECTOR DRAWER
+// ════════════════════════════════════════════════
+function openSector(id,gi){
+  var sec=SECTORS.find(function(x){return x.id===id;});
+  if(!sec) return;
+  if(S.openId===id){
+    S.openId=null;
+    closeAllDrawers();
+    document.querySelectorAll('.sec-card').forEach(function(c){c.classList.remove('selected');});
+    return;
+  }
+  S.openId=id;
+  closeAllDrawers();
+  document.querySelectorAll('.sec-card').forEach(function(c){c.classList.remove('selected');});
+  var card=document.getElementById('sc-'+id);
+  if(card) card.classList.add('selected');
+
+  var tc=TYPE_COLORS[sec.type];
+  var isL=!!S.learned[id];
+
+  // Phase matrix
+  var pmHtml='<div class="phase-matrix">';
+  PHASES.forEach(function(ph){
+    var rating=sec.phases[ph.id]||'★';
+    var note=sec.phase_notes[ph.id]||'';
+    var phc=PHASE_COLORS[ph.id];
+    pmHtml+='<div class="pm-cell" style="background:'+phc.bg+';border-color:rgba(0,0,0,.06);">'
+          +'<div class="pm-ph" style="color:'+phc.text+';">'+ph.name+'</div>'
+          +'<div class="pm-rating" style="color:'+phc.text+';">'+rating+'</div>'
+          +'<div class="pm-note">'+note+'</div>'
+          +'</div>';
+  });
+  pmHtml+='</div>';
+
+  var drawer=document.getElementById('dr-'+gi);
+  if(!drawer) return;
+  drawer.innerHTML=
+    '<div class="dw-left">'
+    +  '<button class="dw-close" onclick="closeAllDrawers(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+    +  '<div class="dw-name" style="color:'+tc.dot+'">'+sec.name+'</div>'
+    +  '<div class="dw-jp">'+sec.jp+'</div>'
+    +  '<div class="dw-lbl">Overview</div>'
+    +  '<div class="dw-text">'+sec.exp_en+'</div>'
+    +  '<div class="dw-mm">'+sec.exp_mm+'</div>'
+    +  '<div class="dw-lbl">Tip</div>'
+    +  '<div class="dw-tip">'+sec.tip_en+'</div>'
+    +  '<div class="dw-tip-mm">'+sec.tip_mm+'</div>'
+    +  '<div class="dw-lbl">Key stocks</div>'
+    +  '<div class="dw-stocks">'+sec.examples.map(function(e){return'<span class="dw-stock">'+e+'</span>';}).join('')+'</div>'
+    +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleL(event,\''+id+'\')">'
+    +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+    +    (isL?'Learned':'Mark as learned')
+    +  '</button>'
+    +'</div>'
+    +'<div class="dw-right">'
+    +  '<div class="dw-lbl">Performance by economic cycle phase</div>'
+    +  pmHtml
+    +'</div>';
+
+  drawer.className='drawer open';
+  var dw=document.getElementById('dw-'+gi);
+  if(dw) setTimeout(function(){dw.scrollIntoView({behavior:'smooth',block:'nearest'});},60);
+}
+
+function closeAllDrawers(e){
+  if(e) e.stopPropagation();
+  S.openId=null;
+  document.querySelectorAll('.drawer').forEach(function(d){d.className='drawer';d.innerHTML='';});
+  document.querySelectorAll('.sec-card').forEach(function(c){c.classList.remove('selected');});
+}
+
+function toggleL(e,id){
+  e.stopPropagation();
+  S.learned[id]=!S.learned[id];
+  saveL();
+  renderSectors();
+  var sec=SECTORS.find(function(x){return x.id===id;});
+  if(sec){
+    var gi=GROUPS2.findIndex(function(g){return g.key===sec.type;});
+    if(gi>=0) setTimeout(function(){openSector(id,gi);},40);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  TYPE FILTER
+// ════════════════════════════════════════════════
+function filterType(t,el){
+  S.typeFilter=t; S.openId=null;
+  document.querySelectorAll('.leg').forEach(function(l){
+    l.className='leg';
+  });
+  var classMap={all:'active-all',defensive:'active-def',cyclical:'active-cyc',growth:'active-gro',financial:'active-fin'};
+  if(el) el.className='leg '+(classMap[t]||'active-all');
+  renderSectors();
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+renderCycle();
+renderSectors();
+</script>
+</body>
+</html>

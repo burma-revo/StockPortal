@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Patterns</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+  --b:#185FA5;--b-bg:#E6F1FB;--b-t:#0C447C;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.tb-search{position:relative;display:flex;align-items:center;}
+.tb-search input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px 6px 30px;font-size:13px;color:var(--text);outline:none;width:160px;transition:border .2s;}
+.tb-search input:focus{border-color:rgba(0,0,0,.2);}
+.tb-search .si{position:absolute;left:9px;font-size:14px;color:var(--text3);pointer-events:none;}
+
+/* ── Tab bar ── */
+.tabbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:0;}
+.tab{flex:1;padding:12px 10px;text-align:center;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--g);border-bottom-color:var(--g);}
+
+/* ── Pages ── */
+.tab-page{display:none;padding:18px;}
+.tab-page.active{display:block;}
+
+/* ══ ANATOMY PAGE ══════════════════════════════════════════ */
+.anatomy-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;max-width:800px;margin:0 auto;}
+.candle-stage{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;align-items:center;}
+.candle-stage-lbl{font-size:12px;color:var(--text3);margin-bottom:16px;text-align:center;}
+.part-info-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;min-height:320px;display:flex;flex-direction:column;}
+.pip-idle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);text-align:center;gap:8px;}
+.pip-idle i{font-size:32px;}
+.pip-idle p{font-size:13px;}
+.pip-content{display:none;}
+.pip-content.show{display:block;}
+.pip-name{font-size:20px;font-weight:700;margin-bottom:4px;}
+.pip-jp{font-size:12px;color:var(--text3);margin-bottom:12px;}
+.pip-en{font-size:13px;line-height:1.75;color:var(--text2);margin-bottom:10px;}
+.pip-mm{font-size:12px;line-height:1.7;color:var(--text3);background:var(--bg);border-radius:8px;padding:10px 12px;font-style:italic;margin-bottom:10px;}
+.pip-tip{font-size:12px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:8px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;}
+
+/* Part selector pills */
+.part-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}
+.pp{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+.pp:hover{border-color:var(--border2);color:var(--text);}
+.pp.active{font-weight:500;}
+
+/* Toggle between bull/bear candle */
+.candle-toggle{display:flex;gap:6px;margin-bottom:14px;}
+.ct-btn{flex:1;padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:none;font-size:12px;cursor:pointer;transition:all .15s;color:var(--text2);}
+.ct-btn.bull.active{background:var(--g-bg);color:var(--g-t);border-color:rgba(59,109,17,.25);}
+.ct-btn.bear.active{background:var(--r-bg);color:var(--r-t);border-color:rgba(163,45,45,.25);}
+
+/* ══ PATTERN GALLERY PAGE ══════════════════════════════════ */
+.gf-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.gfb{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.gfb:hover{background:var(--bg);}
+.gfb.fa{background:var(--surface);color:var(--text);border-color:var(--border2);font-weight:500;}
+.gfb.fbull{background:var(--g-bg);color:var(--g-t);border-color:rgba(59,109,17,.2);}
+.gfb.fbear{background:var(--r-bg);color:var(--r-t);border-color:rgba(163,45,45,.2);}
+.gfb.fneutral{background:var(--a-bg);color:var(--a-t);border-color:rgba(133,79,11,.2);}
+
+.sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.pat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:4px;}
+
+.pat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.pat-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.07);}
+.pat-card.selected{box-shadow:0 0 0 2px var(--pc-sel) inset;border-color:var(--pc-sel);}
+.pat-card.bull{border-top:2px solid var(--g);}
+.pat-card.bear{border-top:2px solid var(--r);}
+.pat-card.neutral{border-top:2px solid var(--a);}
+.pc-svg{background:#f8f8f6;padding:14px;display:flex;align-items:center;justify-content:center;min-height:90px;}
+.pc-info{padding:8px 10px;}
+.pc-badges{display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;}
+.pcb{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;}
+.pc-en{font-size:12px;font-weight:600;line-height:1.3;}
+.pc-jp{font-size:10px;color:var(--text3);margin-top:1px;}
+.pc-lrn{font-size:10px;color:var(--g);margin-top:2px;display:none;}
+.pc-lrn.show{display:block;}
+
+/* Drawer */
+.pat-drawer{display:none;grid-column:1/-1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:6px;}
+.pat-drawer.open{display:grid;grid-template-columns:220px 1fr;}
+.pdw-vis{background:#f8f8f6;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.pdw-body{padding:18px 20px;overflow:auto;}
+.pdw-close{float:right;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;}
+.pdw-close:hover{color:var(--text);}
+.pdw-jp{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.pdw-en{font-size:19px;font-weight:700;line-height:1.2;margin-bottom:6px;}
+.pdw-mm{font-size:12px;color:var(--text2);line-height:1.35;margin-bottom:8px;}
+.pdw-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.pdw-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px;}
+.pdw-exp{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:8px;}
+.pdw-exp-mm{font-size:12px;color:var(--text3);line-height:1.7;background:var(--bg);border-radius:7px;padding:8px 11px;margin-bottom:8px;font-style:italic;}
+.pdw-tip{font-size:12px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:8px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;margin-bottom:4px;}
+.pdw-tip-mm{font-size:11px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:6px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;font-style:italic;margin-bottom:10px;}
+.mark-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+.mark-btn:hover{background:rgba(59,109,17,.08);}
+.mark-btn.on{background:var(--g-bg);color:var(--g);border-color:rgba(59,109,17,.2);}
+.pdw-vis-lbl{font-size:10px;color:var(--text3);margin-top:8px;text-align:center;}
+
+@media(max-width:620px){
+  .anatomy-wrap{grid-template-columns:1fr;}
+  .pat-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+  .pat-drawer.open{grid-template-columns:1fr;}
+  .pdw-vis{border-right:none;border-bottom:1px solid var(--border);}
+  .tab-page{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Candlestick</div>
+    <div class="tb-sub">Anatomy + 20 patterns</div>
+  </div>
+  <div class="tb-right" id="tb-right"></div>
+</div>
+
+<!-- Tab bar -->
+<div class="tabbar">
+  <div class="tab active" onclick="switchTab('anatomy',this)"><i class="ti ti-info-circle" style="font-size:14px;vertical-align:-1px;" aria-hidden="true"></i> Anatomy</div>
+  <div class="tab" onclick="switchTab('patterns',this)"><i class="ti ti-candle" style="font-size:14px;vertical-align:-1px;" aria-hidden="true"></i> 20 Patterns</div>
+</div>
+
+<!-- ══ TAB: ANATOMY ══════════════════════════════════════════ -->
+<div class="tab-page active" id="tab-anatomy">
+  <div class="anatomy-wrap">
+
+    <!-- Left: candle diagram -->
+    <div class="candle-stage">
+      <div class="candle-stage-lbl">Tap a part of the candle — or use the buttons below</div>
+      <div class="candle-toggle">
+        <button class="ct-btn bull active" id="btn-bull" onclick="setCandleType('bull')">Bullish (Green)</button>
+        <button class="ct-btn bear" id="btn-bear" onclick="setCandleType('bear')">Bearish (Red)</button>
+      </div>
+      <!-- SVG anatomy diagram -->
+      <div id="anatomy-svg-wrap"></div>
+      <!-- Part selector pills -->
+      <div class="part-pills" id="part-pills"></div>
+    </div>
+
+    <!-- Right: part info -->
+    <div class="part-info-panel" id="part-info">
+      <div class="pip-idle" id="pip-idle">
+        <i class="ti ti-hand-click" aria-hidden="true"></i>
+        <p>Tap any part of the candle<br>or a button below to learn what it means</p>
+      </div>
+      <div class="pip-content" id="pip-content">
+        <div class="pip-name" id="pip-name"></div>
+        <div class="pip-jp" id="pip-jp"></div>
+        <div class="pip-en" id="pip-en"></div>
+        <div class="pip-mm" id="pip-mm"></div>
+        <div class="pip-tip" id="pip-tip"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ TAB: PATTERNS ════════════════════════════════════════ -->
+<div class="tab-page" id="tab-patterns">
+  <div class="gf-bar">
+    <button class="gfb fa" onclick="setPatFilter('all',this)">All</button>
+    <button class="gfb" onclick="setPatFilter('bullish',this)">Bullish</button>
+    <button class="gfb" onclick="setPatFilter('bearish',this)">Bearish</button>
+    <button class="gfb" onclick="setPatFilter('neutral',this)">Neutral</button>
+    <button class="gfb" onclick="setPatFilter('reversal',this)">Reversal</button>
+    <button class="gfb" onclick="setPatFilter('continuation',this)">Continuation</button>
+  </div>
+  <div id="patterns-body"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  SVG ENGINE
+// ════════════════════════════════════════════════
+var CG='#26a65b',CR='#c0392b',CGY='#888';
+var CGD='rgba(38,166,91,.12)',CRD='rgba(192,57,43,.12)',CGYD='rgba(140,140,140,.1)';
+
+function dc(x,o,c,h,l,color,w){
+  w=w||14;
+  var bT=Math.min(o,c),bB=Math.max(o,c),bH=Math.max(bB-bT,2);
+  var f=color==='green'?CG:color==='red'?CR:CGY;
+  var fd=color==='green'?CGD:color==='red'?CRD:CGYD;
+  var cx=x+w/2;
+  return '<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="'+f+'"/>'
+        +'<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="'+fd+'"/>'
+        +'<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="none" stroke="'+f+'" stroke-width="1.5"/>'
+        +'<line x1="'+cx+'" y1="'+h+'" x2="'+cx+'" y2="'+bT+'" stroke="'+f+'" stroke-width="1.5"/>'
+        +'<line x1="'+cx+'" y1="'+bB+'" x2="'+cx+'" y2="'+l+'" stroke="'+f+'" stroke-width="1.5"/>';
+}
+function svgW(inner,vw,vh){
+  var g='';for(var i=1;i<4;i++)g+='<line x1="0" y1="'+Math.round(vh*i/4)+'" x2="'+vw+'" y2="'+Math.round(vh*i/4)+'" stroke="rgba(0,0,0,.04)" stroke-width=".5"/>';
+  return '<svg viewBox="0 0 '+vw+' '+vh+'" width="'+vw+'" height="'+vh+'" xmlns="http://www.w3.org/2000/svg">'+g+inner+'</svg>';
+}
+function arr(x,y,d){
+  if(d==='up') return '<polygon points="'+x+','+(y-6)+' '+(x-4)+','+(y+2)+' '+(x+4)+','+(y+2)+'" fill="'+CG+'" opacity=".8"/>';
+  return '<polygon points="'+x+','+(y+6)+' '+(x-4)+','+(y-2)+' '+(x+4)+','+(y-2)+'" fill="'+CR+'" opacity=".8"/>';
+}
+
+// ════════════════════════════════════════════════
+//  ANATOMY DATA
+// ════════════════════════════════════════════════
+var PARTS = [
+  {
+    id:'high', label:'High 高値', jp:'高値（たかね）',
+    color:'#185FA5',
+    en:'The HIGHEST price reached during the entire trading session — shown as the top of the upper wick (shadow). This is the maximum price any buyer was willing to pay during the day.',
+    mm:'取引セッション全体で到達した最高価格 — 上ヒゲ（シャドウ）の先端として表示される。その日に買い手が支払う意思のあった最高価格。',
+    tip:'If there is no upper wick — the candle opened or closed at the highest price. This means buyers were in full control at the top.',
+  },
+  {
+    id:'low', label:'Low 安値', jp:'安値（やすね）',
+    color:'#A32D2D',
+    en:'The LOWEST price reached during the trading session — shown as the bottom of the lower wick (shadow). This is the minimum price any seller was willing to accept during the day.',
+    mm:'取引セッション全体で到達した最低価格 — 下ヒゲ（シャドウ）の先端として表示される。その日に売り手が受け入れる意思のあった最低価格。',
+    tip:'A very long lower wick means sellers pushed price down hard but buyers recovered it. The longer the lower wick, the stronger the buyer rejection of lower prices.',
+  },
+  {
+    id:'open', label:'Open 始値', jp:'始値（はじめね）',
+    color:'#854F0B',
+    en:'The FIRST price at which the stock traded when the market opened. For a bullish (green) candle the open is at the BOTTOM of the body. For a bearish (red) candle the open is at the TOP of the body.',
+    mm:'市場が開いたときに株が最初に取引された価格。陽線（緑）では始値はボディの下端。陰線（赤）では始値はボディの上端。',
+    tip:'Gap up open — today\'s open is higher than yesterday\'s close. Gap down open — today\'s open is lower than yesterday\'s close. Both are important signals.',
+  },
+  {
+    id:'close', label:'Close 終値', jp:'終値（おわりね）',
+    color:'#3B6D11',
+    en:'The LAST price at which the stock traded before the market closed. For a bullish (green) candle the close is at the TOP of the body. For a bearish (red) candle the close is at the BOTTOM of the body.',
+    mm:'市場が閉じる前に株が最後に取引された価格。陽線（緑）では終値はボディの上端。陰線（赤）では終値はボディの下端。',
+    tip:'The close is the most important price — it is the consensus value the market agreed on at the end of the day. It determines whether the candle is bullish or bearish.',
+  },
+  {
+    id:'body', label:'Body 実体', jp:'実体（じったい）',
+    color:'#534AB7',
+    en:'The rectangular block between the open and close prices. The SIZE of the body shows conviction — a large body means strong momentum in one direction. A small body (like a Doji) means indecision. Green body = close > open (buyers won). Red body = close < open (sellers won).',
+    mm:'始値と終値の間の長方形のブロック。ボディのサイズは確信度を示す — 大きなボディは一方向への強いモメンタムを意味する。小さなボディ（ドージなど）は優柔不断を意味する。',
+    tip:'Body length relative to the total candle length is key. A large body with small wicks = strong conviction. A small body with large wicks = indecision and potential reversal.',
+  },
+  {
+    id:'upper_wick', label:'Upper Wick 上ヒゲ', jp:'上ヒゲ（かみひげ）',
+    color:'#185FA5',
+    en:'The thin line above the body, from the top of the body to the High price. Shows how far above the body price was pushed during the session — but then fell back. A long upper wick = buyers pushed price up but sellers rejected those higher prices.',
+    mm:'ボディの上にある細い線で、ボディの上端から高値まで。セッション中にボディより上にどれだけ価格が押し上げられたかを示す。長い上ヒゲ = 買い手が価格を押し上げたが売り手が高値を拒否した。',
+    tip:'Upper wick = rejected buyers. The longer the upper wick, the stronger the seller resistance at higher prices. This is the anatomy behind the Shooting Star pattern.',
+  },
+  {
+    id:'lower_wick', label:'Lower Wick 下ヒゲ', jp:'下ヒゲ（したひげ）',
+    color:'#3B6D11',
+    en:'The thin line below the body, from the bottom of the body to the Low price. Shows how far below the body price was pushed — but then recovered. A long lower wick = sellers pushed price down but buyers stepped in and pushed it back up.',
+    mm:'ボディの下にある細い線で、ボディの下端から安値まで。ボディより下にどれだけ価格が押し下げられたかを示す。長い下ヒゲ = 売り手が価格を押し下げたが買い手が介入して押し返した。',
+    tip:'Lower wick = rejected sellers. The longer the lower wick, the stronger the buyer support at lower prices. This is the anatomy behind the Hammer pattern.',
+  },
+];
+
+// ════════════════════════════════════════════════
+//  ANATOMY STATE
+// ════════════════════════════════════════════════
+var A = { type:'bull', activePart:null };
+
+// Candle dimensions for anatomy diagram
+var AW=220, AH=320;
+var BULL = { high:30, open:220, close:100, low:290, color:'green' };
+var BEAR = { high:30, open:100, close:220, low:290, color:'red'   };
+
+function getCandleDef(){ return A.type==='bull'?BULL:BEAR; }
+
+// Hit regions for each part
+function getHitRegions(cd, cxLeft, cw){
+  var cx = cxLeft + cw/2;
+  var bT = Math.min(cd.open,cd.close);
+  var bB = Math.max(cd.open,cd.close);
+  return {
+    high:       {x:cx-20,y:cd.high-20,   w:40, h:bT-cd.high+20},
+    low:        {x:cx-20,y:bB,           w:40, h:cd.low-bB+20},
+    body:       {x:cxLeft-4,y:bT,        w:cw+8,h:bB-bT},
+    upper_wick: {x:cx-20,y:cd.high-10,   w:40, h:bT-cd.high+10},
+    lower_wick: {x:cx-20,y:bB,           w:40, h:cd.low-bB+10},
+    open:       {x:cxLeft-30,y:(A.type==='bull'?bB:bT)-12, w:26,h:24},
+    close:      {x:cxLeft-30,y:(A.type==='bull'?bT:bB)-12, w:26,h:24},
+  };
+}
+
+function buildAnatomySVG(){
+  var cd = getCandleDef();
+  var cxLeft = 90, cw = 40;
+  var cx = cxLeft + cw/2;
+  var bT = Math.min(cd.open,cd.close);
+  var bB = Math.max(cd.open,cd.close);
+  var col = cd.color==='green'?CG:CR;
+  var colDim = cd.color==='green'?CGD:CRD;
+  var ap = A.activePart;
+
+  function highlight(partId){
+    return ap===partId?'rgba(255,200,0,0.25)':'transparent';
+  }
+  function strokeH(partId){
+    return ap===partId?'rgba(200,150,0,0.6)':'none';
+  }
+
+  // Label positions
+  var labelR = cxLeft+cw+14;
+  var dotR   = cxLeft+cw+8;
+
+  function partColor(id){
+    var p=PARTS.find(function(x){return x.id===id;});
+    return p?p.color:'#888';
+  }
+  function labelLine(fromX,fromY,toX,toY,id){
+    var pc=partColor(id);
+    var active=ap===id;
+    return '<line x1="'+fromX+'" y1="'+fromY+'" x2="'+toX+'" y2="'+toY+'"'
+          +' stroke="'+(active?pc:'rgba(0,0,0,0.18)')+'"'
+          +' stroke-width="'+(active?1.5:1)+'" stroke-dasharray="3,2"/>';
+  }
+  function labelText(x,y,txt,id){
+    var pc=partColor(id);
+    var active=ap===id;
+    return '<text x="'+x+'" y="'+y+'"'
+          +' fill="'+(active?pc:'rgba(0,0,0,0.45)')+'"'
+          +' font-size="'+(active?9.5:9)+'"'
+          +' font-weight="'+(active?700:400)+'"'
+          +' font-family="system-ui,sans-serif">'+txt+'</text>';
+  }
+
+  // Open/close label y positions
+  var openLabelY   = A.type==='bull'? bB+4  : bT-8;
+  var closeLabelY  = A.type==='bull'? bT-8  : bB+4;
+  var openLineY    = A.type==='bull'? bB     : bT;
+  var closeLineY   = A.type==='bull'? bT     : bB;
+
+  var inner =
+    // Grid lines
+    '<line x1="0" y1="'+(AH*.25)+'" x2="'+AW+'" y2="'+(AH*.25)+'" stroke="rgba(0,0,0,0.04)" stroke-width="0.5"/>'
+   +'<line x1="0" y1="'+(AH*.5)+'"  x2="'+AW+'" y2="'+(AH*.5)+'"  stroke="rgba(0,0,0,0.04)" stroke-width="0.5"/>'
+   +'<line x1="0" y1="'+(AH*.75)+'" x2="'+AW+'" y2="'+(AH*.75)+'" stroke="rgba(0,0,0,0.04)" stroke-width="0.5"/>'
+
+    // Candle wicks
+   +'<line x1="'+cx+'" y1="'+cd.high+'" x2="'+cx+'" y2="'+bT+'" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'
+   +'<line x1="'+cx+'" y1="'+bB+'"    x2="'+cx+'" y2="'+cd.low+'" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'
+
+    // Candle body
+   +'<rect x="'+cxLeft+'" y="'+bT+'" width="'+cw+'" height="'+(bB-bT)+'" rx="2" fill="'+col+'" opacity=".9"/>'
+   +'<rect x="'+cxLeft+'" y="'+bT+'" width="'+cw+'" height="'+(bB-bT)+'" rx="2" fill="'+colDim+'"/>'
+   +'<rect x="'+cxLeft+'" y="'+bT+'" width="'+cw+'" height="'+(bB-bT)+'" rx="2" fill="none" stroke="'+col+'" stroke-width="1.5"/>'
+
+    // Hit areas (invisible, clickable)
+   +'<rect x="'+(cx-22)+'" y="'+(cd.high-12)+'" width="44" height="'+(bT-cd.high+12)+'" fill="'+highlight('upper_wick')+'" stroke="'+strokeH('upper_wick')+'" stroke-width="1" rx="3" onclick="clickPart(\'upper_wick\')" style="cursor:pointer;"/>'
+   +'<rect x="'+(cx-22)+'" y="'+bB+'" width="44" height="'+(cd.low-bB+12)+'" fill="'+highlight('lower_wick')+'" stroke="'+strokeH('lower_wick')+'" stroke-width="1" rx="3" onclick="clickPart(\'lower_wick\')" style="cursor:pointer;"/>'
+   +'<rect x="'+(cxLeft-6)+'" y="'+bT+'" width="'+(cw+12)+'" height="'+(bB-bT)+'" fill="'+highlight('body')+'" stroke="'+strokeH('body')+'" stroke-width="1.5" rx="3" onclick="clickPart(\'body\')" style="cursor:pointer;"/>'
+   +'<rect x="'+(cx-22)+'" y="'+(cd.high-14)+'" width="44" height="24" fill="'+highlight('high')+'" stroke="'+strokeH('high')+'" stroke-width="1" rx="3" onclick="clickPart(\'high\')" style="cursor:pointer;"/>'
+   +'<rect x="'+(cx-22)+'" y="'+(cd.low-10)+'" width="44" height="24" fill="'+highlight('low')+'"  stroke="'+strokeH('low')+'"  stroke-width="1" rx="3" onclick="clickPart(\'low\')"  style="cursor:pointer;"/>'
+
+    // Labels — right side
+   +labelLine(dotR,cd.high,     labelR,cd.high,      'high')
+   +labelLine(dotR,cd.low,      labelR,cd.low,       'low')
+   +labelLine(dotR,openLineY,   labelR+30,openLabelY, 'open')
+   +labelLine(dotR,closeLineY,  labelR+30,closeLabelY,'close')
+
+   +labelText(labelR+2,cd.high-3,  'High 高値',   'high')
+   +labelText(labelR+2,cd.low+9,   'Low 安値',    'low')
+   +labelText(labelR+32,openLabelY+4,  'Open 始値','open')
+   +labelText(labelR+32,closeLabelY+4, 'Close 終値','close')
+
+    // Labels — left side (wick labels)
+   +'<text x="'+(cxLeft-8)+'" y="'+(cd.high+(bT-cd.high)/2+4)+'" fill="'+(ap==='upper_wick'?partColor('upper_wick'):'rgba(0,0,0,0.35)')+'" font-size="8" text-anchor="end" font-family="system-ui,sans-serif">Upper</text>'
+   +'<text x="'+(cxLeft-8)+'" y="'+(cd.high+(bT-cd.high)/2+13)+'" fill="'+(ap==='upper_wick'?partColor('upper_wick'):'rgba(0,0,0,0.35)')+'" font-size="8" text-anchor="end" font-family="system-ui,sans-serif">wick</text>'
+   +'<text x="'+(cxLeft-8)+'" y="'+(bB+(cd.low-bB)/2+4)+'" fill="'+(ap==='lower_wick'?partColor('lower_wick'):'rgba(0,0,0,0.35)')+'" font-size="8" text-anchor="end" font-family="system-ui,sans-serif">Lower</text>'
+   +'<text x="'+(cxLeft-8)+'" y="'+(bB+(cd.low-bB)/2+13)+'" fill="'+(ap==='lower_wick'?partColor('lower_wick'):'rgba(0,0,0,0.35)')+'" font-size="8" text-anchor="end" font-family="system-ui,sans-serif">wick</text>'
+
+    // Body center label
+   +'<text x="'+cx+'" y="'+(bT+(bB-bT)/2+4)+'" fill="'+colDim.replace('0.12','0.9')+'" font-size="9" text-anchor="middle" font-weight="600" font-family="system-ui,sans-serif">BODY</text>'
+
+    // High / low dot markers
+   +'<circle cx="'+cx+'" cy="'+cd.high+'" r="3" fill="'+(ap==='high'?partColor('high'):col)+'" opacity=".9"/>'
+   +'<circle cx="'+cx+'" cy="'+cd.low+'"  r="3" fill="'+(ap==='low'?partColor('low'):col)+'"  opacity=".9"/>';
+
+  return '<svg viewBox="0 0 '+AW+' '+AH+'" width="'+AW+'" height="'+AH+'" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>';
+}
+
+function clickPart(id){
+  A.activePart = A.activePart===id ? null : id;
+  renderAnatomy();
+  if(A.activePart) showPartInfo(A.activePart);
+  else hidePartInfo();
+}
+
+function showPartInfo(id){
+  var p = PARTS.find(function(x){return x.id===id;});
+  if(!p) return;
+  document.getElementById('pip-idle').style.display='none';
+  var pc = document.getElementById('pip-content');
+  pc.className='pip-content show';
+  document.getElementById('pip-name').textContent = p.label;
+  document.getElementById('pip-name').style.color = p.color;
+  document.getElementById('pip-jp').textContent = p.jp;
+  document.getElementById('pip-en').textContent = p.en;
+  document.getElementById('pip-mm').textContent = p.mm;
+  document.getElementById('pip-tip').textContent = '💡 '+p.tip;
+  // highlight pill
+  document.querySelectorAll('.pp').forEach(function(b){
+    b.classList.toggle('active', b.dataset.part===id);
+    b.style.background = b.dataset.part===id?p.color+('22'):'';
+    b.style.color = b.dataset.part===id?p.color:'';
+    b.style.borderColor = b.dataset.part===id?p.color:'';
+  });
+}
+
+function hidePartInfo(){
+  document.getElementById('pip-idle').style.display='';
+  document.getElementById('pip-content').className='pip-content';
+  document.querySelectorAll('.pp').forEach(function(b){
+    b.classList.remove('active');
+    b.style.background=''; b.style.color=''; b.style.borderColor='';
+  });
+}
+
+function renderAnatomy(){
+  document.getElementById('anatomy-svg-wrap').innerHTML = buildAnatomySVG();
+}
+
+function setCandleType(t){
+  A.type=t; A.activePart=null;
+  document.getElementById('btn-bull').className='ct-btn bull'+(t==='bull'?' active':'');
+  document.getElementById('btn-bear').className='ct-btn bear'+(t==='bear'?' active':'');
+  renderAnatomy();
+  hidePartInfo();
+}
+
+function buildPartPills(){
+  var html='';
+  PARTS.forEach(function(p){
+    html+='<div class="pp" data-part="'+p.id+'" onclick="clickPart(\''+p.id+'\')" style="">'+p.label+'</div>';
+  });
+  document.getElementById('part-pills').innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+//  PATTERN DATA
+// ════════════════════════════════════════════════
+var CANDLES=[
+  {id:'c01',jp:'陽線',en:'Bullish Candle',mm:'ဝယ်သူ လွှမ်းမိုးသော Candle',type:'bullish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Close is higher than open — buyers were in control the entire session. The larger the body, the stronger the conviction.',
+   exp_mm:'ပိတ်ဈေးသည် ဖွင့်ဈေးထက် မြင့်သော Candle ဖြစ်ပြီး ဝယ်သူများ တစ်ရက်တာ လွှမ်းမိုးကြောင်း ပြသသည်။',
+   tip_en:'Larger green body = stronger buying pressure. Tiny wicks = buyers controlled the entire session.',
+   tip_mm:'Body ကြီးလေ ဝယ်ဖိအားပိုကြီးကြောင်း ပြသသည်။ Wick နည်းလေ ဝယ်သူများ ဖွင့်မှ ပိတ်ထိ အပြည့်ထိန်းချုပ်ကြောင်း ဆိုလိုသည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,70,18,10,78,'green',22*s)+arr(66*s,14,'up'),100*s,90);}},
+  {id:'c02',jp:'陰線',en:'Bearish Candle',mm:'ရောင်းသူ လွှမ်းမိုးသော Candle',type:'bearish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Close is lower than open — sellers dominated. Long red body with tiny wicks means complete seller control from open to close.',
+   exp_mm:'ပိတ်ဈေးသည် ဖွင့်ဈေးထက် နိမ့်သော Candle ဖြစ်ပြီး ရောင်းသူများ တစ်ရက်တာ လွှမ်းမိုးကြောင်း ပြသသည်။',
+   tip_en:'Long red body + tiny wicks = sellers controlled price the entire session without hesitation.',
+   tip_mm:'Body ကြီး Wick နည်းသော အနီ Candle သည် ဖွင့်မှ ပိတ်ထိ ရောင်းသူများ အပြည့်ထိန်းချုပ်ကြောင်း ပြသသည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,18,70,10,78,'red',22*s)+arr(66*s,74,'down'),100*s,90);}},
+  {id:'c03',jp:'同事線',en:'Doji',mm:'မဆုံးဖြတ်နိုင်မှု Candle',type:'neutral',signal:'reversal',candles:1,diff:'beginner',
+   exp_en:'Open and close nearly identical — thin body, wicks on both sides. Neither buyers nor sellers won. Signals indecision and possible trend change.',
+   exp_mm:'ဖွင့်ဈေးနှင့် ပိတ်ဈေး ဆိုင်တူနီးပါးဖြစ်ပြီး Body ပါးသော Candle ဖြစ်သည်။ Trend ပြောင်းနိုင်ကြောင်် ညွှန်ပြသည်။',
+   tip_en:'A Doji after a long uptrend or downtrend warns that momentum may be ending.',
+   tip_mm:'ရှည်မြင့်သော Trend ပြီးနောက် Doji ပေါ်လာပါက Trend အားကုန်နေနိုင်ကြောင်် ပြင်းထန်သော သတိပေးချက်ဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,41,43,10,78,'gray',22*s),100*s,90);}},
+  {id:'c04',jp:'ハンマー',en:'Hammer',mm:'Downtrend အောက်ခြေ Bullish Reversal',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Small body at top, long lower wick (2× body). Forms at the bottom of a downtrend — sellers pushed hard but buyers recovered by close.',
+   exp_mm:'Body သေးငယ်ပြီး အောက်ဘက် Wick ရှည်သော Bullish Reversal Candle ဖြစ်သည်။ Downtrend အောက်ခြေတွင် ဖြစ်ပေါ်တတ်သည်။',
+   tip_en:'Only valid as reversal when it forms AFTER a downtrend. Same shape in mid-range means very little.',
+   tip_mm:'Downtrend ပြီးနောက်မှ ဖြစ်ပေါ်မှသာ Reversal Signal အဖြစ် သတ်မှတ်ရသည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,20,28,17,84,'green',22*s)+arr(66*s,16,'up'),100*s,90);}},
+  {id:'c05',jp:'シューティングスター',en:'Shooting Star',mm:'Uptrend ထိပ် Bearish Reversal',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Small body at bottom, long upper wick (2×+). Forms at top of uptrend. Buyers pushed price up but sellers drove it back down.',
+   exp_mm:'Body သေးငယ်ပြီး အပေါ်ဘက် Wick ရှည်သော Bearish Reversal Candle ဖြစ်သည်။ Uptrend ထိပ်တွင် ဈေးမြင့်မှုကို ငြင်းပယ်ကြောင်် ပြသသည်။',
+   tip_en:'The long upper wick is the shadow of rejected buyers — higher price was tested and refused.',
+   tip_mm:'ရှည်သော အပေါ် Wick သည် ငြင်းပယ်ခံရသော ဝယ်သူများ၏ အရိပ်ဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,62,70,10,75,'red',22*s)+arr(66*s,74,'down'),100*s,90);}},
+  {id:'c06',jp:'首吊り線',en:'Hanging Man',mm:'Uptrend ထိပ် Bearish သတိပေးချက်',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Same shape as Hammer but forms at the TOP of an uptrend. Same candle is bullish at bottom (hammer) and bearish at top (hanging man).',
+   exp_mm:'Hammer နှင့် ပုံသဏ္ဍာန်တူသော်လည်း Uptrend ထိပ်တွင် ဖြစ်ပေါ်သောကြောင့် Bearish သတိပေးချက်ဖြစ်သည်။',
+   tip_en:'Location is everything — the exact same shape is bullish at the bottom and bearish at the top.',
+   tip_mm:'တည်နေရာသည် အရာအားလုံးဖြစ်သည်။ တူညီသော ပုံသဏ္ဍာန်သည် အောက်တွင် Bullish၊ အပေါ်တွင် Bearish ဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,20,28,17,84,'red',22*s)+arr(66*s,28,'down'),100*s,90);}},
+  {id:'c07',jp:'逆ハンマー',en:'Inverted Hammer',mm:'Downtrend အောက်ခြေ Bullish Signal',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Shooting star shape but at BOTTOM of downtrend — bullish reversal possibility. Always wait for a confirming green candle the next day.',
+   exp_mm:'Shooting Star ပုံသဏ္ဍာန်နှင့် တူသော်လည်း Downtrend အောက်ခြေတွင် ဖြစ်ပေါ်ပြီး Bullish Reversal ဖြစ်နိုင်ကြောင်် ညွှန်ပြသည်။',
+   tip_en:'Needs a bullish confirmation candle the next day. Without confirmation it is a weak signal.',
+   tip_mm:'ယုံကြည်ရန် နောက်တစ်နေ့ Bullish Confirmation Candle လိုအပ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,62,70,10,75,'green',22*s)+arr(66*s,62,'up'),100*s,90);}},
+  {id:'c08',jp:'大陽線',en:'Marubozu',mm:'ပြည့်ဝသော Body Candle',type:'bullish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Very large body, no wicks. One side controlled price completely from open to close. One of the strongest momentum signals.',
+   exp_mm:'Body အလွန်ကြီးပြီး Wick မရှိသလောက်သော Candle ဖြစ်သည်။ Momentum Signal အတောင်ကောင်းဆုံးတစ်ခုဖြစ်သည်။',
+   tip_en:'Marubozu on high volume is one of the most reliable momentum signals available.',
+   tip_mm:'Volume ကြီးနှင့် Marubozu ဖြစ်ပေါ်ပါက အယုံကြည်ရဆုံး Momentum Signal တစ်ခုဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,80,12,80,12,'green',22*s)+arr(66*s,8,'up'),100*s,90);}},
+  {id:'c09',jp:'陽のはらみ',en:'Bullish Engulfing',mm:'ဝယ်မှု လွှမ်းမိုးမှု ပြောင်းလဲချက်',type:'bullish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a red candle, a large green candle completely swallows the previous body. Strong buying takeover at bottom of a downtrend.',
+   exp_mm:'အနီ Candle ပြီးနောက် ကြီးသော အစိမ်း Candle က ယခင် Body ကို အပြည့်မျိုဝါးသည်။ Downtrend အောက်ခြေ ပြင်းထန်သော Signal ဖြစ်သည်။',
+   tip_en:'High volume engulfing patterns are far more powerful. Volume confirms the conviction behind the move.',
+   tip_mm:'Volume ကြီးနှင့် Engulfing ပုံသဏ္ဍာန်သည် Volume နည်းနှင့်ထက် အများကြီး ပိုအားကောင်းသည်။',
+   svg:function(s){s=s||1;return svgW(dc(14*s,28,54,20,62,'red',16*s)+dc(40*s,60,10,6,64,'green',22*s)+arr(76*s,6,'up'),96*s,90);}},
+  {id:'c10',jp:'陰のはらみ',en:'Bearish Engulfing',mm:'ရောင်းမှု လွှမ်းမိုးမှု ပြောင်းလဲချက်',type:'bearish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a green candle, a large red candle completely swallows the previous body. Strong selling takeover at top of an uptrend.',
+   exp_mm:'အစိမ်း Candle ပြီးနောက် ကြီးသော အနီ Candle က ယခင် Body ကို အပြည့်မျိုဝါးသည်။ Uptrend ထိပ်တွင် ပြင်းထန်သော Signal ဖြစ်သည်။',
+   tip_en:'The larger the engulfing candle vs the first, the stronger the reversal.',
+   tip_mm:'Engulfing Candle သည် ပထမ Candle နှင့် ယှဉ်ကာ ပိုကြီးလေ Reversal Signal ပိုအားကောင်းလေဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(14*s,52,28,22,60,'green',16*s)+dc(40*s,10,58,6,62,'red',22*s)+arr(76*s,62,'down'),96*s,90);}},
+  {id:'c11',jp:'孕み線',en:'Harami',mm:'Momentum နှေးကွေးလာချိန်',type:'neutral',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'A large candle followed by a small candle whose body fits inside the first. Signals slowing momentum — a reversal may follow.',
+   exp_mm:'ကြီးသော Candle ပြီးနောက် Body ငယ်သော Candle တစ်ဆောင် ယခင် Body အတွင်း ရှိသည်။ Momentum နှေးကွေးနေပြီး Reversal ဖြစ်နိုင်ကြောင်် ညွှန်ပြသည်။',
+   tip_en:'Harami alone is weak. Wait for a third confirming candle in the reversal direction before acting.',
+   tip_mm:'Harami တစ်ခုတည်းသည် Signal အားနည်းသည်။ တတိယ Candle Confirmation ကို မဝင်မီ စောင့်ပါ။',
+   svg:function(s){s=s||1;return svgW(dc(14*s,64,14,10,72,'red',22*s)+dc(44*s,44,34,30,48,'green',14*s),96*s,90);}},
+  {id:'c12',jp:'切り込み線',en:'Piercing Line',mm:'Bullish Reversal နှစ်ဆောင်',type:'bullish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a red candle, green opens below previous low but closes above the midpoint of the red body. Deeper = stronger.',
+   exp_mm:'အနီ Candle ပြီးနောက် အစိမ်း Candle သည် ယခင် Low အောက်မှ ဖွင့်ပြီး အနီ Body ၏ အလယ်ကို ကျော်ပြီး ပိတ်သည်။',
+   tip_en:'Less than 50% penetration into the first body is not valid.',
+   tip_mm:'ပထမ Candle Body ထဲ 50% အောက် ဖောက်ထွင်းမှုသည် Valid မဟုတ်ဘဲ။',
+   svg:function(s){s=s||1;return svgW(dc(14*s,26,62,18,70,'red',20*s)+dc(44*s,72,26,65,76,'green',20*s)+arr(78*s,22,'up'),100*s,90);}},
+  {id:'c13',jp:'被せ線',en:'Dark Cloud Cover',mm:'Bearish Reversal နှစ်ဆောင်',type:'bearish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a green candle, red opens above previous high but closes below the midpoint of the green body.',
+   exp_mm:'အစိမ်း Candle ပြီးနောက် အနီ Candle သည် ယခင် High အပေါ်မှ ဖွင့်ပြီး အစိမ်း Body ၏ အလယ်အောက် ပိတ်သည်။',
+   tip_en:'Best when it forms near a known resistance level.',
+   tip_mm:'သိရှိပြီးသား Resistance Level နီးတွင် ဖြစ်ပေါ်ချိန် ပိုယုံကြည်ရသည်။',
+   svg:function(s){s=s||1;return svgW(dc(14*s,62,26,20,66,'green',20*s)+dc(44*s,16,56,14,70,'red',20*s)+arr(78*s,58,'down'),100*s,90);}},
+  {id:'c14',jp:'明けの明星',en:'Morning Star',mm:'Downtrend အဆုံး Bullish Signal',type:'bullish',signal:'reversal',candles:3,diff:'intermediate',
+   exp_en:'(1) Large red — sellers dominate. (2) Small body gap down — indecision. (3) Large green closing above midpoint of candle 1 — buyers take control.',
+   exp_mm:'(1) ကြီးသော အနီ (2) Gap Down Body ငယ် (3) ကြီးသော အစိမ်း — ဝယ်သူများ လွှမ်းမိုး',
+   tip_en:'Most powerful when middle candle is a Doji near a key support level.',
+   tip_mm:'အလယ် Candle သည် Doji ဖြစ်ပြီး Support Level နီးတွင် ဖြစ်ပေါ်ပါက အထူးအားကောင်းသည်။',
+   svg:function(s){s=s||1;return svgW(dc(8*s,20,58,14,66,'red',18*s)+dc(36*s,66,58,58,68,'gray',12*s)+dc(58*s,62,16,10,68,'green',18*s)+arr(90*s,12,'up'),110*s,90);}},
+  {id:'c15',jp:'宵の明星',en:'Evening Star',mm:'Uptrend အဆုံး Bearish Signal',type:'bearish',signal:'reversal',candles:3,diff:'intermediate',
+   exp_en:'(1) Large green. (2) Small body gap up — indecision at peak. (3) Large red closing below midpoint of candle 1.',
+   exp_mm:'(1) ကြီးသော အစိမ်း (2) Gap Up Body ငယ် (3) ကြီးသော အနီ — ရောင်းသူများ လွှမ်းမိုး',
+   tip_en:'Watch near resistance after a prolonged uptrend — high-conviction exit signal.',
+   tip_mm:'Resistance Level နီး ရှည်မြင့်သော Uptrend ပြီးနောက် ဖြစ်ပေါ်ပါက ထွက်ရမည့် Signal ဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(8*s,60,20,12,66,'green',18*s)+dc(36*s,14,22,12,26,'gray',12*s)+dc(58*s,16,64,10,70,'red',18*s)+arr(90*s,66,'down'),110*s,90);}},
+  {id:'c16',jp:'三白兵',en:'Three White Soldiers',mm:'ဆက်တိုက် ဝယ်မှု Momentum',type:'bullish',signal:'continuation',candles:3,diff:'intermediate',
+   exp_en:'Three consecutive large green candles closing progressively higher. Strong sustained buying — confirms a new uptrend.',
+   exp_mm:'ကြီးသော အစိမ်း Candle သုံးဆောင် ဆက်တိုက် ပိုမြင့်မြင့် ပိတ်သည်။ Uptrend အသစ် ညွှန်ပြသည်။',
+   tip_en:'If each candle shrinks in size, momentum may be fading. Watch for reversal.',
+   tip_mm:'Candle တစ်ဆောင်စီ ငယ်လာပါက Momentum ကုန်နေနိုင်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(8*s,76,50,44,78,'green',16*s)+dc(32*s,54,28,22,56,'green',16*s)+dc(56*s,32,8,6,34,'green',16*s)+arr(86*s,4,'up'),110*s,90);}},
+  {id:'c17',jp:'三羽烏',en:'Three Black Crows',mm:'ဆက်တိုက် ရောင်းမှု Momentum',type:'bearish',signal:'continuation',candles:3,diff:'intermediate',
+   exp_en:'Three consecutive large red candles closing progressively lower. Bearish mirror of Three White Soldiers.',
+   exp_mm:'ကြီးသော အနီ Candle သုံးဆောင် ဆက်တိုက် ပိုနိမ့်နိမ့် ပိတ်သည်။ Three White Soldiers ၏ Bearish ဆန့်ကျင်ဘက်ဖြစ်သည်။',
+   tip_en:'After a long uptrend — major warning to exit long positions immediately.',
+   tip_mm:'ရှည်မြင့်သော Uptrend ပြီးနောက် ပေါ်လာပါက Long Position ချက်ချင်းထွက်ရမည်။',
+   svg:function(s){s=s||1;return svgW(dc(8*s,10,52,8,54,'red',16*s)+dc(32*s,46,68,44,70,'red',16*s)+dc(56*s,62,82,60,84,'red',16*s)+arr(86*s,84,'down'),110*s,90);}},
+  {id:'c18',jp:'十字線（墓石）',en:'Gravestone Doji',mm:'Bearish ဒုံးပျံငြင်းပယ်ချက်',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Long upper wick, no lower wick, open and close at very bottom. Forms at top of uptrends — buyers pushed up but sellers completely rejected the gains.',
+   exp_mm:'အပေါ် Wick ရှည်ပြီး အောက် Wick မရှိဘဲ ဖွင့်/ပိတ် အောက်ဆုံးတွင် ရှိသည်။ Uptrend ထိပ် Bearish Signal ဖြစ်သည်။',
+   tip_en:'The Doji version of a Shooting Star — considered slightly stronger as a rejection signal.',
+   tip_mm:'Shooting Star ၏ Doji ဗားရှင်း — Rejection Signal အနေဖြင့် ပိုအားကောင်းသည်ဟု သတ်မှတ်တတ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,66,70,8,72,'red',22*s),100*s,90);}},
+  {id:'c19',jp:'蜻蛉',en:'Dragonfly Doji',mm:'Bullish ဒုံးပျံကူညီချက်',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Long lower wick, no upper wick, open and close at very top. Sellers pushed price down but buyers completely recovered it by close.',
+   exp_mm:'အောက် Wick ရှည်ပြီး အပေါ် Wick မရှိဘဲ ဖွင့်/ပိတ် အပေါ်ဆုံးတွင် ရှိသည်။ Downtrend အောက်ခြေ Bullish Signal ဖြစ်သည်။',
+   tip_en:'At key support with high volume — one of the strongest single-candle bullish reversal signals.',
+   tip_mm:'Key Support Level တွင် Volume ကြီးနှင့် — ရနိုင်သော အားကောင်းဆုံး Single-Candle Bullish Reversal Signal တစ်ခုဖြစ်သည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,12,14,12,84,'green',22*s)+arr(66*s,10,'up'),100*s,90);}},
+  {id:'c20',jp:'コマ',en:'Spinning Top',mm:'နှစ်ဖက် တူညီ မဆုံးဖြတ်နိုင်မှု',type:'neutral',signal:'reversal',candles:1,diff:'beginner',
+   exp_en:'Small body with long wicks on both sides. Both buyers and sellers were active but neither won decisively.',
+   exp_mm:'Body ငယ်သော်လည်း နှစ်ဖက်တွင် Wick ရှည်ရှည်ပါသော Candle ဖြစ်သည်။ ဝယ်သူနှင့် ရောင်းသူ မည်သူမျှ မနိုင်ကြ။',
+   tip_en:'Multiple spinning tops in a row signal prolonged consolidation — big breakout coming.',
+   tip_mm:'Spinning Top တွေ ဆက်တိုက်ပေါ်လာပါက ကြာမြင့်သော Consolidation ညွှန်ပြပြီး Breakout ဖြစ်နိုင်ကြောင်် ညွှန်ပြသည်။',
+   svg:function(s){s=s||1;return svgW(dc(30*s,34,52,8,80,'gray',22*s),100*s,90);}},
+];
+
+// ════════════════════════════════════════════════
+//  PATTERN GALLERY STATE
+// ════════════════════════════════════════════════
+var P = {
+  filter:'all',
+  openId:null,
+  learned: JSON.parse(localStorage.getItem('cg_learned_'+(localStorage.getItem('slp_uid')||'guest'))||'{}'),
+  userId: localStorage.getItem('slp_uid')||'guest',
+};
+function saveP(){localStorage.setItem('cg_learned_'+P.userId,JSON.stringify(P.learned));}
+
+var PGROUPS=[
+  {label:'Single candle',items:null,candles:1},
+  {label:'Two candles',items:null,candles:2},
+  {label:'Three candles',items:null,candles:3},
+];
+
+function getFilteredPats(){
+  var c=CANDLES;
+  var f=P.filter;
+  if(f==='all') return c;
+  if(f==='bullish'||f==='bearish'||f==='neutral') return c.filter(function(x){return x.type===f;});
+  return c.filter(function(x){return x.signal===f;});
+}
+
+function setPatFilter(f,btn){
+  P.filter=f; P.openId=null;
+  document.querySelectorAll('.gfb').forEach(function(b){b.className='gfb';});
+  var map={all:'fa',bullish:'fbull',bearish:'fbear',neutral:'fneutral',reversal:'fa',continuation:'fa'};
+  if(btn) btn.className='gfb '+(map[f]||'fa');
+  renderPatterns();
+}
+
+function renderPatterns(){
+  var fc=getFilteredPats();
+  var groups=[
+    {label:'Single candle',items:fc.filter(function(p){return p.candles===1;})},
+    {label:'Two candles',  items:fc.filter(function(p){return p.candles===2;})},
+    {label:'Three candles',items:fc.filter(function(p){return p.candles>=3;})},
+  ].filter(function(g){return g.items.length;});
+
+  var html='';
+  groups.forEach(function(g,gi){
+    html+='<div class="sec-lbl">'+g.label+' ('+g.items.length+')</div>';
+    html+='<div class="pat-drawer" id="pd-'+gi+'"></div>';
+    html+='<div class="pat-grid">';
+    g.items.forEach(function(p){
+      var isL=!!P.learned[p.id];
+      var tc=p.type==='bullish'?'bull':p.type==='bearish'?'bear':'neutral';
+      var selC=p.type==='bullish'?'var(--g)':p.type==='bearish'?'var(--r)':'var(--a)';
+      var sel=P.openId===p.id?'selected':'';
+      var pb=p.type==='bullish'?'background:var(--g-bg);color:var(--g-t)':p.type==='bearish'?'background:var(--r-bg);color:var(--r-t)':'background:var(--a-bg);color:var(--a-t)';
+      html+='<div class="pat-card '+tc+' '+sel+'" id="pcc-'+p.id+'" onclick="openPatDrawer(\''+p.id+'\','+gi+')" style="--pc-sel:'+selC+';">'
+          +'<div class="pc-svg">'+p.svg(0.82)+'</div>'
+          +'<div class="pc-info">'
+          +  '<div class="pc-badges"><span class="pcb" style="'+pb+'">'+p.type+'</span></div>'
+          +  '<div class="pc-en">'+p.en+'</div>'
+          +  '<div class="pc-jp">'+p.jp+'</div>'
+          +  '<div class="pc-lrn '+(isL?'show':'')+'" >✓ learned</div>'
+          +'</div>'
+          +'</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('patterns-body').innerHTML=html;
+}
+
+function openPatDrawer(id,gi){
+  var p=CANDLES.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(P.openId===id){P.openId=null;closePatDrawers();document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});return;}
+  P.openId=id;
+  closePatDrawers();
+  document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});
+  var card=document.getElementById('pcc-'+id);
+  if(card) card.classList.add('selected');
+  var isL=!!P.learned[id];
+  var sc=p.type==='bullish'?'var(--g)':p.type==='bearish'?'var(--r)':'var(--a)';
+  var pb=p.type==='bullish'?'background:var(--g-bg);color:var(--g-t)':p.type==='bearish'?'background:var(--r-bg);color:var(--r-t)':'background:var(--a-bg);color:var(--a-t)';
+  var sb=p.signal==='reversal'?'background:var(--b-bg);color:var(--b-t)':'background:var(--bg);color:var(--text3)';
+  var bigSvg=p.svg(1.35);
+  var drawer=document.getElementById('pd-'+gi);
+  if(!drawer) return;
+  drawer.innerHTML=
+    '<div class="pdw-vis">'+bigSvg+'<div class="pdw-vis-lbl">'+p.jp+'</div></div>'
+   +'<div class="pdw-body">'
+   +  '<button class="pdw-close" onclick="closePatDrawers(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+   +  '<div class="pdw-jp">'+p.jp+'</div>'
+   +  '<div class="pdw-en" style="color:'+sc+'">'+p.en+'</div>'
+   +  '<div class="pdw-mm">'+p.mm+'</div>'
+   +  '<div class="pdw-badges"><span class="pcb" style="'+pb+'">'+p.type+'</span><span class="pcb" style="'+sb+'">'+p.signal+'</span><span class="pcb" style="background:var(--bg);color:var(--text3);">'+p.diff+'</span></div>'
+   +  '<div class="pdw-lbl">Explanation</div>'
+   +  '<div class="pdw-exp">'+p.exp_en+'</div>'
+   +  '<div class="pdw-exp-mm">'+p.exp_mm+'</div>'
+   +  '<div class="pdw-tip">'+p.tip_en+'</div>'
+   +  '<div class="pdw-tip-mm">'+p.tip_mm+'</div>'
+   +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="togglePatLearned(event,\''+id+'\')">'
+   +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+   +    (isL?'Learned':'Mark as learned')
+   +  '</button>'
+   +'</div>';
+  drawer.className='pat-drawer open';
+  drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closePatDrawers(e){
+  if(e) e.stopPropagation();
+  P.openId=null;
+  document.querySelectorAll('.pat-drawer').forEach(function(d){d.className='pat-drawer';d.innerHTML='';});
+  document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});
+}
+
+function togglePatLearned(e,id){
+  e.stopPropagation();
+  P.learned[id]=!P.learned[id];
+  saveP();
+  renderPatterns();
+  var p=CANDLES.find(function(x){return x.id===id;});
+  if(p){
+    var fc=getFilteredPats();
+    var groups=[fc.filter(function(x){return x.candles===1;}),fc.filter(function(x){return x.candles===2;}),fc.filter(function(x){return x.candles>=3;})].filter(function(g){return g.length;});
+    var gi=groups.findIndex(function(g){return g.find(function(x){return x.id===id;});});
+    if(gi>=0) setTimeout(function(){openPatDrawer(id,gi);},40);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════
+function switchTab(tab, el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active');});
+  if(el) el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+renderAnatomy();
+buildPartPills();
+renderPatterns();
+</script>
+</body>
+</html>

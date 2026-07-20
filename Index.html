@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Learning Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#666;--text3:#aaa;--radius:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;display:none;border-radius:6px;line-height:1;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-back.show{display:flex;align-items:center;}
+.tb-title{font-size:15px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.tb-search{display:none;position:relative;}
+.tb-search.show{display:flex;align-items:center;}
+.tb-search input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px 6px 30px;font-size:13px;color:var(--text);outline:none;width:170px;transition:border .2s;}
+.tb-search input:focus{border-color:rgba(0,0,0,0.2);}
+.tb-search .si{position:absolute;left:9px;font-size:14px;color:var(--text3);pointer-events:none;}
+.tb-prog{font-size:11px;color:var(--text3);white-space:nowrap;}
+
+/* ── Pages ── */
+.page{display:none;padding:18px;}
+.page.active{display:block;}
+
+/* ══ HOME ══════════════════════════════════════════ */
+.home-head{margin-bottom:18px;}
+.home-head h1{font-size:20px;font-weight:700;}
+.home-head p{font-size:13px;color:var(--text2);margin-top:3px;}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}
+.section-block{margin-bottom:28px;}
+.section-block:last-child{margin-bottom:8px;}
+.section-head{display:flex;align-items:baseline;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.section-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.section-label{font-size:14px;font-weight:600;color:var(--text);}
+.section-mm{font-size:11px;color:var(--text3);}
+.cat-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.cat-tile:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08);}
+.ct-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:11px;}
+.ct-name{font-size:14px;font-weight:600;line-height:1.3;margin-bottom:3px;}
+.ct-mm{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.35;}
+.ct-foot{display:flex;align-items:center;justify-content:space-between;}
+.ct-count{font-size:11px;color:var(--text3);}
+.ct-prog{height:3px;background:rgba(0,0,0,.06);border-radius:2px;margin-top:8px;overflow:hidden;}
+.ct-prog-fill{height:100%;border-radius:2px;transition:width .4s;}
+
+/* ══ ITEMS GALLERY (shared by all categories + candles) ═══ */
+.gallery-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.gf-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.gf-btn:hover{background:var(--bg);}
+.gf-btn.gf-active{font-weight:500;border-color:var(--border2);}
+
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:4px;}
+
+/* Item card */
+.item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.item-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.07);}
+.item-card.selected{box-shadow:0 0 0 2px var(--sel-c,#3B6D11) inset;border-color:var(--sel-c,#3B6D11);}
+.item-card.bull-card{border-top:2px solid #3B6D11;}
+.item-card.bear-card{border-top:2px solid #A32D2D;}
+.item-card.neutral-card{border-top:2px solid #854F0B;}
+/* visual area — SVG for candles, icon for terms */
+.item-visual{background:#f8f8f6;padding:16px;display:flex;align-items:center;justify-content:center;min-height:88px;}
+.item-visual.term-vis{background:var(--bg);min-height:70px;}
+.item-footer{padding:9px 11px;}
+.item-jp{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.item-en{font-size:12px;font-weight:600;line-height:1.3;}
+.item-mm{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.3;}
+.item-lrn{font-size:10px;color:#3B6D11;margin-top:3px;display:none;}
+.item-lrn.show{display:block;}
+
+/* ── Drawer (shared) ── */
+.item-drawer{display:none;grid-column:1/-1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:2px;}
+.item-drawer.open{display:grid;grid-template-columns:220px 1fr;}
+.drawer-vis{background:#f8f8f6;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.drawer-vis.term-dvis{background:var(--bg);}
+.drawer-body{padding:18px 20px;overflow:auto;}
+.drawer-close{float:right;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;transition:color .15s;line-height:1;}
+.drawer-close:hover{color:var(--text);}
+.d-jp{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.d-en{font-size:19px;font-weight:700;line-height:1.2;margin-bottom:4px;}
+.d-mm-name{font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.35;}
+.d-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.dbadge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.d-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px;}
+.d-exp{font-size:13px;line-height:1.75;color:var(--text);margin-bottom:10px;}
+.d-exp-mm{font-size:12px;line-height:1.7;color:var(--text2);background:var(--bg);border-radius:8px;padding:9px 12px;margin-bottom:10px;}
+.d-tip{font-size:12px;background:#FAEEDA;border-left:3px solid #EF9F27;padding:8px 12px;border-radius:0 6px 6px 0;color:#633806;line-height:1.6;margin-bottom:4px;}
+.d-tip-mm{font-size:11px;background:#FAEEDA;border-left:3px solid #EF9F27;padding:6px 12px;border-radius:0 6px 6px 0;color:#854F0B;line-height:1.6;font-style:italic;margin-bottom:10px;}
+.d-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.d-tag{font-size:10px;background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:20px;color:var(--text3);}
+.mark-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+.mark-btn:hover{background:rgba(59,109,17,.08);}
+.mark-btn.on{background:#EAF3DE;color:#3B6D11;border-color:rgba(59,109,17,.2);}
+
+/* ── Section label ── */
+.sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* ── Loading ── */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text3);gap:10px;}
+.loading i{font-size:26px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Mobile ── */
+@media(max-width:600px){
+  .cat-grid{grid-template-columns:repeat(2,1fr);}
+  .section-label{font-size:13px;}
+  .section-mm{display:none;}
+  .items-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  .item-drawer.open{grid-template-columns:1fr;}
+  .drawer-vis{border-right:none;border-bottom:1px solid var(--border);}
+  .page{padding:14px;}
+  .tb-search input{width:130px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" id="tb-back" onclick="goBack()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div class="tb-title" id="tb-title">Stock Learning Portal</div>
+  <div class="tb-right">
+    <div class="tb-search" id="tb-search">
+      <i class="ti ti-search si" aria-hidden="true"></i>
+      <input type="text" id="search-input" placeholder="Search..." oninput="doSearch()">
+    </div>
+    <span class="tb-prog" id="tb-prog"></span>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-head">
+    <h1>မင်္ဂလာပါ</h1>
+    <p id="home-sub">Loading...</p>
+  </div>
+  <div id="cat-grid-wrap">
+    <div class="loading"><i class="ti ti-loader-2"></i></div>
+  </div>
+</div>
+
+<!-- GALLERY (used for all categories) -->
+<div class="page" id="page-gallery">
+  <div class="gallery-filter" id="gallery-filter"></div>
+  <div id="gallery-body"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+var RATIOS_URL = '<?= ratiosUrl ?>';
+var S={
+  terms:[],cats:[],
+  currentCat:null,       // name_en of open category
+  isCandleCat:false,
+  allItems:[],           // full items for current cat (terms or candles)
+  filteredItems:[],
+  openItemId:null,
+  activeFilter:'all',
+  progress:{},
+  userId:(function(){
+    var id=localStorage.getItem('slp_uid');
+    if(!id){id='u_'+Math.random().toString(36).substr(2,9);localStorage.setItem('slp_uid',id);}
+    return id;
+  })(),
+  pageStack:['home']
+};
+
+// ════════════════════════════════════════════════
+//  PALETTE
+// ════════════════════════════════════════════════
+var CC=[
+  {bg:'#E6F1FB',icon:'#185FA5',prog:'#378ADD',text:'#0C447C'},
+  {bg:'#FAEEDA',icon:'#854F0B',prog:'#EF9F27',text:'#633806'},
+  {bg:'#E1F5EE',icon:'#0F6E56',prog:'#1D9E75',text:'#085041'},
+  {bg:'#EEEDFE',icon:'#534AB7',prog:'#7F77DD',text:'#3C3489'},
+  {bg:'#FAECE7',icon:'#993C1D',prog:'#D85A30',text:'#712B13'},
+  {bg:'#EAF3DE',icon:'#3B6D11',prog:'#639922',text:'#27500A'},
+];
+var DC={beginner:'#3B6D11',intermediate:'#854F0B',advanced:'#A32D2D'};
+var DB={beginner:'#EAF3DE',intermediate:'#FAEEDA',advanced:'#FCEBEB'};
+
+function catColor(catNameOrIdx){
+  if(typeof catNameOrIdx==='number') return CC[catNameOrIdx%CC.length];
+  var idx=S.cats.findIndex(function(c){return c.name_en===catNameOrIdx;});
+  return CC[Math.max(idx,0)%CC.length];
+}
+
+// ════════════════════════════════════════════════
+//  SVG CANDLE ENGINE
+// ════════════════════════════════════════════════
+var CG='#26a65b',CR='#c0392b',CGY='#999';
+var CGD='rgba(38,166,91,.12)',CRD='rgba(192,57,43,.12)',CGYD='rgba(150,150,150,.1)';
+
+function dc(x,o,c,h,l,color,w){
+  w=w||14;
+  var bT=Math.min(o,c),bB=Math.max(o,c),bH=Math.max(bB-bT,2);
+  var f=color==='green'?CG:color==='red'?CR:CGY;
+  var fd=color==='green'?CGD:color==='red'?CRD:CGYD;
+  var cx=x+w/2;
+  return '<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="'+f+'"/>'
+        +'<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="'+fd+'"/>'
+        +'<rect x="'+x+'" y="'+bT+'" width="'+w+'" height="'+bH+'" rx="1.5" fill="none" stroke="'+f+'" stroke-width="1.5"/>'
+        +'<line x1="'+cx+'" y1="'+h+'" x2="'+cx+'" y2="'+bT+'" stroke="'+f+'" stroke-width="1.5"/>'
+        +'<line x1="'+cx+'" y1="'+bB+'" x2="'+cx+'" y2="'+l+'" stroke="'+f+'" stroke-width="1.5"/>';
+}
+function svgW(inner,vw,vh){
+  var g='';for(var i=1;i<4;i++)g+='<line x1="0" y1="'+Math.round(vh*i/4)+'" x2="'+vw+'" y2="'+Math.round(vh*i/4)+'" stroke="rgba(0,0,0,.04)" stroke-width=".5"/>';
+  return '<svg viewBox="0 0 '+vw+' '+vh+'" width="'+vw+'" height="'+vh+'" xmlns="http://www.w3.org/2000/svg">'+g+inner+'</svg>';
+}
+function arr(x,y,d){
+  if(d==='up') return '<polygon points="'+x+','+(y-6)+' '+(x-4)+','+(y+2)+' '+(x+4)+','+(y+2)+'" fill="'+CG+'" opacity=".8"/>';
+  return '<polygon points="'+x+','+(y+6)+' '+(x-4)+','+(y-2)+' '+(x+4)+','+(y-2)+'" fill="'+CR+'" opacity=".8"/>';
+}
+
+// ════════════════════════════════════════════════
+//  CANDLE DATA
+// ════════════════════════════════════════════════
+var CANDLES=[
+  {id:'c01',jp:'陽線',en:'Bullish Candle',mm:'ဝယ်သူ လွှမ်းမိုးသော Candle',type:'bullish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Close is higher than open — buyers were in control the entire session. The larger the body, the stronger the conviction.',
+   exp_mm:'ပိတ်ဈေးသည် ဖွင့်ဈေးထက် မြင့်သော Candle ဖြစ်ပြီး ဝယ်သူများ တစ်ရက်တာ လွှမ်းမိုးကြောင်း ပြသသည်။ Body ကြီးလေ ဝယ်ဖိအားပိုကြီးကြောင်း ပြသသည်။',
+   tip_en:'Larger green body = stronger buying pressure. Tiny wicks = buyers controlled the entire session.',
+   tip_mm:'Body ကြီးလေ ဝယ်ဖိအားပိုကြီးကြောင်း ပြသသည်။ Wick နည်းလေ ဝယ်သူများ ဖွင့်မှ ပိတ်ထိ အပြည့်ထိန်းချုပ်ကြောင်း ဆိုလိုသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,70,18,10,78,'green',22*sc)+arr(66*sc,14,'up'),100*sc,90);}},
+  {id:'c02',jp:'陰線',en:'Bearish Candle',mm:'ရောင်းသူ လွှမ်းမိုးသော Candle',type:'bearish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Close is lower than open — sellers dominated. Long red body with tiny wicks means complete seller control from open to close.',
+   exp_mm:'ပိတ်ဈေးသည် ဖွင့်ဈေးထက် နိမ့်သော Candle ဖြစ်ပြီး ရောင်းသူများ တစ်ရက်တာ လွှမ်းမိုးကြောင်း ပြသသည်။',
+   tip_en:'Long red body + tiny wicks = sellers controlled price the entire session without hesitation.',
+   tip_mm:'Body ကြီး Wick နည်းသော အနီ Candle သည် ဖွင့်မှ ပိတ်ထိ ရောင်းသူများ အပြည့်ထိန်းချုပ်ကြောင်း ပြသသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,18,70,10,78,'red',22*sc)+arr(66*sc,74,'down'),100*sc,90);}},
+  {id:'c03',jp:'同事線',en:'Doji',mm:'မဆုံးဖြတ်နိုင်မှု Candle',type:'neutral',signal:'reversal',candles:1,diff:'beginner',
+   exp_en:'Open and close nearly identical — thin body, wicks both sides. Neither buyers nor sellers won. Signals indecision and possible trend change.',
+   exp_mm:'ဖွင့်ဈေးနှင့် ပိတ်ဈေး ဆိုင်တူနီးပါးဖြစ်ပြီး Body ပါးသော Candle ဖြစ်သည်။ Trend ပြောင်းနိုင်ကြောင်း ညွှန်ပြသည်။',
+   tip_en:'A Doji after a long uptrend or downtrend warns that momentum may be ending.',
+   tip_mm:'ရှည်မြင့်သော Trend ပြီးနောက် Doji ပေါ်လာပါက Trend အားကုန်နေနိုင်ကြောင်း ပြင်းထန်သော သတိပေးချက်ဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,41,43,10,78,'gray',22*sc),100*sc,90);}},
+  {id:'c04',jp:'ハンマー',en:'Hammer',mm:'Downtrend အောက်ခြေ Bullish Reversal',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Small body at top, long lower wick (2× body). Forms at the bottom of a downtrend — sellers pushed hard but buyers recovered by close.',
+   exp_mm:'Body သေးငယ်ပြီး အောက်ဘက် Wick ရှည်သော Bullish Reversal Candle ဖြစ်သည်။ Downtrend အောက်ခြေတွင် ဖြစ်ပေါ်တတ်သည်။',
+   tip_en:'Only valid as reversal when it forms AFTER a downtrend. Same shape in mid-range means very little.',
+   tip_mm:'Downtrend ပြီးနောက်မှ ဖြစ်ပေါ်မှသာ Reversal Signal အဖြစ် သတ်မှတ်ရသည်။ Range အလယ်တွင် ဖြစ်ပေါ်သော Hammer မှာ သိပ်မပါဝင်ဟု ဆိုနိုင်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,20,28,17,84,'green',22*sc)+arr(66*sc,16,'up'),100*sc,90);}},
+  {id:'c05',jp:'シューティングスター',en:'Shooting Star',mm:'Uptrend ထိပ် Bearish Reversal',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Small body at bottom, long upper wick (2×+). Forms at top of uptrend. Buyers pushed price up but sellers drove it back down — rejection of higher prices.',
+   exp_mm:'Body သေးငယ်ပြီး အပေါ်ဘက် Wick ရှည်သော Bearish Reversal Candle ဖြစ်သည်။ Uptrend ထိပ်တွင် ဈေးမြင့်မှုကို ငြင်းပယ်ကြောင်း ပြသသည်။',
+   tip_en:'The long upper wick is the shadow of rejected buyers — higher price was tested and refused.',
+   tip_mm:'ရှည်သော အပေါ် Wick သည် ငြင်းပယ်ခံရသော ဝယ်သူများ၏ အရိပ်ဖြစ်သည်။ ဈေးမြင့်မှုကို ရောင်းသူများ ငြင်းပယ်ကြောင်း ပြသသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,62,70,10,75,'red',22*sc)+arr(66*sc,74,'down'),100*sc,90);}},
+  {id:'c06',jp:'首吊り線',en:'Hanging Man',mm:'Uptrend ထိပ် Bearish သတိပေးချက်',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Identical shape to Hammer but forms at the TOP of an uptrend. Same candle is bullish at the bottom (hammer) and bearish at the top (hanging man).',
+   exp_mm:'Hammer နှင့် ပုံသဏ္ဍာန်တူသော်လည်း Uptrend ထိပ်တွင် ဖြစ်ပေါ်သောကြောင့် Bearish သတိပေးချက်ဖြစ်သည်။',
+   tip_en:'Location is everything — the exact same shape is bullish at the bottom and bearish at the top.',
+   tip_mm:'တည်နေရာသည် အရာအားလုံးဖြစ်သည်။ တူညီသော ပုံသဏ္ဍာန်သည် အောက်တွင် Bullish၊ အပေါ်တွင် Bearish ဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,20,28,17,84,'red',22*sc)+arr(66*sc,28,'down'),100*sc,90);}},
+  {id:'c07',jp:'逆ハンマー',en:'Inverted Hammer',mm:'Downtrend အောက်ခြေ Bullish Signal',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Shooting star shape but at BOTTOM of downtrend — bullish reversal possibility. Always wait for a confirming green candle the next day.',
+   exp_mm:'Shooting Star ပုံသဏ္ဍာန်နှင့် တူသော်လည်း Downtrend အောက်ခြေတွင် ဖြစ်ပေါ်ပြီး Bullish Reversal ဖြစ်နိုင်ကြောင်း ညွှန်ပြသည်။',
+   tip_en:'Needs a bullish confirmation candle the next day. Without confirmation it is a weak signal.',
+   tip_mm:'ယုံကြည်ရန် နောက်တစ်နေ့ Bullish Confirmation Candle လိုအပ်သည်။ Confirmation မပါပါက Signal အားနည်းသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,62,70,10,75,'green',22*sc)+arr(66*sc,62,'up'),100*sc,90);}},
+  {id:'c08',jp:'大陽線',en:'Marubozu',mm:'ပြည့်ဝသော Body Candle',type:'bullish',signal:'basic',candles:1,diff:'beginner',
+   exp_en:'Very large body, no wicks. One side controlled price completely from open to close. One of the strongest momentum signals.',
+   exp_mm:'Body အလွန်ကြီးပြီး Wick မရှိသလောက်သော Candle ဖြစ်သည်။ ဖွင့်မှ ပိတ်ထိ တစ်ဖက်မှ ပြည့်ဝစွာ ထိန်းချုပ်ကြောင်း ညွှန်ပြသည်။',
+   tip_en:'Marubozu on high volume is one of the most reliable momentum signals available.',
+   tip_mm:'Volume ကြီးနှင့် Marubozu ဖြစ်ပေါ်ပါက ဈေးကွက်တစ်ဖက်မှ ပြည့်ဝသော ယုံကြည်မှုကို ပြသသောကြောင့် အယုံကြည်ရဆုံး Momentum Signal တစ်ခုဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,80,12,80,12,'green',22*sc)+arr(66*sc,8,'up'),100*sc,90);}},
+  {id:'c09',jp:'陽のはらみ',en:'Bullish Engulfing',mm:'ဝယ်မှု လွှမ်းမိုးမှု ပြောင်းလဲချက်',type:'bullish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a red candle, a large green candle completely swallows the previous body. Strong buying takeover at bottom of a downtrend.',
+   exp_mm:'အနီ Candle ပြီးနောက် ကြီးသော အစိမ်း Candle က ယခင် Body ကို အပြည့်မျိုဝါးသည်။ Downtrend အောက်ခြေ ပြင်းထန်သော ဝယ်မှု Signal ဖြစ်သည်။',
+   tip_en:'High volume engulfing patterns are far more powerful. Volume confirms the conviction behind the move.',
+   tip_mm:'Volume ကြီးနှင့် Engulfing ပုံသဏ္ဍာန်သည် Volume နည်းနှင့်ထက် အများကြီး ပိုအားကောင်းသည်။ Volume သည် ယုံကြည်မှုကို အတည်ပြုသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(14*sc,28,54,20,62,'red',16*sc)+dc(40*sc,60,10,6,64,'green',22*sc)+arr(76*sc,6,'up'),96*sc,90);}},
+  {id:'c10',jp:'陰のはらみ',en:'Bearish Engulfing',mm:'ရောင်းမှု လွှမ်းမိုးမှု ပြောင်းလဲချက်',type:'bearish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a green candle, a large red candle completely swallows the previous body. Strong selling takeover at top of an uptrend.',
+   exp_mm:'အစိမ်း Candle ပြီးနောက် ကြီးသော အနီ Candle က ယခင် Body ကို အပြည့်မျိုဝါးသည်။ Uptrend ထိပ်တွင် ပြင်းထန်သော ရောင်းမှု Signal ဖြစ်သည်။',
+   tip_en:'The larger the engulfing candle vs the first candle, the stronger the reversal signal.',
+   tip_mm:'Engulfing Candle သည် ပထမ Candle နှင့် ယှဉ်ကာ ပိုကြီးလေ Reversal Signal ပိုအားကောင်းလေဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(14*sc,52,28,22,60,'green',16*sc)+dc(40*sc,10,58,6,62,'red',22*sc)+arr(76*sc,62,'down'),96*sc,90);}},
+  {id:'c11',jp:'孕み線',en:'Harami',mm:'Momentum နှေးကွေးလာချိန်',type:'neutral',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'A large candle followed by a small candle whose body fits inside the first. Signals slowing momentum — a reversal may follow.',
+   exp_mm:'ကြီးသော Candle ပြီးနောက် Body ငယ်သော Candle တစ်ဆောင် ယခင် Body အတွင်း ရှိသည်။ Momentum နှေးကွေးနေပြီး Reversal ဖြစ်နိုင်ကြောင်း ညွှန်ပြသည်။',
+   tip_en:'Harami alone is weak. Wait for a third confirming candle in the reversal direction before acting.',
+   tip_mm:'Harami တစ်ခုတည်းသည် Signal အားနည်းသည်။ Reversal လမ်းကြောင်းတွင် တတိယ Candle Confirmation ကို မဝင်မီ စောင့်ပါ။',
+   svg:function(sc){sc=sc||1;return svgW(dc(14*sc,64,14,10,72,'red',22*sc)+dc(44*sc,44,34,30,48,'green',14*sc),96*sc,90);}},
+  {id:'c12',jp:'切り込み線',en:'Piercing Line',mm:'Bullish Reversal နှစ်ဆောင်',type:'bullish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a red candle, green opens below previous low but closes above the midpoint of the red body. Deeper penetration = stronger signal.',
+   exp_mm:'အနီ Candle ပြီးနောက် အစိမ်း Candle သည် ယခင် Low အောက်မှ ဖွင့်ပြီး အနီ Body ၏ အလယ်ကို ကျော်ပြီး ပိတ်သည်။',
+   tip_en:'Less than 50% penetration into the first body is not valid. The close must exceed the midpoint.',
+   tip_mm:'ပထမ Candle Body ထဲ 50% အောက် ဖောက်ထွင်းမှုသည် Valid မဟုတ်ဘဲ။ ပိတ်ဈေးသည် Body အလယ်ကို ကျော်ရမည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(14*sc,26,62,18,70,'red',20*sc)+dc(44*sc,72,26,65,76,'green',20*sc)+arr(78*sc,22,'up'),100*sc,90);}},
+  {id:'c13',jp:'被せ線',en:'Dark Cloud Cover',mm:'Bearish Reversal နှစ်ဆောင်',type:'bearish',signal:'reversal',candles:2,diff:'intermediate',
+   exp_en:'After a green candle, red opens above previous high but closes below the midpoint of the green body — bearish reversal at the top of an uptrend.',
+   exp_mm:'အစိမ်း Candle ပြီးနောက် အနီ Candle သည် ယခင် High အပေါ်မှ ဖွင့်ပြီး အစိမ်း Body ၏ အလယ်အောက် ပိတ်သည်။',
+   tip_en:'Best when it forms near a known resistance level — level and pattern confirm each other.',
+   tip_mm:'သိရှိပြီးသား Resistance Level နီးတွင် ဖြစ်ပေါ်ချိန် ပိုယုံကြည်ရသည်။ Level နှင့် ပုံသဏ္ဍာန် တစ်ခုနှင့်တစ်ခု အတည်ပြုသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(14*sc,62,26,20,66,'green',20*sc)+dc(44*sc,16,56,14,70,'red',20*sc)+arr(78*sc,58,'down'),100*sc,90);}},
+  {id:'c14',jp:'明けの明星',en:'Morning Star',mm:'Downtrend အဆုံး Bullish Signal',type:'bullish',signal:'reversal',candles:3,diff:'intermediate',
+   exp_en:'(1) Large red — sellers dominate. (2) Small body gap down — indecision. (3) Large green closing above midpoint of candle 1 — buyers take control.',
+   exp_mm:'(1) ကြီးသော အနီ Candle — ရောင်းသူ လွှမ်းမိုး (2) Gap Down Body ငယ် — မဆုံးဖြတ်နိုင်မှု (3) ကြီးသော အစိမ်း Candle — ဝယ်သူများ လွှမ်းမိုး',
+   tip_en:'Most powerful when the middle candle is a Doji near a key support level.',
+   tip_mm:'အလယ် Candle သည် Doji ဖြစ်ပြီး Support Level နီးတွင် ဖြစ်ပေါ်ပါက အထူးအားကောင်းသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(8*sc,20,58,14,66,'red',18*sc)+dc(36*sc,66,58,58,68,'gray',12*sc)+dc(58*sc,62,16,10,68,'green',18*sc)+arr(90*sc,12,'up'),110*sc,90);}},
+  {id:'c15',jp:'宵の明星',en:'Evening Star',mm:'Uptrend အဆုံး Bearish Signal',type:'bearish',signal:'reversal',candles:3,diff:'intermediate',
+   exp_en:'(1) Large green. (2) Small body gap up — indecision at peak. (3) Large red closing below midpoint of candle 1. Bearish counterpart of Morning Star.',
+   exp_mm:'(1) ကြီးသော အစိမ်း Candle (2) Gap Up Body ငယ် — ထိပ်တွင် မဆုံးဖြတ်နိုင်မှု (3) ကြီးသော အနီ Candle — ရောင်းသူများ လွှမ်းမိုး',
+   tip_en:'Watch near resistance after a prolonged uptrend — high-conviction exit or short-entry signal.',
+   tip_mm:'Resistance Level နီး ရှည်မြင့်သော Uptrend ပြီးနောက် ဖြစ်ပေါ်ပါက ထွက်ရမည် သို့မဟုတ် Short ဝင်ရမည့် Signal ဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(8*sc,60,20,12,66,'green',18*sc)+dc(36*sc,14,22,12,26,'gray',12*sc)+dc(58*sc,16,64,10,70,'red',18*sc)+arr(90*sc,66,'down'),110*sc,90);}},
+  {id:'c16',jp:'三白兵',en:'Three White Soldiers',mm:'ဆက်တိုက် ဝယ်မှု Momentum',type:'bullish',signal:'continuation',candles:3,diff:'intermediate',
+   exp_en:'Three consecutive large green candles closing progressively higher. Strong sustained buying — confirms a new uptrend after a downtrend.',
+   exp_mm:'ကြီးသော အစိမ်း Candle သုံးဆောင် ဆက်တိုက် ပိုမြင့်မြင့် ပိတ်သည်။ ပြင်းထန်ဆက်လက်သော ဝယ်မှုနှင့် Uptrend အသစ် ညွှန်ပြသည်။',
+   tip_en:'If each candle shrinks in size, momentum may be fading. Watch for reversal.',
+   tip_mm:'Candle တစ်ဆောင်စီ ငယ်လာပါက Momentum ကုန်နေနိုင်သည်။ Reversal သတိပြုပါ။',
+   svg:function(sc){sc=sc||1;return svgW(dc(8*sc,76,50,44,78,'green',16*sc)+dc(32*sc,54,28,22,56,'green',16*sc)+dc(56*sc,32,8,6,34,'green',16*sc)+arr(86*sc,4,'up'),110*sc,90);}},
+  {id:'c17',jp:'三羽烏',en:'Three Black Crows',mm:'ဆက်တိုက် ရောင်းမှု Momentum',type:'bearish',signal:'continuation',candles:3,diff:'intermediate',
+   exp_en:'Three consecutive large red candles closing progressively lower. Bearish mirror of Three White Soldiers — confirms a new downtrend.',
+   exp_mm:'ကြီးသော အနီ Candle သုံးဆောင် ဆက်တိုက် ပိုနိမ့်နိမ့် ပိတ်သည်။ Three White Soldiers ၏ Bearish ဆန့်ကျင်ဘက်ဖြစ်ပြီး Downtrend အသစ် အတည်ပြုသည်။',
+   tip_en:'After a long uptrend — major warning to exit long positions immediately.',
+   tip_mm:'ရှည်မြင့်သော Uptrend ပြီးနောက် ပေါ်လာပါက Long Position ချက်ချင်းထွက်ရမည့် ပြင်းထန်သော သတိပေးချက်ဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(8*sc,10,52,8,54,'red',16*sc)+dc(32*sc,46,68,44,70,'red',16*sc)+dc(56*sc,62,82,60,84,'red',16*sc)+arr(86*sc,84,'down'),110*sc,90);}},
+  {id:'c18',jp:'十字線（墓石）',en:'Gravestone Doji',mm:'Bearish ဒုံးပျံငြင်းပယ်ချက်',type:'bearish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Long upper wick, no lower wick, open and close at very bottom. Forms at top of uptrends — buyers pushed up but sellers completely rejected the gains.',
+   exp_mm:'အပေါ် Wick ရှည်ပြီး အောက် Wick မရှိဘဲ ဖွင့်/ပိတ် အောက်ဆုံးတွင် ရှိသည်။ Uptrend ထိပ်တွင် ဈေးမြင့်မှုကို ငြင်းပယ်ကြောင်း ပြသသည်။',
+   tip_en:'Equivalent to a Shooting Star. The Doji version is considered slightly stronger as a rejection signal.',
+   tip_mm:'Shooting Star နှင့် ဆိုလိုချက် တူညီသည်။ Doji ဗားရှင်းကို Rejection Signal အနေဖြင့် ပိုအားကောင်းသည်ဟု သတ်မှတ်တတ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,66,70,8,72,'red',22*sc),100*sc,90);}},
+  {id:'c19',jp:'蜻蛉',en:'Dragonfly Doji',mm:'Bullish ဒုံးပျံကူညီချက်',type:'bullish',signal:'reversal',candles:1,diff:'intermediate',
+   exp_en:'Long lower wick, no upper wick, open and close at very top. Forms at bottom of downtrends — sellers pushed price down but buyers completely recovered it.',
+   exp_mm:'အောက် Wick ရှည်ပြီး အပေါ် Wick မရှိဘဲ ဖွင့်/ပိတ် အပေါ်ဆုံးတွင် ရှိသည်။ Downtrend အောက်ခြေတွင် ဝယ်သူများ ပြန်ကယ်တင်ကြောင်း ညွှန်ပြသည်။',
+   tip_en:'At key support with high volume — one of the strongest single-candle bullish reversal signals.',
+   tip_mm:'Key Support Level တွင် Volume ကြီးနှင့် ဖြစ်ပေါ်ပါက ရနိုင်သော အားကောင်းဆုံး Single-Candle Bullish Reversal Signal တစ်ခုဖြစ်သည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,12,14,12,84,'green',22*sc)+arr(66*sc,10,'up'),100*sc,90);}},
+  {id:'c20',jp:'コマ',en:'Spinning Top',mm:'နှစ်ဖက် တူညီ မဆုံးဖြတ်နိုင်မှု',type:'neutral',signal:'reversal',candles:1,diff:'beginner',
+   exp_en:'Small body with long wicks on both sides. Both buyers and sellers were active but neither won decisively — indecision signal.',
+   exp_mm:'Body ငယ်သော်လည်း နှစ်ဖက်တွင် Wick ရှည်ရှည်ပါသော Candle ဖြစ်သည်။ ဝယ်သူနှင့် ရောင်းသူ မည်သူမျှ မနိုင်ကြောင်း ပြသသည်။',
+   tip_en:'Multiple spinning tops in a row signal prolonged consolidation — big breakout may be approaching.',
+   tip_mm:'Spinning Top တွေ ဆက်တိုက်ပေါ်လာပါက ကြာမြင့်သော Consolidation ကာလ ညွှန်ပြပြီး မကြာမီ ကြီးမားသော Breakout ဖြစ်နိုင်ကြောင်း ညွှန်ပြသည်။',
+   svg:function(sc){sc=sc||1;return svgW(dc(30*sc,34,52,8,80,'gray',22*sc),100*sc,90);}}
+];
+
+// ════════════════════════════════════════════════
+//  LOAD DATA
+// ════════════════════════════════════════════════
+function loadData(){
+  google.script.run
+    .withSuccessHandler(function(data){
+      if(data.error){showLoadErr(data.error);return;}
+      S.terms=data.terms||[];
+      S.cats=data.categories||[];
+      S.progress=JSON.parse(localStorage.getItem('slp_prog_'+S.userId)||'{}');
+      renderHome();
+      updateProg();
+    })
+    .withFailureHandler(function(e){showLoadErr(e.message);})
+    .getAllData();
+}
+function showLoadErr(msg){
+  document.getElementById('cat-grid-wrap').innerHTML='<p style="color:#A32D2D;font-size:13px;padding:20px;">Error: '+msg+'<br><small>Check that Terms and Categories sheets exist.</small></p>';
+}
+
+// ════════════════════════════════════════════════
+//  HOME
+// ════════════════════════════════════════════════
+// ── Section grouping ──────────────────────────────────────────
+// Sheet categories mapped to one of the 4 portal sections.
+var SHEET_CAT_SECTION = {
+  'Market & Price Movement':'knowledge',
+  'Margin & Trading Mechanisms':'knowledge',
+  'Financial Performance Ratios':'knowledge',
+  'Instruments & Participants':'knowledge',
+  'Candlestick Patterns':'knowledge',
+  'Fundamental Analysis':'knowledge',
+  'Japan Macro & Market Structure':'toolkit',
+  'NISA & Japan Tax':'toolkit',
+  'Market Psychology & Strategy':'mindset',
+};
+
+var SECTIONS = [
+  {id:'mindset', label:'Mindset Lab', mm:'心理ラボ', color:'#D4A843'},
+  {id:'knowledge', label:'Knowledge Base', mm:'知識ベース', color:'#185FA5'},
+  {id:'toolkit', label:'My Toolkit', mm:'ツールキット', color:'#534AB7'},
+  {id:'journal', label:'The Journal', mm:'ジャーナル', color:'#993C1D'},
+];
+
+function tileHTML(onclick, borderColor, iconBg, icon, iconColor, name, mm, count, progPct, progColor){
+  return '<div class="cat-tile" onclick="'+onclick+'" style="border-top:3px solid '+borderColor+';">'
+      +'<div class="ct-icon" style="background:'+iconBg+'"><i class="ti '+icon+'" style="font-size:20px;color:'+iconColor+';" aria-hidden="true"></i></div>'
+      +'<div class="ct-name">'+name+'</div>'
+      +'<div class="ct-mm">'+mm+'</div>'
+      +'<div class="ct-foot"><span class="ct-count">'+count+'</span>'
+      +'<i class="ti ti-chevron-right" style="font-size:15px;color:var(--text3);" aria-hidden="true"></i></div>'
+      +'<div class="ct-prog"><div class="ct-prog-fill" style="width:'+(progPct||0)+'%;background:'+(progColor||borderColor)+';"></div></div>'
+      +'</div>';
+}
+
+function renderHome(){
+  var total=S.terms.length+CANDLES.length;
+  var learned=learnedCount();
+  document.getElementById('home-sub').textContent=total+' terms & patterns · '+learned+' learned';
+
+  // Build tiles bucketed by section
+  var bucket = {mindset:[], knowledge:[], toolkit:[], journal:[]};
+
+  // Sheet categories
+  S.cats.forEach(function(cat,i){
+    var col=CC[i%CC.length];
+    var isCandle=cat.name_en==='Candlestick Patterns';
+    var cnt=isCandle?CANDLES.length:S.terms.filter(function(t){return t.category===cat.name_en;}).length;
+    var lrn=isCandle
+      ?CANDLES.filter(function(p){return S.progress['cg_'+p.id]==='learned';}).length
+      :S.terms.filter(function(t){return t.category===cat.name_en&&S.progress[t.id]==='learned';}).length;
+    var pct=cnt>0?Math.round(lrn/cnt*100):0;
+    var sec = SHEET_CAT_SECTION[cat.name_en] || 'knowledge';
+    bucket[sec].push(tileHTML(
+      "openGallery('"+escQ(cat.name_en)+"')", col.prog, col.bg, (cat.icon||'ti-folder'), col.icon,
+      cat.name_en, cat.name_mm, cnt+' '+(isCandle?'patterns':'terms'), pct, col.prog
+    ));
+  });
+
+  // Static feature tiles — assigned to their section
+  bucket.knowledge.push(tileHTML('openIndicators()','#185FA5','#E6F1FB','ti-chart-line','#185FA5','Technical Indicators','テクニカル指標','11 indicators'));
+  bucket.knowledge.push(tileHTML('openChartPatterns()','#3B6D11','#EAF3DE','ti-trending-up','#3B6D11','Chart Patterns','チャートパターン','14 patterns'));
+  bucket.knowledge.push(tileHTML('openRatioCalc()','#7F77DD','#EEEDFE','ti-calculator','#534AB7','Ratio Calculator','ROE・ROA・PER・PBR','8 ratios + 割安/割高'));
+
+  bucket.mindset.push(tileHTML('openPrinciples()','#D4A843','#FAEEDA','ti-award','#854F0B','Investing Principles','投資の原則','12 principles'));
+  bucket.mindset.push(tileHTML('openSwingRules()','#c24b4b','#FCEBEB','ti-shield-check','#c24b4b','Swing Trading Rules','15 rules · Requirements · Mental traps','15 rules'));
+
+  bucket.toolkit.push(tileHTML('openSectorMap()','#993C1D','#FAECE7','ti-map-2','#993C1D','TSE Sector Map','東証セクターマップ','14 sectors · 4 phases'));
+
+  bucket.journal.push(tileHTML('openCalculator()','#534AB7','#EEEDFE','ti-math-function','#534AB7','Trade Calculator','ポジションサイズ・リスクリワード','Position size · R/R'));
+  bucket.journal.push(tileHTML('openReflection()','#993C1D','#FAECE7','ti-notebook','#993C1D','Trade Reflection','取引の振り返り','Learn from every trade'));
+
+  // Render grouped by section, in fixed order
+  var html='';
+  SECTIONS.forEach(function(sec){
+    var tiles = bucket[sec.id];
+    if(!tiles.length) return;
+    html+='<div class="section-block">'
+        +'<div class="section-head">'
+        +'<span class="section-dot" style="background:'+sec.color+';"></span>'
+        +'<span class="section-label">'+sec.label+'</span>'
+        +'<span class="section-mm">'+sec.mm+'</span>'
+        +'</div>'
+        +'<div class="cat-grid">'+tiles.join('')+'</div>'
+        +'</div>';
+  });
+
+  document.getElementById('cat-grid-wrap').innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+//  GALLERY — unified for all categories
+// ════════════════════════════════════════════════
+function openGallery(catName){
+  // Candle Patterns opens dedicated Candles page
+  if(catName==='Candlestick Patterns'){
+    var url = RATIOS_URL.replace('?page=ratios','?page=candles');
+    window.open(url, '_blank');
+    return;
+  }
+  S.currentCat=catName;
+  S.isCandleCat=false;
+  S.openItemId=null;
+  S.activeFilter='all';
+
+  if(S.isCandleCat){
+    S.allItems=CANDLES;
+  } else {
+    S.allItems=S.terms.filter(function(t){return t.category===catName;});
+  }
+  S.filteredItems=S.allItems.slice();
+
+  document.getElementById('tb-title').textContent=catName;
+  document.getElementById('tb-search').classList.toggle('show',!S.isCandleCat);
+  document.getElementById('search-input').value='';
+
+  buildGalleryFilters();
+  renderGallery();
+  gotoPage('gallery');
+}
+
+function buildGalleryFilters(){
+  var el=document.getElementById('gallery-filter');
+  if(S.isCandleCat){
+    // candle-specific filters
+    var filters=[
+      {label:'All',val:'all'},
+      {label:'Bullish',val:'bullish'},
+      {label:'Bearish',val:'bearish'},
+      {label:'Neutral',val:'neutral'},
+      {label:'Reversal',val:'reversal'},
+      {label:'Continuation',val:'continuation'},
+    ];
+    el.innerHTML=filters.map(function(f){
+      return '<button class="gf-btn'+(f.val==='all'?' gf-active':'')+'" onclick="setFilter(\''+f.val+'\',this)">'+f.label+'</button>';
+    }).join('');
+  } else {
+    // term filters: difficulty
+    var diffs=['all','beginner','intermediate','advanced'];
+    el.innerHTML=diffs.map(function(d){
+      return '<button class="gf-btn'+(d==='all'?' gf-active':'')+'" onclick="setFilter(\''+d+'\',this)">'+cap(d)+'</button>';
+    }).join('');
+  }
+}
+
+function setFilter(val,btn){
+  S.activeFilter=val;
+  S.openItemId=null;
+  document.querySelectorAll('.gf-btn').forEach(function(b){b.classList.remove('gf-active');});
+  if(btn) btn.classList.add('gf-active');
+
+  if(S.isCandleCat){
+    S.filteredItems=CANDLES.filter(function(p){
+      if(val==='all') return true;
+      return p.type===val||p.signal===val;
+    });
+  } else {
+    S.filteredItems=S.allItems.filter(function(t){
+      return val==='all'||t.difficulty===val;
+    });
+  }
+  renderGallery();
+}
+
+function doSearch(){
+  var q=document.getElementById('search-input').value.toLowerCase();
+  S.openItemId=null;
+  if(!q){S.filteredItems=S.allItems.slice();renderGallery();return;}
+  S.filteredItems=S.allItems.filter(function(t){
+    return (t.term_en||t.en||'').toLowerCase().includes(q)
+        ||(t.term_jp||t.jp||'').toLowerCase().includes(q)
+        ||(t.explanation_mm||t.exp_mm||'').toLowerCase().includes(q)
+        ||(t.explanation_en||t.exp_en||'').toLowerCase().includes(q);
+  });
+  renderGallery();
+}
+
+function renderGallery(){
+  var col=catColor(S.currentCat);
+
+  if(S.isCandleCat){
+    renderCandleGallery(col);
+  } else {
+    renderTermGallery(col);
+  }
+}
+
+// ── Term gallery ──
+function renderTermGallery(col){
+  var items=S.filteredItems;
+  if(!items.length){
+    document.getElementById('gallery-body').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">No terms found.</div>';
+    return;
+  }
+  var html='<div class="items-grid">';
+  items.forEach(function(t,i){
+    var isL=S.progress[t.id]==='learned';
+    var selC=col.prog;
+    var sel=S.openItemId===t.id?'selected':'';
+    var dc2=DC[t.difficulty]||DC.beginner;
+    html+='<div class="item-card '+(sel)+'" id="ic-'+t.id+'" onclick="openItemDrawer(\''+escQ(t.id)+'\',\'term\','+i+')" style="--sel-c:'+selC+';">'
+        +'<div class="item-visual term-vis" style="background:'+col.bg+';">'
+        +  '<i class="ti '+(getCatIcon(S.currentCat)||'ti-book')+'" style="font-size:28px;color:'+col.prog+';" aria-hidden="true"></i>'
+        +'</div>'
+        +'<div class="item-footer">'
+        +  '<div class="item-jp">'+(t.term_jp||'')+'</div>'
+        +  '<div class="item-en">'+(t.term_en||'')+'</div>'
+        +  '<div class="item-mm">'+(t.explanation_mm||'').substring(0,40)+'…</div>'
+        +  '<div class="item-lrn '+(isL?'show':'')+'" >✓ learned</div>'
+        +'</div>'
+        +'</div>';
+  });
+  html+='</div>';
+  // drawer placeholder at end
+  html+='<div class="item-drawer" id="term-drawer"></div>';
+  document.getElementById('gallery-body').innerHTML=html;
+}
+
+// ── Candle gallery ──
+function renderCandleGallery(col){
+  var items=S.filteredItems;
+  var groups=[
+    {label:'Single candle',items:items.filter(function(p){return p.candles===1;})},
+    {label:'Two candles',  items:items.filter(function(p){return p.candles===2;})},
+    {label:'Three candles',items:items.filter(function(p){return p.candles>=3;})},
+  ].filter(function(g){return g.items.length;});
+
+  var html='';
+  groups.forEach(function(g,gi){
+    html+='<div class="sec-lbl">'+g.label+' ('+g.items.length+')</div>';
+    html+='<div class="item-drawer" id="cd-'+gi+'"></div>';
+    html+='<div class="items-grid">';
+    g.items.forEach(function(p){
+      var isL=S.progress['cg_'+p.id]==='learned';
+      var tc=p.type==='bullish'?'bull-card':p.type==='bearish'?'bear-card':'neutral-card';
+      var selC=p.type==='bullish'?'#3B6D11':p.type==='bearish'?'#A32D2D':'#854F0B';
+      var sel=S.openItemId===p.id?'selected':'';
+      html+='<div class="item-card '+tc+' '+sel+'" id="ic-'+p.id+'" onclick="openItemDrawer(\''+p.id+'\',\'candle\','+gi+')" style="--sel-c:'+selC+';">'
+          +'<div class="item-visual">'+p.svg(0.82)+'</div>'
+          +'<div class="item-footer">'
+          +  '<div class="item-en">'+p.en+'</div>'
+          +  '<div class="item-jp">'+p.jp+'</div>'
+          +  '<div class="item-lrn '+(isL?'show':'')+'" >✓ learned</div>'
+          +'</div>'
+          +'</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('gallery-body').innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+//  UNIFIED DRAWER
+// ════════════════════════════════════════════════
+function openItemDrawer(id,kind,groupIdx){
+  // toggle
+  if(S.openItemId===id){
+    S.openItemId=null;
+    closeAllDrawers();
+    document.querySelectorAll('.item-card').forEach(function(c){c.classList.remove('selected');});
+    return;
+  }
+  S.openItemId=id;
+  closeAllDrawers();
+  document.querySelectorAll('.item-card').forEach(function(c){c.classList.remove('selected');});
+  var card=document.getElementById('ic-'+id);
+  if(card) card.classList.add('selected');
+
+  if(kind==='candle'){
+    var p=CANDLES.find(function(x){return x.id===id;});
+    if(!p) return;
+    var drawer=document.getElementById('cd-'+groupIdx);
+    if(!drawer) return;
+    drawer.innerHTML=buildCandleDrawer(p);
+    drawer.className='item-drawer open';
+    drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else {
+    var t=S.filteredItems.find(function(x){return x.id===id;});
+    if(!t) return;
+    var drawer2=document.getElementById('term-drawer');
+    if(!drawer2) return;
+    drawer2.innerHTML=buildTermDrawer(t);
+    drawer2.className='item-drawer open';
+    drawer2.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+
+function closeAllDrawers(){
+  document.querySelectorAll('.item-drawer').forEach(function(d){d.className='item-drawer';d.innerHTML='';});
+}
+
+function closeDrawer(e){
+  e.stopPropagation();
+  S.openItemId=null;
+  closeAllDrawers();
+  document.querySelectorAll('.item-card').forEach(function(c){c.classList.remove('selected');});
+}
+
+// ── Build candle drawer HTML ──
+function buildCandleDrawer(p){
+  var isL=S.progress['cg_'+p.id]==='learned';
+  var signCol=p.type==='bullish'?'#3B6D11':p.type==='bearish'?'#A32D2D':'#854F0B';
+  var pbStyle=p.type==='bullish'?'background:#EAF3DE;color:#27500A':p.type==='bearish'?'background:#FCEBEB;color:#791F1F':'background:#FAEEDA;color:#633806';
+  var tipHtml='';
+  if(p.tip_en||p.tip_mm){
+    if(p.tip_en) tipHtml+='<div class="d-tip">'+p.tip_en+'</div>';
+    if(p.tip_mm) tipHtml+='<div class="d-tip-mm">'+p.tip_mm+'</div>';
+  }
+  return '<div class="drawer-vis">'
+    +  p.svg(1.35)
+    +  '<div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">'+p.jp+'</div>'
+    +'</div>'
+    +'<div class="drawer-body">'
+    +  '<button class="drawer-close" onclick="closeDrawer(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+    +  '<div class="d-jp">'+p.jp+'</div>'
+    +  '<div class="d-en" style="color:'+signCol+'">'+p.en+'</div>'
+    +  '<div class="d-mm-name">'+p.mm+'</div>'
+    +  '<div class="d-badges"><span class="dbadge" style="'+pbStyle+'">'+p.type+'</span>'
+    +    '<span class="dbadge" style="background:var(--bg);color:var(--text3);">'+p.signal+'</span>'
+    +    '<span class="dbadge" style="background:var(--bg);color:var(--text3);">'+p.diff+'</span>'
+    +  '</div>'
+    +  '<div class="d-lbl">Explanation</div>'
+    +  '<div class="d-exp">'+p.exp_en+'</div>'
+    +  '<div class="d-exp-mm">'+p.exp_mm+'</div>'
+    +  (tipHtml?'<div class="d-lbl">Tip</div>'+tipHtml:'')
+    +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleCandleLearned(event,\''+p.id+'\')">'
+    +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+    +    (isL?'Learned':'Mark as learned')
+    +  '</button>'
+    +'</div>';
+}
+
+// ── Build term drawer HTML ──
+function buildTermDrawer(t){
+  var col=catColor(S.currentCat);
+  var isL=S.progress[t.id]==='learned';
+  var diff=t.difficulty||'beginner';
+  var tags=(t.tags||[]);
+  var tipHtml='';
+  if(t.tip_en||t.tip_mm){
+    if(t.tip_en) tipHtml+='<div class="d-tip">'+t.tip_en+'</div>';
+    if(t.tip_mm) tipHtml+='<div class="d-tip-mm">'+t.tip_mm+'</div>';
+  }
+  var tagsHtml=tags.length?'<div class="d-tags">'+tags.map(function(tg){return'<span class="d-tag">'+tg+'</span>';}).join('')+'</div>':'';
+  return '<div class="drawer-vis term-dvis">'
+    +  '<i class="ti '+(getCatIcon(S.currentCat)||'ti-book')+'" style="font-size:52px;color:'+col.prog+';" aria-hidden="true"></i>'
+    +  '<div style="font-size:12px;font-weight:600;color:'+col.text+';margin-top:10px;text-align:center;">'+( t.term_en||'')+'</div>'
+    +  '<div style="font-size:11px;color:var(--text3);margin-top:3px;text-align:center;">'+( t.term_jp||'')+'</div>'
+    +'</div>'
+    +'<div class="drawer-body">'
+    +  '<button class="drawer-close" onclick="closeDrawer(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+    +  '<div class="d-jp">'+( t.term_jp||'')+'</div>'
+    +  '<div class="d-en">'+( t.term_en||'')+'</div>'
+    +  '<div class="d-badges">'
+    +    '<span class="dbadge" style="background:'+col.bg+';color:'+col.text+';">'+( t.category||'')+'</span>'
+    +    '<span class="dbadge" style="background:'+(DB[diff]||'#eee')+';color:'+(DC[diff]||'#555')+';">'+diff+'</span>'
+    +  '</div>'
+    +  '<div class="d-lbl">Explanation</div>'
+    +  '<div class="d-exp">'+( t.explanation_en||'')+'</div>'
+    +  (t.explanation_mm?'<div class="d-exp-mm">'+t.explanation_mm+'</div>':'')
+    +  (tipHtml?'<div class="d-lbl">Tip</div>'+tipHtml:'')
+    +  tagsHtml
+    +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleTermLearned(event,\''+t.id+'\')">'
+    +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+    +    (isL?'Learned':'Mark as learned')
+    +  '</button>'
+    +'</div>';
+}
+
+// ════════════════════════════════════════════════
+//  MARK LEARNED
+// ════════════════════════════════════════════════
+function toggleCandleLearned(e,id){
+  e.stopPropagation();
+  var key='cg_'+id;
+  S.progress[key]=S.progress[key]==='learned'?'':'learned';
+  if(!S.progress[key]) delete S.progress[key];
+  save();
+  var prev=S.openItemId;
+  var p=CANDLES.find(function(x){return x.id===id;});
+  renderGallery();
+  if(prev&&p){
+    var gi=getGroupIdx(p);
+    if(gi>=0) setTimeout(function(){openItemDrawer(id,'candle',gi);},40);
+  }
+  renderHome();
+}
+
+function toggleTermLearned(e,id){
+  e.stopPropagation();
+  S.progress[id]=S.progress[id]==='learned'?'':'learned';
+  if(!S.progress[id]) delete S.progress[id];
+  save();
+  var prev=S.openItemId;
+  renderGallery();
+  if(prev) setTimeout(function(){openItemDrawer(id,'term',0);},40);
+  renderHome();
+  google.script.run.saveProgress(S.userId,id,S.progress[id]||'');
+}
+
+function getGroupIdx(p){
+  var fc=S.filteredItems;
+  var g0=fc.filter(function(x){return x.candles===1;});
+  var g1=fc.filter(function(x){return x.candles===2;});
+  var g2=fc.filter(function(x){return x.candles>=3;});
+  var groups=[g0,g1,g2].filter(function(g){return g.length;});
+  return groups.findIndex(function(g){return g.find(function(x){return x.id===p.id;});});
+}
+
+function save(){
+  localStorage.setItem('slp_prog_'+S.userId,JSON.stringify(S.progress));
+  updateProg();
+}
+
+// ════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════
+function gotoPage(p){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  S.pageStack.push(p);
+  document.getElementById('tb-back').classList.toggle('show',p!=='home');
+  if(p==='home'){
+    document.getElementById('tb-title').textContent='Stock Learning Portal';
+    document.getElementById('tb-search').classList.remove('show');
+  }
+}
+
+function goBack(){
+  S.pageStack.pop();
+  var prev=S.pageStack[S.pageStack.length-1]||'home';
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('page-'+prev).classList.add('active');
+  document.getElementById('tb-back').classList.toggle('show',prev!=='home');
+  if(prev==='home'){
+    document.getElementById('tb-title').textContent='Stock Learning Portal';
+    document.getElementById('tb-search').classList.remove('show');
+    renderHome();
+  }
+}
+
+// ════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════
+function learnedCount(){return Object.keys(S.progress).filter(function(k){return S.progress[k]==='learned';}).length;}
+function updateProg(){
+  var total=S.terms.length+CANDLES.length;
+  document.getElementById('tb-prog').textContent=learnedCount()+'/'+total+' learned';
+}
+function getCatIcon(name){
+  var cat=S.cats.find(function(c){return c.name_en===name;});
+  return cat?cat.icon:'ti-book';
+}
+function escQ(s){return(s||'').replace(/'/g,"\\'");}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+
+// ════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════
+
+
+// ════════════════════════════════════════════════
+// ════════════════════════════════════════════════
+//  RATIO CALCULATOR — opens as separate page
+// ════════════════════════════════════════════════
+function openCalculator(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=calculator');
+  window.open(url, '_blank');
+}
+
+function openReflection(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=reflection');
+  window.open(url, '_blank');
+}
+
+function openSectorMap(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=sectors');
+  window.open(url, '_blank');
+}
+
+function openChartPatterns(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=chartpatterns');
+  window.open(url, '_blank');
+}
+
+function openIndicators(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=indicators');
+  window.open(url, '_blank');
+}
+
+function openSwingRules(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=swingrules');
+  window.open(url, '_blank');
+}
+
+function openPrinciples(){
+  var url = RATIOS_URL.replace('?page=ratios','?page=principles');
+  window.open(url, '_blank');
+}
+
+function openRatioCalc(){
+  window.open(RATIOS_URL, '_blank');
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>

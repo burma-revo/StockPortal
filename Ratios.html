@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratio Calculator — Stock Learning Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;transition:background .15s;display:flex;align-items:center;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+
+/* ── Layout ── */
+.wrap{max-width:860px;margin:0 auto;padding:18px 18px 40px;}
+.note{background:var(--a-bg);border:1px solid rgba(133,79,11,.15);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--a-t);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;line-height:1.6;}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+
+/* ── Input panel ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.ph{padding:12px 16px;border-bottom:1px solid var(--border);}
+.pt{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.ps{font-size:11px;color:var(--text3);margin-top:2px;}
+.pb{padding:14px 16px;}
+.ig{margin-bottom:12px;}
+.ig:last-child{margin-bottom:0;}
+.ig-lbl{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.ig-hint{font-size:10px;color:var(--text3);font-weight:400;}
+.ig-row{display:flex;align-items:center;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--bg);transition:border-color .2s;}
+.ig-row:focus-within{border-color:rgba(0,0,0,.2);background:var(--surface);}
+.ig-pre{padding:0 9px;font-size:12px;color:var(--text3);border-right:1px solid var(--border);height:34px;display:flex;align-items:center;background:var(--surface);flex-shrink:0;}
+.ig-suf{padding:0 9px;font-size:11px;color:var(--text3);border-left:1px solid var(--border);height:34px;display:flex;align-items:center;background:var(--surface);flex-shrink:0;}
+.ig-in{flex:1;border:none;background:transparent;padding:0 9px;font-size:14px;color:var(--text);outline:none;height:34px;width:0;}
+.ig-in::placeholder{color:var(--text3);}
+.ig-note{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.55;padding-left:1px;}
+.ig-note{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5;padding-left:2px;}
+.sdiv{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:10px 0 6px;border-top:1px solid var(--border);margin-top:14px;}
+.sdiv:first-child{border-top:none;margin-top:0;padding-top:0;}
+.reset-btn{width:100%;padding:8px;border-radius:7px;border:1px solid var(--border);background:none;font-size:12px;color:var(--text3);cursor:pointer;margin-top:14px;transition:background .15s;}
+.reset-btn:hover{background:var(--bg);}
+
+/* ── Results ── */
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;}
+.rc:last-child{margin-bottom:0;}
+.rc-head{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.rc-head:hover{background:var(--bg);}
+.rc-left{flex:1;}
+.rc-en{font-size:13px;font-weight:600;}
+.rc-jp{font-size:10px;color:var(--text3);margin-top:1px;}
+.rc-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;min-width:72px;text-align:right;}
+.rc-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;flex-shrink:0;}
+.rc-vd{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;flex-shrink:0;}
+.rc-chev{font-size:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;}
+.rc-chev.open{transform:rotate(180deg);}
+.rc-body{display:none;padding:12px 14px;background:var(--bg);}
+.rc-body.open{display:block;}
+.rc-bar{height:5px;background:rgba(0,0,0,.07);border-radius:3px;margin-bottom:10px;overflow:hidden;}
+.rc-bar-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.22,1,.36,1);}
+.rc-bench{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px;}
+.bi{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;text-align:center;}
+.bi-v{font-size:12px;font-weight:600;}
+.bi-l{font-size:10px;color:var(--text3);margin-top:1px;}
+.watch-box{margin-bottom:8px;border-left:3px solid;padding:9px 11px;border-radius:0 6px 6px 0;}
+.watch-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.watch-en{font-size:12px;line-height:1.65;}
+.watch-mm{font-size:11px;line-height:1.6;margin-top:5px;font-style:italic;}
+.rc-exp{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:6px;}
+.rc-mm{font-size:11px;color:var(--text3);line-height:1.6;font-style:italic;background:var(--surface);border-radius:6px;padding:7px 10px;}
+.empty{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;color:var(--text3);}
+.empty i{font-size:32px;display:block;margin-bottom:8px;}
+.empty p{font-size:12px;}
+.summary{border:1px solid rgba(0,0,0,.06);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;}
+.summary-label{font-size:16px;font-weight:700;margin-bottom:5px;}
+.summary-text{font-size:12px;line-height:1.65;margin-bottom:4px;}
+.summary-mm{font-size:11px;line-height:1.6;font-style:italic;}
+
+@media(max-width:620px){
+  .layout{grid-template-columns:1fr;}
+  .wrap{padding:14px 14px 40px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back">
+    <i class="ti ti-arrow-left"></i>
+  </button>
+  <div>
+    <div class="tb-title">Ratio Calculator</div>
+    <div class="tb-sub">ဘဏ္ဍာရေး Ratio တွက်ချက်ကိရိယာ</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="note">
+    <i class="ti ti-info-circle" style="font-size:15px;flex-shrink:0;" aria-hidden="true"></i>
+    <span>決算短信の数字をそのまま入力してください。<strong>金額はすべて百万円（M）単位</strong>で入力。株価と配当は円のまま。株式数は千株単位。</span>
+  </div>
+
+  <div class="layout">
+    <!-- INPUT -->
+    <div class="panel">
+      <div class="ph">
+        <div class="pt"><i class="ti ti-report" style="font-size:16px;color:#185FA5;" aria-hidden="true"></i> Input figures</div>
+        <div class="ps">損益計算書 · 貸借対照表 · 株価</div>
+      </div>
+      <div class="pb">
+        <div class="sdiv">Income statement 損益計算書</div>
+        <div class="ig">
+          <div class="ig-lbl">Net profit 純利益<span class="ig-hint">損益計算書 → 当期純利益</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="np" type="number" placeholder="百万円 e.g. 4,200" oninput="calc()" step="any"><span class="ig-suf">百万円</span></div>
+          <div class="ig-note">決算短信の数字をそのまま入力。¥4,200百万円と書いてある → 4200と入力</div>
+        </div>
+        <div class="ig">
+          <div class="ig-lbl">Revenue 売上高<span class="ig-hint">損益計算書 → 売上高</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="rev" type="number" placeholder="百万円 e.g. 52,000" oninput="calc()" step="any"><span class="ig-suf">百万円</span></div>
+        </div>
+        <div class="ig">
+          <div class="ig-lbl">Annual dividend per share 年間配当<span class="ig-hint">１株当たり配当金（合計）</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="dps" type="number" placeholder="円 e.g. 60" oninput="calc()" step="any"><span class="ig-suf">円/株</span></div>
+          <div class="ig-note">中間配当＋期末配当の合計。例：中間¥30＋期末¥30 → 60と入力</div>
+        </div>
+
+        <div class="sdiv">Balance sheet 貸借対照表</div>
+        <div class="ig">
+          <div class="ig-lbl">Total assets 資産合計<span class="ig-hint">貸借対照表 → 資産合計（左側の一番下）</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="ta" type="number" placeholder="百万円 e.g. 85,000" oninput="calc()" step="any"><span class="ig-suf">百万円</span></div>
+          <div class="ig-note">貸借対照表の左列（資産の部）の一番下の合計欄</div>
+        </div>
+        <div class="ig">
+          <div class="ig-lbl">Shareholders equity 純資産合計<span class="ig-hint">貸借対照表 → 純資産合計（右側の下段）</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="eq" type="number" placeholder="百万円 e.g. 24,000" oninput="calc()" step="any"><span class="ig-suf">百万円</span></div>
+          <div class="ig-note">右列の下段「純資産の部」→ 純資産合計。負債合計とは別の行</div>
+        </div>
+        <div class="ig">
+          <div class="ig-lbl">Shares outstanding 発行済株式数<span class="ig-hint">表紙ページ or 株式数の欄</span></div>
+          <div class="ig-row"><input class="ig-in" id="sh" type="number" placeholder="千株 e.g. 120,000" oninput="calc()" step="any"><span class="ig-suf">千株</span></div>
+          <div class="ig-note">千株単位で入力。120,000千株と書いてある → 120000と入力。120百万株 → 120000</div>
+        </div>
+
+        <div class="sdiv">Market data 株価情報</div>
+        <div class="ig">
+          <div class="ig-lbl">Current share price 株価<span class="ig-hint">今日の終値 or 現在値（円）</span></div>
+          <div class="ig-row"><span class="ig-pre">¥</span><input class="ig-in" id="pr" type="number" placeholder="円 e.g. 3,850" oninput="calc()" step="any"><span class="ig-suf">円/株</span></div>
+          <div class="ig-note">株価をそのまま円で入力。¥3,850 → 3850</div>
+        </div>
+
+        <button class="reset-btn" onclick="reset()"><i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px;" aria-hidden="true"></i> Clear all</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results">
+      <div class="empty" id="empty-state">
+        <i class="ti ti-calculator" aria-hidden="true"></i>
+        <p>Enter at least one figure to see ratios calculated.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var OPEN = null;
+
+// ── Color map ─────────────────────────────────────────────────
+var C = {
+  g:{bg:'#EAF3DE',text:'#27500A',bar:'#3B6D11',lbl:'Healthy'},
+  a:{bg:'#FAEEDA',text:'#633806',bar:'#854F0B',lbl:'Watch'},
+  r:{bg:'#FCEBEB',text:'#791F1F',bar:'#A32D2D',lbl:'Concern'},
+  n:{bg:'#F1EFE8',text:'#444',   bar:'#ccc',   lbl:'—'}
+};
+
+// ── Ratio definitions ─────────────────────────────────────────
+var RATIOS = [
+  {id:'roe',en:'ROE',jp:'自己資本利益率',unit:'%',dec:1,barMax:30,
+   exp_en:'Profit generated per ¥100 of shareholders equity. Most-watched ratio by institutional investors in Japan.',
+   exp_mm:'ရှယ်ယာရှင်များ စိုက်ထားသော ငွေ ¥100 လျှင် ကုမ္ပဏီ ဘယ်လောက် အမြတ်ရှာပေးနိုင်သည်ကို တိုင်းတာသည်။ ဂျပန်တွင် Institutional Investor များ အဓိကကြည့်သော Ratio ဖြစ်သည်။',
+   bench:[{l:'Below 8%',s:'r',n:'Weak'},{l:'8–15%',s:'a',n:'Acceptable'},{l:'Above 15%',s:'g',n:'Strong'}],
+   thr:{g:15,a:8},
+   calc:function(d){return d.np&&d.eq?(d.np/d.eq)*100:null;}},
+  {id:'roa',en:'ROA',jp:'総資産利益率',unit:'%',dec:1,barMax:15,
+   exp_en:'How efficiently total assets generate profit. Broader than ROE because it includes debt.',
+   exp_mm:'ကုမ္ပဏီ ပိုင်ဆိုင်သမျှ Asset အားလုံးကို အသုံးချပြီး အမြတ်ဘယ်လောက် ထိရောက်အောင် ရှာနိုင်လဲ ဆိုတာ တိုင်းတာသည်။',
+   bench:[{l:'Below 3%',s:'r',n:'Weak'},{l:'3–5%',s:'a',n:'Acceptable'},{l:'Above 5%',s:'g',n:'Strong'}],
+   thr:{g:5,a:3},
+   calc:function(d){return d.np&&d.ta?(d.np/d.ta)*100:null;}},
+  {id:'per',en:'PER',jp:'株価収益率',unit:'×',dec:1,barMax:50,
+   exp_en:'Years of current earnings you pay at today\'s share price. Lower = potentially undervalued; very high = growth priced in.',
+   exp_mm:'လက်ရှိ Earnings ဖြင့် ဈေးနှုန်းကို ဘယ်နှစ်ဆ ပေးဝယ်နေသည်ကို ပြသည်။ PER နိမ့်ပါက Undervalued ဖြစ်နိုင်သည်။',
+   bench:[{l:'Below 10×',s:'g',n:'Cheap'},{l:'10–25×',s:'a',n:'Fair'},{l:'Above 25×',s:'r',n:'Pricey'}],
+   thr:{g:10,a:25,inv:true},
+   calc:function(d){var e=eps(d);return d.pr&&e&&e>0?d.pr/e:null;}},
+  {id:'pbr',en:'PBR',jp:'株価純資産倍率',unit:'×',dec:2,barMax:6,
+   exp_en:'Share price vs book value per share. Below 1× means the market values the company below net asset value — common value signal in Japan.',
+   exp_mm:'ဈေးနှုန်းကို Book Value Per Share ဖြင့် ယှဉ်ပြသည်။ PBR 1× အောက် = ဈေးကွက်က ကုမ္ပဏီကို Asset တန်ဖိုးအောက် ထားနေသည် — ဂျပန်တွင် Value Signal ဖြစ်တတ်သည်။',
+   bench:[{l:'Below 1×',s:'g',n:'Below book'},{l:'1–2×',s:'a',n:'Fair'},{l:'Above 3×',s:'r',n:'Premium'}],
+   thr:{g:1,a:3,inv:true},
+   calc:function(d){var b=bvps(d);return d.pr&&b&&b>0?d.pr/b:null;}},
+  {id:'div',en:'Dividend Yield',jp:'配当利回り',unit:'%',dec:2,barMax:10,
+   exp_en:'Annual dividend as a % of current share price. Above 6–7% can be a trap — verify the dividend is sustainable.',
+   exp_mm:'現在の株価に対する年間配当の割合。6–7%超は持続可能性を確認すること。',
+   bench:[{l:'Below 1%',s:'r',n:'Low'},{l:'1–4%',s:'g',n:'Healthy'},{l:'Above 6%',s:'a',n:'Verify'}],
+   thr:{divC:true},
+   calc:function(d){return d.dps&&d.pr?(d.dps/d.pr)*100:null;}},
+  {id:'npm',en:'Net Profit Margin',jp:'純利益率',unit:'%',dec:1,barMax:25,
+   exp_en:'What % of revenue becomes profit after all costs. Compare within the same industry.',
+   exp_mm:'Revenue ၏ ဘယ်ရာခိုင်နှုန်းသည် ကုန်ကျစရိတ်အားလုံးပြီးနောက် စစ်မှန်သော အမြတ်ဖြစ်သည်ကို ပြသည်။ Industry တူတူနှင့်သာ ယှဉ်ပါ။',
+   bench:[{l:'Below 3%',s:'r',n:'Thin'},{l:'3–10%',s:'a',n:'Moderate'},{l:'Above 10%',s:'g',n:'Strong'}],
+   thr:{g:10,a:3},
+   calc:function(d){return d.np&&d.rev?(d.np/d.rev)*100:null;}},
+  {id:'eps',en:'EPS',jp:'１株当たり利益',unit:'¥',dec:0,pre:true,barMax:500,
+   exp_en:'Total net profit divided by shares outstanding. Negative EPS means the company is currently loss-making.',
+   exp_mm:'ရှယ်ယာတစ်စုချင်းစီ မည်မျှ အမြတ်ရှာပေးနိုင်သည်ကို ပြသည်။ EPS အနှုတ်ပြပါက ကုမ္ပဏီ လက်ရှိ အရှုံးပြနေကြောင်း ဆိုလိုသည်။',
+   bench:[{l:'Negative',s:'r',n:'Loss'},{l:'Low positive',s:'a',n:'Breakeven'},{l:'Growing',s:'g',n:'Profitable'}],
+   thr:{epsC:true},
+   calc:function(d){return eps(d);}},
+  {id:'bvps',en:'Book Value / Share',jp:'１株当たり純資産',unit:'¥',dec:0,pre:true,barMax:5000,
+   exp_en:'Net assets divided by shares. The denominator for PBR — compare with share price.',
+   exp_mm:'純資産を発行済株式数で割ったもの。PBRを計算するための分母。株価と比較する。',
+   bench:[{l:'Negative',s:'r',n:'Neg. equity'},{l:'Below price',s:'a',n:'PBR>1'},{l:'Above price',s:'g',n:'PBR<1'}],
+   thr:{bvpsC:true},
+   calc:function(d){return bvps(d);}},
+];
+
+// ── Helpers ───────────────────────────────────────────────────
+function getData(){
+  var ids=['np','rev','dps','ta','eq','sh','pr'];
+  var d={};
+  ids.forEach(function(k){var v=parseFloat(document.getElementById(k).value);d[k]=isNaN(v)?null:v;});
+  return d;
+}
+function eps(d){return d.np&&d.sh?(d.np*1e6)/(d.sh*1e3):null;}
+function bvps(d){return d.eq&&d.sh?(d.eq*1e6)/(d.sh*1e3):null;}
+
+function status(r,val,d){
+  if(val===null)return'n';
+  var t=r.thr;
+  if(t.divC) return val<1?'r':val<=4?'g':val<=6?'a':'a';
+  if(t.epsC) return val>0?'g':val===0?'a':'r';
+  if(t.bvpsC) return val<0?'r':(d.pr&&val>d.pr?'g':'a');
+  if(t.inv)  return val<=t.g?'g':val<=t.a?'a':'r';
+  return val>=t.g?'g':val>=t.a?'a':'r';
+}
+
+function fmt(r,val){
+  if(val===null)return'—';
+  var neg=val<0?'-':'',v=Math.abs(val);
+  var s=r.dec===0?Math.round(v).toLocaleString():v.toFixed(r.dec);
+  return r.pre?neg+'¥'+s:neg+s+(r.unit||'');
+}
+
+// ── Verdict & What to watch ───────────────────────────────────
+function verdict(r,val,d){
+  if(val===null)return null;
+  var id=r.id,v=val;
+  if(id==='per'){
+    if(v<10)  return{lbl:'割安',tag:'g',w:'PER below 10× is cheap historically. Confirm with ROE and Net Margin before buying.',mm:'PER 10× အောက်သည် ရာသမိုင်းအရ ပေါသည်。ROE နှင့် Net Margin ကြည့်ပြီး ဝင်ဝယ်ပါ。'};
+    if(v<=15) return{lbl:'割安',tag:'g',w:'PER 10–15× is the Japan value sweet spot. If ROE > 10% and earnings growing, worth deeper research.',mm:'PER 10–15× သည် ဂျပန် Value Investor များ အကြိုက်ဆုံးဖြစ်သည်。ROE 10%+ ဖြစ်ပြီး Earnings တက်နေပါက ပိုဆန်းစစ်ရန် တန်ဖိုးရှိသည်。'};
+    if(v<=25) return{lbl:'適正',tag:'a',w:'Fairly priced. Focus on whether earnings are growing — flat PER with rising EPS means the stock drifts higher.',mm:'ဈေးတန်သည်。Earnings ကြီးထွားနေမနေ အဓိကကြည့်ပါ。'};
+    if(v<=40) return{lbl:'割高',tag:'r',w:'Paying a premium for future growth. Only justified if earnings grow 20%+ YoY. Can this growth be sustained?',mm:'PER 25× အထက်သည် မျှော်လင့်ချက်ဖြင့် Premium ပေးဝယ်နေကြောင်းဖြစ်သည်。Earnings 20%+ YoY ကြီးထွားနေမှသာ ကောင်းသည်。'};
+    return{lbl:'割高',tag:'r',w:'PER above 40× — priced for perfection. Any earnings miss will cause a sharp drop.',mm:'PER 40× အထက်သည် ပြည့်ဝသောအောင်မြင်မှုအတွက် ဈေးပေးနေကြောင်းဖြစ်သည်。Earnings မမျှော်ဆ ဆိုပါက ဈေး ပြင်းစွာ ကျနိုင်သည်。'};
+  }
+  if(id==='pbr'){
+    if(v<0.5) return{lbl:'割安 Deep',tag:'g',w:'Buying assets at half price. Common in Japanese small caps — verify assets are real and liquid.',mm:'Asset ကို တစ်ဝက်ဈေးဖြင့် ဝယ်နေကြောင်းဖြစ်သည်。Asset များ စစ်မှန်ပြီး ငွေဖြစ်လွယ်မလွယ် စစ်ဆေးပါ。'};
+    if(v<1)   return{lbl:'割安',tag:'g',w:'Classic value signal in Japan — market values company below net assets. Check WHY it is low, low ROE can keep PBR depressed.',mm:'ဂျပန်တွင် ဒေသပုံ Value Signal ဖြစ်သည်。ဘာကြောင့် နိမ့်နေသည်ကို စစ်ဆေးပါ — ROE နိမ့်ပါက ဆက်နိမ့်နေနိုင်သည်。'};
+    if(v<=2)  return{lbl:'適正',tag:'a',w:'Normal range for Japanese companies. Focus on ROE trend — rising ROE will pull PBR higher.',mm:'ဂျပန်ကုမ္ပဏီ အများစုအတွက် ပုံမှန်ဖြစ်သည်。ROE Trend ကြည့်ပါ — ROE တက်နေပါက PBR လိုက်တက်မည်。'};
+    if(v<=4)  return{lbl:'割高',tag:'r',w:'Significant premium over book. Only justified for high-ROE compounders consistently above 15%.',mm:'Book Value ထက် Premium များများပေးနေကြောင်းဖြစ်သည်。ROE 15%+ ကို ဆက်တိုက်ထိန်းနိုင်သောကုမ္ပဏီများမှသာ ကောင်းသည်。'};
+    return{lbl:'割高',tag:'r',w:'PBR above 4× is very rare in Japan outside software/platforms. Traditional business at 4×+ needs careful scrutiny.',mm:'PBR 4× အထက်သည် Software/Platform မှလွဲပြီး ဂျပန်တွင် ရှားသည်。ရိုးရာလုပ်ငန်းဆိုပါက အလွန်ဂရုတစိုက် စစ်ဆေးပါ。'};
+  }
+  if(id==='roe'){
+    if(v<0)   return{lbl:'Loss',tag:'r',w:'Negative ROE — destroying shareholder value. Avoid unless strong turnaround evidence.',mm:'Negative ROE — ကုမ္ပဏီသည် ရှယ်ယာရှင်တန်ဖိုးကို ဖျက်ဆီးနေကြောင်းဖြစ်သည်。Turnaround ဖြစ်မည်ဟု ခိုင်မာသောအချက်မရှိပါက ရှောင်ပါ。'};
+    if(v<5)   return{lbl:'ROE ညံ့',tag:'r',w:'Very little return on equity. Check if temporary (one-off costs) or structural (weak business model).',mm:'ROE 5% အောက် — ရှယ်ယာရှင်ငွေမှ အမြတ်အနည်းဆုံးဖြစ်သည်。တစ်ကြိမ်တည်း ကုန်ကျမှုဖြစ်မဖြစ် စစ်ဆေးပါ。'};
+    if(v<10)  return{lbl:'ROE ပျမ်းမျှ',tag:'a',w:'Japan market average is ~9–10%. Ask if management has a plan to improve capital efficiency.',mm:'ဂျပန် ပျမ်းမျှ 9–10% ဝန်းကျင်ဖြစ်သည်。ငွေကြေးထိရောက်မှုတိုးတက်ရန် Management Plan ရှိမရှိ မေးပါ。'};
+    if(v<15)  return{lbl:'ROE ကောင်း',tag:'g',w:'Above Japan market average. If PER is also reasonable this is worth holding long-term.',mm:'ROE 10–15% သည် ဂျပန်ဈေးကွက် ပျမ်းမျှထက် မြင့်သည်。PER လည်း သင့်တော်ပါက ရေရှည်ကိုင်ထားရန် တန်ဖိုးရှိသည်。'};
+    return{lbl:'ROE ထူးချွန်',tag:'g',w:'Exceptional for Japan. Buffett-style quality. Key question: is this ROE sustainable?',mm:'ROE 15%+ သည် ဂျပန်တွင် ထူးချွန်သည်。Buffett Style ကုမ္ပဏီဖြစ်သည်။ ဤ ROE ကို ဆက်ထိန်းနိုင်မနိုင် စစ်ဆေးပါ。'};
+  }
+  if(id==='roa'){
+    if(v<0)   return{lbl:'Loss',tag:'r',w:'Negative ROA — assets not generating profit.',mm:'Negative ROA — Asset များ အမြတ်မရှာပေးနိုင်ကြောင်းဖြစ်သည်。'};
+    if(v<3)   return{lbl:'ROA ညံ့',tag:'r',w:'Heavy debt or inefficient assets. Compare with industry — banks/real estate naturally have lower ROA.',mm:'ROA 3% အောက် — Debt များမြင့်မားခြင်း သို့မဟုတ် Asset မထိရောက်ဘဲ အသုံးပြုနေကြောင်် ညွှန်ပြသည်。ဘဏ်/ရီးယယ်စတိတ် ROA နိမ့်ပုံမှန်ဖြစ်သည်。'};
+    if(v<7)   return{lbl:'ROA ကောင်း',tag:'g',w:'Solid. Combined with healthy ROE shows the company manages both debt and equity efficiently.',mm:'ROA 3–7% သည် ကောင်းသည်。ROE နှင့် ပေါင်းကြည့်ပါ — ကုမ္ပဏီသည် Debt နှင့် Equity နှစ်ခုစလုံးကို ထိရောက်စွာ စီမံနိုင်ကြောင်် ပြသည်。'};
+    return{lbl:'ROA ထူးချွန်',tag:'g',w:'High returns from asset base. Common in asset-light businesses like software and consulting.',mm:'ROA 7%+ သည် ပြင်းသည်。Asset နည်းသောလုပ်ငန်းများ (Software၊ Consulting) တွင် အဖြစ်များသည်。'};
+  }
+  if(id==='div'){
+    if(v<1)   return{lbl:'Yield နည်း',tag:'r',w:'Below 1% — minimal income. Stock relies on price appreciation.',mm:'Yield 1% အောက် — Passive Income အနည်းဆုံးဖြစ်သည်。'};
+    if(v<=3)  return{lbl:'Yield ကောင်း',tag:'g',w:'Healthy range for Japanese dividend stocks. Track record of increases = quality income stock.',mm:'Yield 1–3% သည် ဂျပန် Dividend Stock တွင် ကောင်းသောအပိုင်းဖြစ်သည်。'};
+    if(v<=5)  return{lbl:'Yield မြင့်',tag:'g',w:'Attractive — but check payout ratio. Paying out 60–70%+ of earnings makes the dividend fragile if earnings dip.',mm:'Yield 3–5% ဆွဲဆောင်မှုရှိသည်。Payout Ratio စစ်ဆေးပါ — Earnings ၏ 60–70% ကျော် ပေးနေပါက Earnings ကျဆင်းချိန် ဖြတ်တောက်နိုင်သည်。'};
+    return{lbl:'Yield အန္တရာယ်',tag:'r',w:'Above 5% often signals a distressed stock or incoming dividend cut. Why is it so high? Usually because the stock price crashed. Verify earnings cover it.',mm:'Yield 5%+ သည် မကြာခဏ ကပ်ရောက်နေသော Stock သို့မဟုတ် Dividend ဖြတ်တောက်မည့် Signal ဖြစ်သည်。ဈေးကျဆင်းသောကြောင့် ဖြစ်တတ်သည် — Earnings က Dividend ကာမိမကာမိ စစ်ဆေးပါ。'};
+  }
+  if(id==='npm'){
+    if(v<0)   return{lbl:'Loss',tag:'r',w:'Every yen of revenue results in a loss. One-off or structural?',mm:'Revenue တိုင်း အရှုံးဖြစ်ကြောင်းဆိုလိုသည်。တစ်ကြိမ်တည်းဖြစ်မဖြစ် ချက်ချင်းစစ်ဆေးပါ。'};
+    if(v<3)   return{lbl:'Margin ညံ့',tag:'r',w:'Almost no cushion — one bad quarter can tip into loss. Only acceptable in high-volume low-margin industries.',mm:'3% အောက် Net Margin သည် Buffer အနည်းဆုံးဖြစ်သည်。Quarter တစ်ခု ဆိုးပါက အရှုံးဖြစ်နိုင်သည်。'};
+    if(v<10)  return{lbl:'Margin သင့်တော်',tag:'a',w:'Moderate. Compare with industry peers. Improving trend matters more than the absolute number.',mm:'3–10% သည် သင့်တော်သည်。Industry တူတူနှင့် ယှဉ်ပါ — Trend တိုးတက်မှုသည် ကိန်းတစ်ကြောင်းတည်းထက် ပိုအရေးကြီးသည်。'};
+    if(v<20)  return{lbl:'Margin ကောင်း',tag:'g',w:'Real pricing power and cost control. Company keeps a significant share of each revenue yen.',mm:'10–20% Net Margin သည် စစ်မှန်သော ဈေးကြေးနှင့် ကုန်ကျစရိတ်ထိန်းချုပ်မှုကို ပြသည်。'};
+    return{lbl:'Margin ထူးချွန်',tag:'g',w:'Exceptional — typically only software, pharma, or platform businesses achieve this.',mm:'20%+ Net Margin သည် ထူးချွန်သည် — Software၊ ဆေးဝါး သို့မဟုတ် Platform ကုမ္ပဏီများတွင်သာ မကြာခဏ မြင်ရသည်。'};
+  }
+  if(id==='eps'){
+    if(v<0)   return{lbl:'EPS အရှုံး',tag:'r',w:'Loss-making. Are losses narrowing or widening? Compare with last year.',mm:'Negative EPS: ကုမ္ပဏီ လက်ရှိ အရှုံးပြနေသည်。အရှုံး ကျဉ်းမြောင်းလာနေမနေ ယမန်နှစ်နှင့် ယှဉ်ကြည့်ပါ。'};
+    if(v<50)  return{lbl:'EPS နည်း',tag:'a',w:'Profitable but modest. Is EPS growing year-over-year?',mm:'Positive EPS သော်လည်း နည်းသည်。EPS YoY ကြီးထွားနေမနေ စောင့်ကြည့်ပါ。'};
+    return{lbl:'EPS ကောင်း',tag:'g',w:'Healthy. Cross-check with PER — low PER plus growing EPS is a strong fundamental signal.',mm:'EPS ကောင်းသည်。PER နှင့် ဆင်စစ်ကြည့်ပါ — PER နိမ့်ပြီး EPS တက်နေပါက ပြင်းထန်သော Fundamental Signal ဖြစ်သည်。'};
+  }
+  if(id==='bvps'){
+    if(v<0)   return{lbl:'Neg. equity',tag:'r',w:'Liabilities exceed assets — technically insolvent on paper.',mm:'Negative Book Value — Liability များ Asset ထက် များနေကြောင်းဆိုလိုသည်。'};
+    if(d.pr&&v>d.pr) return{lbl:'割安 PBR<1',tag:'g',w:'Share price below book value per share — classic 割安 in Japan, especially after TSE PBR reform push.',mm:'ဈေးနှုန်းသည် Book Value Per Share အောက်ဖြစ်သည် — ဒေသပုံ 割安 ဧရိယာဖြစ်သည်。TSE PBR ပြုပြင်ပြောင်းလဲမှုနောက် ဂျပန်တွင် ပိုအဓိပ္ပာယ်ရှိသည်。'};
+    if(d.pr&&v>d.pr*0.7) return{lbl:'PBR ≈ 1×',tag:'a',w:'Book value close to share price. ROE and earnings growth will determine whether stock re-rates higher.',mm:'Book Value သည် ဈေးနှုန်းနှင့် နီးစပ်နေသည်。ROE နှင့် Earnings ကြီးထွားမှုသည် ဈေးနှုန်းတက်မတက် ဆုံးဖြတ်မည်ဖြစ်သည်。'};
+    return{lbl:'PBR > 1×',tag:'a',w:'Price exceeds book. Normal for high-ROE quality businesses — verify earnings justify the premium.',mm:'ဈေးနှုန်းသည် Book Value ထက် မြင့်သည်。ROE မြင့်သော Quality Business တွင် ပုံမှန်ဖြစ်သော်လည်း Earnings Power ဖြင့် တရားဝင်မဝင် စစ်ဆေးပါ。'};
+  }
+  return null;
+}
+
+// ── Overall 割安/割高 verdict ──────────────────────────────────
+function overallVerdict(results,d){
+  var per=results.find(function(x){return x.r.id==='per';});
+  var pbr=results.find(function(x){return x.r.id==='pbr';});
+  var roe=results.find(function(x){return x.r.id==='roe';});
+  var hv=function(x){return x&&x.v!==null;};
+  if(!hv(per)&&!hv(pbr)) return null;
+  var lbl='',tag='a',txt='',mm='';
+  if(hv(per)&&hv(pbr)){
+    var pC=per.v<15,pE=per.v>25,bC=pbr.v<1,bE=pbr.v>3,rG=hv(roe)&&roe.v>=10;
+    if(pC&&bC)  {lbl='割安 Undervalued';tag='g';txt='Both PER and PBR signal undervaluation.'+(rG?' ROE is healthy too — looks genuinely cheap.':' Check ROE before acting.');mm='PER နှင့် PBR နှစ်ခုစလုံး Undervalued ညွှန်ပြသည်。'+(rG?'ROE လည်းကောင်းသည် — စစ်မှန်သောဈေးပေါပုံပေါ်သည်。':'Catalyst မရှိပါက ပေါနေသည့်တိုင် ပေါနေနိုင်သောကြောင့် ROE စစ်ဆေးပြီးမှ ဆောင်ရွက်ပါ。');}
+    else if(pE&&bE){lbl='割高 Overvalued';tag='r';txt='Both PER and PBR signal overvaluation. If growth disappoints, downside can be severe.';mm='PER နှင့် PBR နှစ်ခုစလုံး Overvalued ညွှန်ပြသည်。ကြီးထွားမှု မမျှော်ဆ ဆိုပါက ဆုတ်ဆည်းမှု ပြင်းနိုင်သည်。';}
+    else if(pC&&!bC){lbl='割安 PER cheap';tag='g';txt='PER is cheap but PBR is above book. Earnings underpriced, assets fairly valued. Watch for an earnings catalyst.';mm='PER ပေါသော်လည်း PBR 1× အောက်မဟုတ်ဘဲ။ Earnings Catalyst ကို စောင့်ကြည့်ပါ。';}
+    else if(!pC&&bC){lbl='割安 PBR below book';tag='g';txt='PBR is below book but PER is not cheap. Asset value but not earnings driven — value trap risk.';mm='PBR 1× အောက်သော်လည်း PER ပေါမဟုတ်ဘဲ — Value Trap Risk သတိထားပါ。';}
+    else           {lbl='適正 Fairly valued';tag='a';txt='Both PER and PBR in fair value range. Focus on earnings growth trend and ROE direction.';mm='PER နှင့် PBR နှစ်ခုစလုံး ဈေးတန်သောအပိုင်းတွင် ရှိသည်。Earnings Trend နှင့် ROE လမ်းကြောင်းကို ဦးစားပေးကြည့်ပါ。';}
+  } else if(hv(per)){
+    lbl=per.v<15?'割安 (PER only)':per.v>25?'割高 (PER only)':'適正 (PER only)';
+    tag=per.v<15?'g':per.v>25?'r':'a';
+    txt='Based on PER only. Enter equity and share count for a fuller picture.';
+    mm='PER တစ်ခုတည်းဖြင့် တွက်ချက်ထားသည်。ပိုပြည့်ဝသောရလဒ်ရရှိရန် ဒေတာပိုဖြည့်ပါ。';
+  } else {
+    lbl=pbr.v<1?'割安 (PBR only)':pbr.v>3?'割高 (PBR only)':'適正 (PBR only)';
+    tag=pbr.v<1?'g':pbr.v>3?'r':'a';
+    txt='Based on PBR only. Enter EPS data for a fuller picture.';
+    mm='PBR တစ်ခုတည်းဖြင့် တွက်ချက်ထားသည်。EPS ဒေတာဖြည့်ပါ。';
+  }
+  return{lbl:lbl,tag:tag,col:C[tag],txt:txt,mm:mm};
+}
+
+// ── Toggle drawer ─────────────────────────────────────────────
+function toggle(id){
+  var b=document.getElementById('b-'+id),c=document.getElementById('c-'+id);
+  if(!b)return;
+  var open=b.classList.contains('open');
+  if(OPEN&&OPEN!==id){
+    var ob=document.getElementById('b-'+OPEN),oc=document.getElementById('c-'+OPEN);
+    if(ob)ob.classList.remove('open');if(oc)oc.classList.remove('open');
+  }
+  b.classList.toggle('open',!open);c.classList.toggle('open',!open);
+  OPEN=open?null:id;
+}
+
+// ── Main calc ─────────────────────────────────────────────────
+function calc(){
+  var d=getData();
+  var any=Object.values(d).some(function(v){return v!==null;});
+  var wrap=document.getElementById('results');
+  if(!any){wrap.innerHTML='<div class="empty"><i class="ti ti-calculator" aria-hidden="true"></i><p>Enter at least one figure to see ratios.</p></div>';return;}
+  var results=RATIOS.map(function(r){return{r:r,v:r.calc(d)};});
+  var avail=results.filter(function(x){return x.v!==null;});
+  if(!avail.length){wrap.innerHTML='<div class="empty"><i class="ti ti-calculator" aria-hidden="true"></i><p>Not enough data yet. Keep filling in fields.</p></div>';return;}
+
+  var ov=overallVerdict(results,d);
+  var html='';
+
+  // Overall verdict card
+  if(ov){
+    html+='<div class="summary" style="background:'+ov.col.bg+';color:'+ov.col.text+';">'
+        +'<div class="summary-label">'+ov.lbl+'</div>'
+        +'<div class="summary-text">'+ov.txt+'</div>'
+        +'<div class="summary-mm">'+ov.mm+'</div>'
+        +'</div>';
+  } else {
+    var h=avail.filter(function(x){return status(x.r,x.v,d)==='g';}).length;
+    var cn=avail.filter(function(x){return status(x.r,x.v,d)==='r';}).length;
+    var sc=cn>0?C.r:h===avail.length?C.g:C.a;
+    var msg=cn>0?cn+' ratio'+(cn>1?'s':'')+' need attention':h===avail.length?'All ratios look healthy':'Review flagged ratios';
+    html+='<div class="summary" style="background:'+sc.bg+';color:'+sc.text+';">'
+        +'<div class="summary-label">'+avail.length+' ratios calculated</div>'
+        +'<div class="summary-text">'+msg+'</div>'
+        +'</div>';
+  }
+
+  // Individual ratio cards
+  results.forEach(function(x){
+    var r=x.r,val=x.v;
+    var st=status(r,val,d),col=C[st];
+    var pct=val!==null?Math.min(Math.abs(val)/r.barMax*100,100):0;
+    var vd=verdict(r,val,d);
+    var bh=r.bench.map(function(b){
+      var bc=C[b.s];
+      return'<div class="bi"><div class="bi-v" style="color:'+bc.text+'">'+b.l+'</div><div class="bi-l" style="color:'+bc.text+'">'+b.n+'</div></div>';
+    }).join('');
+    var vdBadge='';
+    if(vd){var vc=C[vd.tag];vdBadge='<span class="rc-vd" style="background:'+vc.bg+';color:'+vc.text+';">'+vd.lbl+'</span>';}
+    var watchHtml='';
+    if(vd){
+      var wc=C[vd.tag];
+      watchHtml='<div class="watch-box" style="background:'+wc.bg+';border-color:'+wc.bar+';color:'+wc.text+';">'
+        +'<div class="watch-lbl">What to watch</div>'
+        +'<div class="watch-en">'+vd.w+'</div>'
+        +'<div class="watch-mm">'+vd.mm+'</div>'
+        +'</div>';
+    }
+    html+='<div class="rc">'
+        +'<div class="rc-head" onclick="toggle(\''+r.id+'\')">'
+        +  '<div class="rc-left"><div class="rc-en">'+r.en+'</div><div class="rc-jp">'+r.jp+'</div></div>'
+        +  '<div class="rc-val" style="color:'+(val===null?'var(--text3)':col.text)+'">'+fmt(r,val)+'</div>'
+        +  vdBadge
+        +  '<div class="rc-badge" style="background:'+col.bg+';color:'+col.text+';">'+col.lbl+'</div>'
+        +  '<i class="ti ti-chevron-down rc-chev" id="c-'+r.id+'" aria-hidden="true"></i>'
+        +'</div>'
+        +'<div class="rc-body" id="b-'+r.id+'">'
+        +  '<div class="rc-bar"><div class="rc-bar-fill" style="width:'+pct.toFixed(1)+'%;background:'+col.bar+';"></div></div>'
+        +  '<div class="rc-bench">'+bh+'</div>'
+        +  watchHtml
+        +  '<div class="rc-exp">'+r.exp_en+'</div>'
+        +  '<div class="rc-mm">'+r.exp_mm+'</div>'
+        +'</div>'
+        +'</div>';
+  });
+
+  wrap.innerHTML=html;
+  if(OPEN){
+    var ob=document.getElementById('b-'+OPEN),oc=document.getElementById('c-'+OPEN);
+    if(ob){ob.classList.add('open');if(oc)oc.classList.add('open');}
+  }
+}
+
+function reset(){
+  ['np','rev','dps','ta','eq','sh','pr'].forEach(function(id){document.getElementById(id).value='';});
+  OPEN=null;
+  calc();
+}
+</script>
+</body>
+</html>

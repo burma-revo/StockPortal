@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart Patterns</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+  --b:#185FA5;--b-bg:#E6F1FB;--b-t:#0C447C;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;padding:14px 18px 12px;}
+.fb{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.fb:hover{background:var(--bg);}
+.fb.fa{background:var(--surface);color:var(--text);border-color:var(--border2);font-weight:500;}
+.fb.fbull{background:var(--g-bg);color:var(--g-t);border-color:rgba(59,109,17,.2);}
+.fb.fbear{background:var(--r-bg);color:var(--r-t);border-color:rgba(163,45,45,.2);}
+.fb.frev{background:var(--b-bg);color:var(--b-t);border-color:rgba(24,95,165,.2);}
+.fb.fcont{background:var(--a-bg);color:var(--a-t);border-color:rgba(133,79,11,.2);}
+.page{padding:0 18px 32px;}
+.sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:4px;}
+.pat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.pat-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.07);}
+.pat-card.bull{border-top:2px solid var(--g);}
+.pat-card.bear{border-top:2px solid var(--r);}
+.pat-card.neutral{border-top:2px solid var(--a);}
+.pat-card.selected{box-shadow:0 0 0 2px var(--pc-sel) inset;border-color:var(--pc-sel);}
+.pc-svg{background:#f8f8f6;padding:12px 14px;display:flex;align-items:center;justify-content:center;min-height:100px;}
+.pc-info{padding:9px 12px;}
+.pc-badges{display:flex;gap:4px;margin-bottom:5px;flex-wrap:wrap;}
+.pcb{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;}
+.pc-en{font-size:13px;font-weight:600;line-height:1.3;}
+.pc-jp{font-size:10px;color:var(--text3);margin-top:2px;}
+.pc-lrn{font-size:10px;color:var(--g);margin-top:2px;display:none;}
+.pc-lrn.show{display:block;}
+.drawer{display:none;grid-column:1/-1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:6px;}
+.drawer.open{display:grid;grid-template-columns:260px 1fr;}
+.dw-vis{background:#f8f8f6;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);}
+.dw-body{padding:18px 20px;overflow:auto;}
+.dw-close{float:right;background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;}
+.dw-close:hover{color:var(--text);}
+.dw-jp{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.dw-en{font-size:19px;font-weight:700;line-height:1.2;margin-bottom:6px;}
+.dw-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.dw-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:5px;}
+.dw-exp{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:8px;}
+.dw-mm{font-size:12px;color:var(--text3);line-height:1.7;background:var(--bg);border-radius:7px;padding:8px 11px;margin-bottom:8px;font-style:italic;}
+.dw-how{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px;}
+.dw-tip{font-size:12px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:8px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;margin-bottom:4px;}
+.dw-tip-mm{font-size:11px;background:var(--a-bg);border-left:3px solid #EF9F27;padding:6px 11px;border-radius:0 6px 6px 0;color:var(--a-t);line-height:1.6;font-style:italic;margin-bottom:10px;}
+.mark-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;}
+.mark-btn:hover{background:rgba(59,109,17,.08);}
+.mark-btn.on{background:var(--g-bg);color:var(--g);border-color:rgba(59,109,17,.2);}
+.dw-vis-lbl{font-size:10px;color:var(--text3);margin-top:8px;text-align:center;}
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .drawer.open{grid-template-columns:1fr;}
+  .dw-vis{border-right:none;border-bottom:1px solid var(--border);}
+  .page{padding:0 14px 24px;}
+  .filter-bar{padding:12px 14px 10px;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div><div class="tb-title">Chart Patterns</div><div class="tb-sub">チャートパターン — tap a chart to learn</div></div>
+</div>
+<div class="filter-bar">
+  <button class="fb fa" onclick="setF('all',this)">All</button>
+  <button class="fb" onclick="setF('bullish',this)">Bullish</button>
+  <button class="fb" onclick="setF('bearish',this)">Bearish</button>
+  <button class="fb" onclick="setF('reversal',this)">Reversal</button>
+  <button class="fb" onclick="setF('continuation',this)">Continuation</button>
+</div>
+<div class="page" id="body"></div>
+
+<script>
+// ── SVG drawing helpers ─────────────────────────────────────
+var CG='#26a65b',CR='#c0392b',CB='#2980b9',CO='#d35400',CGY='#95a5a6';
+
+function pl(pts,col,w,dash){
+  var d=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  return '<polyline points="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(w||1.5)+'" stroke-linecap="round" stroke-linejoin="round"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+}
+function fa(pts,col){
+  var d=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  return '<polygon points="'+d+'" fill="'+col+'" opacity=".12"/>';
+}
+function hl(x1,y,x2,col,dash){
+  return '<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+col+'" stroke-width="1" stroke-dasharray="'+(dash||'3,2')+'"/>';
+}
+function vl(x,y1,y2,col){
+  return '<line x1="'+x+'" y1="'+y1+'" x2="'+x+'" y2="'+y2+'" stroke="'+col+'" stroke-width="1" stroke-dasharray="3,2"/>';
+}
+function lb(x,y,t,col,anchor,size){
+  return '<text x="'+x+'" y="'+y+'" fill="'+(col||'rgba(0,0,0,0.4)')+'" font-size="'+(size||8)+'" text-anchor="'+(anchor||'middle')+'" font-family="system-ui,sans-serif">'+t+'</text>';
+}
+function arr(x,y,up,col){
+  col=col||(up?CG:CR);
+  if(up) return '<polygon points="'+x+','+(y-7)+' '+(x-4)+','+(y+1)+' '+(x+4)+','+(y+1)+'" fill="'+col+'" opacity=".85"/>';
+  return '<polygon points="'+x+','+(y+7)+' '+(x-4)+','+(y-1)+' '+(x+4)+','+(y-1)+'" fill="'+col+'" opacity=".85"/>';
+}
+function svgW(inner,vw,vh){
+  var g='<line x1="0" y1="'+(vh*.33)+'" x2="'+vw+'" y2="'+(vh*.33)+'" stroke="rgba(0,0,0,0.04)" stroke-width=".5"/>'
+       +'<line x1="0" y1="'+(vh*.66)+'" x2="'+vw+'" y2="'+(vh*.66)+'" stroke="rgba(0,0,0,0.04)" stroke-width=".5"/>';
+  return '<svg viewBox="0 0 '+vw+' '+vh+'" width="'+vw+'" height="'+vh+'" xmlns="http://www.w3.org/2000/svg">'+g+inner+'</svg>';
+}
+
+// ── Chart pattern SVG builders ──────────────────────────────
+function svgHS(){
+  var price=[[6,70],[18,55],[30,42],[42,30],[54,42],[66,25],[78,42],[90,55],[102,42],[114,60],[126,72],[138,72]];
+  var neckY=58;
+  return svgW(
+    hl(0,neckY,160,CB)
+    +pl(price,CO,1.8)
+    +lb(42,27,'L Shoulder',CO,'middle',7)
+    +lb(66,22,'Head',CO,'middle',7)
+    +lb(90,52,'R Shoulder',CO,'middle',7)
+    +lb(80,neckY+9,'Neckline',CB,'middle',7)
+    +arr(130,72,false)
+  ,160,90);
+}
+function svgIHS(){
+  var price=[[6,22],[18,38],[30,50],[42,62],[54,50],[66,75],[78,50],[90,38],[102,50],[114,32],[126,20],[138,20]];
+  var neckY=40;
+  return svgW(
+    hl(0,neckY,160,CB)
+    +pl(price,CG,1.8)
+    +lb(42,66,'L Shoulder',CG,'middle',7)
+    +lb(66,79,'Head',CG,'middle',7)
+    +lb(90,54,'R Shoulder',CG,'middle',7)
+    +lb(80,neckY-5,'Neckline',CB,'middle',7)
+    +arr(130,20,true)
+  ,160,90);
+}
+function svgDT(){
+  var price=[[6,65],[18,45],[30,28],[42,45],[54,62],[66,45],[78,28],[90,45],[102,62],[114,68],[126,72]];
+  return svgW(
+    hl(0,29,160,CR,'3,2')
+    +pl(price,CO,1.8)
+    +lb(30,24,'Top 1',CR,'middle',7)
+    +lb(78,24,'Top 2',CR,'middle',7)
+    +lb(100,40,'Resistance',CR,'middle',7)
+    +arr(118,72,false)
+  ,160,90);
+}
+function svgDB(){
+  var price=[[6,25],[18,45],[30,65],[42,45],[54,28],[66,45],[78,65],[90,45],[102,28],[114,22],[126,18]];
+  return svgW(
+    hl(0,64,160,CG,'3,2')
+    +pl(price,CO,1.8)
+    +lb(30,70,'Bottom 1',CG,'middle',7)
+    +lb(78,70,'Bottom 2',CG,'middle',7)
+    +lb(100,55,'Support',CG,'middle',7)
+    +arr(118,18,true)
+  ,160,90);
+}
+function svgAscTri(){
+  var price=[[6,65],[18,50],[30,38],[42,50],[54,40],[66,50],[78,38],[90,50],[102,38],[114,50],[126,38],[138,28],[150,18]];
+  return svgW(
+    hl(0,38,160,CR,'3,2')
+    +pl([[6,65],[138,38]],CG,1.2,'4,2')
+    +pl(price,CO,1.8)
+    +lb(80,34,'Resistance (flat)',CR,'middle',7)
+    +lb(80,72,'Support (rising)',CG,'middle',7)
+    +arr(145,18,true)
+  ,160,90);
+}
+function svgDescTri(){
+  var price=[[6,25],[18,40],[30,55],[42,40],[54,55],[66,40],[78,55],[90,40],[102,55],[114,40],[126,55],[138,65],[150,75]];
+  return svgW(
+    hl(0,55,160,CG,'3,2')
+    +pl([[6,25],[138,55]],CR,1.2,'4,2')
+    +pl(price,CO,1.8)
+    +lb(80,18,'Resistance (falling)',CR,'middle',7)
+    +lb(80,62,'Support (flat)',CG,'middle',7)
+    +arr(145,75,false)
+  ,160,90);
+}
+function svgSymTri(){
+  var price=[[6,18],[18,35],[30,48],[42,35],[54,22],[66,35],[78,45],[90,35],[102,28],[114,35],[126,40],[138,35],[150,35]];
+  return svgW(
+    pl([[6,18],[138,38]],CR,1.2,'4,2')
+    +pl([[6,62],[138,38]],CG,1.2,'4,2')
+    +pl(price,CO,1.8)
+    +lb(80,15,'Falling resistance',CR,'middle',7)
+    +lb(80,72,'Rising support',CG,'middle',7)
+    +lb(148,30,'→',CB,'middle',9)
+  ,160,90);
+}
+function svgBullFlag(){
+  var pole=[[6,75],[6,30]];
+  var flag=[[6,30],[20,36],[34,30],[48,36],[62,30],[76,36],[90,30]];
+  var cont=[[90,30],[110,10]];
+  return svgW(
+    pl(pole,CG,2.5)
+    +pl(flag,CO,1.5)
+    +pl(cont,CG,2,'5,3')
+    +lb(6,26,'Pole',CG,'start',7)
+    +lb(48,26,'Flag (consolidation)',CO,'middle',7)
+    +arr(108,10,true)
+  ,160,90);
+}
+function svgBearFlag(){
+  var pole=[[6,15],[6,60]];
+  var flag=[[6,60],[20,54],[34,60],[48,54],[62,60],[76,54],[90,60]];
+  var cont=[[90,60],[110,80]];
+  return svgW(
+    pl(pole,CR,2.5)
+    +pl(flag,CO,1.5)
+    +pl(cont,CR,2,'5,3')
+    +lb(6,72,'Pole',CR,'start',7)
+    +lb(48,50,'Flag (consolidation)',CO,'middle',7)
+    +arr(108,80,false)
+  ,160,90);
+}
+function svgCupHandle(){
+  var cup=[];
+  for(var i=0;i<=20;i++){var x=6+i*6.2;var y=20+Math.pow((i-10)/4.5,2)*3;cup.push([x,y]);}
+  var handle=[[130,20],[136,26],[142,22],[148,18],[154,14]];
+  return svgW(
+    pl(cup,CG,1.8)
+    +pl(handle,CO,1.8)
+    +lb(68,78,'Cup',CG,'middle',7)
+    +lb(142,28,'Handle',CO,'middle',7)
+    +arr(152,14,true)
+  ,160,90);
+}
+function svgWedgeUp(){
+  var price=[[6,65],[18,52],[30,42],[42,34],[54,28],[66,24],[78,20],[90,28],[102,34],[114,42],[126,52],[138,62],[150,75]];
+  return svgW(
+    pl([[6,65],[90,18]],CR,1.2,'4,2')
+    +pl([[6,80],[90,38]],CR,1.2,'4,2')
+    +pl(price,CO,1.8)
+    +lb(50,14,'Rising wedge (bearish)',CR,'middle',7)
+    +arr(145,75,false)
+  ,160,90);
+}
+function svgWedgeDown(){
+  var price=[[6,25],[18,38],[30,48],[42,55],[54,60],[66,64],[78,68],[90,60],[102,52],[114,42],[126,30],[138,18],[150,8]];
+  return svgW(
+    pl([[6,25],[90,72]],CG,1.2,'4,2')
+    +pl([[6,10],[90,52]],CG,1.2,'4,2')
+    +pl(price,CO,1.8)
+    +lb(50,78,'Falling wedge (bullish)',CG,'middle',7)
+    +arr(145,8,true)
+  ,160,90);
+}
+function svgRoundTop(){
+  var pts=[];
+  for(var i=0;i<=20;i++){var x=6+i*7.4;var y=70-Math.pow((i-10)/5,2)*3;pts.push([x,y]);}
+  return svgW(
+    pl(pts,CR,1.8)
+    +lb(80,16,'Rounding top (bearish)',CR,'middle',7)
+    +arr(148,70,false)
+  ,160,90);
+}
+function svgRoundBottom(){
+  var pts=[];
+  for(var i=0;i<=20;i++){var x=6+i*7.4;var y=20+Math.pow((i-10)/5,2)*3;pts.push([x,y]);}
+  return svgW(
+    pl(pts,CG,1.8)
+    +lb(80,78,'Rounding bottom (bullish)',CG,'middle',7)
+    +arr(148,20,true)
+  ,160,90);
+}
+
+// ── Pattern data ────────────────────────────────────────────
+var PATTERNS=[
+  // Reversal
+  {id:'hs',type:'bearish',signal:'reversal',jp:'ヘッドアンドショルダーズ',en:'Head & Shoulders',
+   exp_en:'Three peaks — a higher middle peak (head) flanked by two lower peaks (shoulders). A classic bearish reversal after an uptrend. The neckline connects the two troughs between the peaks. A break below the neckline confirms the pattern.',
+   exp_mm:'ထိပ်သုံးခု — အလယ် (Head) ပိုမြင့်ပြီး နှစ်ဘက် (Shoulder) နိမ့်သည်။ Uptrend ပြီးနောက် Bearish Reversal ဖြစ်ပြီး Neckline ကျော်ကျသောအခါ Pattern အတည်ပြုသည်။',
+   how:'Sell when price breaks BELOW the neckline with high volume. Measure target = head height projected downward from breakout point.',
+   tip_en:'Right shoulder forming at lower height than left = weakness building. Volume should shrink on right shoulder — confirms sellers are in control.',
+   tip_mm:'Right Shoulder သည် Left Shoulder ထက် နိမ့်ပါက အားနည်းချက်ကြီးထွားနေကြောင်းဖြစ်သည်။ Right Shoulder ဖြစ်ပေါ်နေချိန် Volume ကျသင့်သည်။',
+   svg:svgHS,diff:'intermediate'},
+  {id:'ihs',type:'bullish',signal:'reversal',jp:'逆ヘッドアンドショルダーズ',en:'Inverse Head & Shoulders',
+   exp_en:'The mirror image of H&S — three troughs with the middle (head) deepest. A bullish reversal after a downtrend. Break above the neckline on high volume confirms the reversal and signals a new uptrend.',
+   exp_mm:'H&S ၏ ဆန့်ကျင်ဘက် — အလယ် (Head) ပိုနိမ့်သော တွင်းသုံးခု။ Downtrend ပြီးနောက် Bullish Reversal ဖြစ်ပြီး Neckline ကျော်တက်သောအခါ Uptrend အသစ် ညွှန်ပြသည်။',
+   how:'Buy when price breaks ABOVE the neckline with high volume. Target = head depth projected upward from breakout.',
+   tip_en:'The most reliable reversal pattern in technical analysis. When it appears at a major support level with diverging RSI, it is a very strong signal.',
+   tip_mm:'Technical Analysis တွင် အယုံကြည်ရဆုံး Reversal Pattern ဖြစ်သည်။ Major Support Level တွင် RSI Divergence နှင့်တွဲဆိုပါက Signal အလွန်ပြင်းသည်။',
+   svg:svgIHS,diff:'intermediate'},
+  {id:'dt',type:'bearish',signal:'reversal',jp:'ダブルトップ',en:'Double Top',
+   exp_en:'Two peaks at approximately the same price level, separated by a trough. The price tests resistance twice but fails both times. Break below the trough (neckline) confirms the bearish reversal.',
+   exp_mm:'ဈေးနှုန်းတူနီးပါး ထိပ်နှစ်ခု ဖြစ်ပြီး Resistance ကို နှစ်ကြိမ်နှစ်ခါ ဝင်ရောက်သော်လည်း နှစ်ကြိမ်စလုံး ငြင်းပယ်ခံရသည်။ Trough ကျော်ကျသောအခါ Bearish Reversal အတည်ပြုသည်။',
+   how:'Sell when price closes below the trough between the two tops. Volume typically lower on second top than first — key confirmation.',
+   tip_en:'Double top is one of the most common and reliable bearish reversal patterns. The more equal the two peaks, the stronger the signal.',
+   tip_mm:'Double Top သည် အဖြစ်အများဆုံး Bearish Reversal Pattern တစ်ခုဖြစ်သည်။ ထိပ်နှစ်ခု ဈေးနှုန်းတူနီးပါးလေ Signal ပိုကောင်းလေ ဖြစ်သည်။',
+   svg:svgDT,diff:'beginner'},
+  {id:'db',type:'bullish',signal:'reversal',jp:'ダブルボトム',en:'Double Bottom',
+   exp_en:'Two troughs at approximately the same price — support holds twice. The price attempts to break support twice but buyers defend both times. Break above the peak between the bottoms confirms the bullish reversal.',
+   exp_mm:'ဈေးနှုန်းတူနီးပါး တွင်းနှစ်ခု ဖြစ်ပြီး Support ကို နှစ်ကြိမ်ကိုင်ထားသည်။ Peak ကျော်တက်သောအခါ Bullish Reversal အတည်ပြုသည်။',
+   how:'Buy when price closes ABOVE the peak between the two bottoms. Volume should surge on the breakout.',
+   tip_en:'Double bottom after a prolonged downtrend with volume picking up on the second bottom = high-conviction reversal signal.',
+   tip_mm:'ရှည်မြင့်သော Downtrend ပြီးနောက် ဒုတိယ Bottom တွင် Volume တက်လာသော Double Bottom = ယုံကြည်မှုမြင့်သော Reversal Signal ဖြစ်သည်။',
+   svg:svgDB,diff:'beginner'},
+  {id:'roundtop',type:'bearish',signal:'reversal',jp:'円形天井',en:'Rounding Top',
+   exp_en:'A gradual, curved price peak shaped like an inverted bowl. Momentum slowly shifts from bullish to bearish over weeks or months. No sharp top — the slowness of the reversal is the defining feature.',
+   exp_mm:'တဖြည်းဖြည်း ကွေးလာသော ဈေးနှုန်း ထိပ်ဖြစ်ပြီး Momentum သည် ရက်သတ္တပတ် သို့မဟုတ် လများကြာ Bullish မှ Bearish သို့ တဖြည်းဖြည်း ပြောင်းသည်။',
+   how:'Watch for declining volume as price rounds over. Sell when the curve turns clearly downward — usually 2/3 through the formation.',
+   tip_en:'Rounding tops often appear on weekly/monthly charts and represent major trend changes. They are slow to form but when confirmed the move is usually large.',
+   tip_mm:'Rounding Top သည် Weekly/Monthly Chart တွင် မကြာခဏ ပေါ်လာပြီး ကြီးမားသော Trend ပြောင်းလဲမှုကို ကိုယ်စားပြုသည်。ဖြစ်ပေါ်ချိန် နှေးသော်လည်း အတည်ပြုပြီးနောက် လှုပ်ရှားမှု ပုံမှန်ကြီးမားသည်。',
+   svg:svgRoundTop,diff:'intermediate'},
+  {id:'roundbottom',type:'bullish',signal:'reversal',jp:'円形底',en:'Rounding Bottom',
+   exp_en:'A gradual, curved price trough shaped like a bowl. The mirror of rounding top. Momentum shifts slowly from bearish to bullish. Often appears at the end of long downtrends and precedes major rallies.',
+   exp_mm:'Rounding Top ၏ ဆန့်ကျင်ဘက်။ Bowl ပုံသဏ္ဍာန် ကွေးလာသော Trough ဖြစ်ပြီး ရှည်မြင့်သော Downtrend အဆုံးတွင် မကြာခဏ ပေါ်လာပြီး ကြီးမားသော Rally ကြိုတင်ညွှန်ပြတတ်သည်。',
+   how:'Buy when the curve turns clearly upward and volume starts to increase. Often best entered on the right side of the bowl as momentum builds.',
+   tip_en:'Warren Buffett-style stocks often form rounding bottoms during periods of neglect before the market recognizes their value. Patience required.',
+   tip_mm:'Buffett Style ကုမ္ပဏီများသည် ဈေးကွက်မှ တန်ဖိုးကို မမြင်နိုင်သေးသော ကာလများတွင် Rounding Bottom ဖြစ်ပေါ်တတ်သည်。သည်းခံမှု လိုအပ်သည်。',
+   svg:svgRoundBottom,diff:'intermediate'},
+  // Continuation
+  {id:'asctri',type:'bullish',signal:'continuation',jp:'上昇トライアングル',en:'Ascending Triangle',
+   exp_en:'Flat resistance at the top, rising support line below. Price coils between them with each dip higher than the last. Buyers are gaining strength. Breakout above the flat resistance line — usually bullish continuation.',
+   exp_mm:'အပေါ်ဘက် Flat Resistance နှင့် တက်နေသော Support Line ကြားတွင် ဈေးနှုန်းပိတ်မိနေပြီး Dip တိုင်းသည် ယခင်ထက် ပိုမြင့်သည်။ Flat Resistance ကိုကျော်တက်သောအခါ Bullish Continuation ဖြစ်ပုံပါသည်。',
+   how:'Buy on breakout above the flat resistance with high volume. Stop just below the last higher low. Target = height of triangle projected from breakout.',
+   tip_en:'Ascending triangle is one of the most reliable continuation patterns. The flat top = sellers are consistent, but the rising bottom = buyers are persistent. Eventually buyers win.',
+   tip_mm:'Ascending Triangle သည် အယုံကြည်ရဆုံး Continuation Pattern တစ်ခုဖြစ်သည်。Flat Top = ရောင်းသူများ တသမတ်တည်း Resistance ထားသည်, Rising Bottom = ဝယ်သူများ ပြောင်မတိမ်း Pressure ပေးနေသည်。နောက်ဆုံး ဝယ်သူများ နိုင်တတ်သည်。',
+   svg:svgAscTri,diff:'intermediate'},
+  {id:'desctri',type:'bearish',signal:'continuation',jp:'下降トライアングル',en:'Descending Triangle',
+   exp_en:'Flat support at the bottom, falling resistance line above. Each rally lower than the last — sellers increasingly dominate. Breakdown below the flat support confirms bearish continuation.',
+   exp_mm:'အောက်ဘက် Flat Support နှင့် ကျနေသော Resistance Line ကြားတွင် ဈေးနှုန်း ပိတ်မိနေပြီး Rally တိုင်းသည် ယခင်ထက် ပိုနိမ့်သည်。Flat Support ကျော်ကျသောအခါ Bearish Continuation ဖြစ်သည်。',
+   how:'Sell on breakdown below flat support with volume surge. Target = height of triangle projected downward from breakout.',
+   tip_en:'Descending triangle inside a broader downtrend is very reliable. It represents a short pause before sellers resume. Watch for volume increasing into the breakdown.',
+   tip_mm:'ကျယ်ပြန့်သော Downtrend ထဲတွင် Descending Triangle ဖြစ်ပေါ်ပါက အလွန်ယုံကြည်ရသည်。ရောင်းသူများ ဆက်လက်ရောင်းချမတိုင်မီ ယာယီနားနေမှုကို ကိုယ်စားပြုသည်。',
+   svg:svgDescTri,diff:'intermediate'},
+  {id:'symtri',type:'neutral',signal:'continuation',jp:'シンメトリカルトライアングル',en:'Symmetrical Triangle',
+   exp_en:'Falling resistance + rising support converge toward a point. Price coils tightly. The direction of breakout determines the trade. Usually continues in the direction of the prior trend.',
+   exp_mm:'ကျနေသော Resistance နှင့် တက်နေသော Support ကြားတွင် ဈေးနှုန်း တင်းကျပ်ပိတ်မိနေသည်。Breakout ဘယ်ဘက်သွားမည်ကို ကြိုတင်မပြဘဲ — ပုံမှန်အားဖြင့် ယခင် Trend လမ်းကြောင်းအတိုင်း ဆက်သွားတတ်သည်。',
+   how:'Wait for confirmed breakout — buy above upper line or sell below lower line. Breakout must have high volume. False breakouts are common.',
+   tip_en:'Do not predict direction in a symmetrical triangle — wait for the breakout. False breakouts are very common, especially to the upside. Give it one or two closes beyond the line before acting.',
+   tip_mm:'Symmetrical Triangle တွင် လမ်းကြောင်း ကြိုတင်မခန့်မှန်းပါ — Breakout ကိုစောင့်ပါ。False Breakout အဖြစ်များသည်။ Line ကျော်ပြီး ပိတ်ဈေးတစ်ကြိမ် နှစ်ကြိမ် ကြည့်ပြီးမှ ဝင်ပါ。',
+   svg:svgSymTri,diff:'intermediate'},
+  {id:'bullflag',type:'bullish',signal:'continuation',jp:'強気フラッグ',en:'Bull Flag',
+   exp_en:'A sharp pole (strong rally) followed by a rectangular consolidation that slopes slightly downward (the flag). The flag represents a brief rest before the uptrend continues. Breakout above the upper channel = buy signal.',
+   exp_mm:'ပြင်းထန်သော Rally (Pole) ပြီးနောက် အနည်းငယ်ဆင်းနေသော ကြောင်ချောင်းပုံ Consolidation (Flag) ဖြစ်သည်。Flag သည် Uptrend ဆက်မတိုင်မီ ယာယီနားနေမှုကို ကိုယ်စားပြုသည်。Upper Channel ကိုကျော်တက်သောအခါ ဝင်ဝယ်ပါ。',
+   how:'Buy breakout above the upper flag channel. Volume should be HIGH on the pole and low during the flag — then surge on breakout.',
+   tip_en:'The steeper and more vertical the pole, the more powerful the subsequent breakout. Flags that form too slowly or too long (more than 3-4 weeks) often fail.',
+   tip_mm:'Pole ပိုမြောက်ဖြောင့်တည်မတ်လေ Breakout ပိုအားကောင်းလေ ဖြစ်သည်。Flag ဖြစ်ပေါ်ချိန် ကြာလွန်းပါက (3–4 ရက်သတ္တ အထက်) မကြာခဏ မအောင်မြင်ဘဲ。',
+   svg:svgBullFlag,diff:'beginner'},
+  {id:'bearflag',type:'bearish',signal:'continuation',jp:'弱気フラッグ',en:'Bear Flag',
+   exp_en:'A sharp downward pole followed by a brief rectangular consolidation sloping slightly upward (the flag). The flag is a dead-cat bounce before the downtrend resumes. Breakdown below lower channel = sell signal.',
+   exp_mm:'ပြင်းထန်သော ကျဆင်းမှု (Pole) ပြီးနောက် အနည်းငယ်တက်နေသော ကြောင်ချောင်းပုံ Consolidation (Flag) ဖြစ်သည်。Flag သည် Downtrend ဆက်မတိုင်မီ Dead-Cat Bounce ဖြစ်သည်。Lower Channel ကိုကျော်ကျသောအခါ ရောင်းပါ。',
+   how:'Sell breakdown below lower flag channel. Volume low during flag, then surge on breakdown.',
+   tip_en:'Bear flags are common in strong downtrends and after gap-down opens. They are one of the most reliable short-selling setups — the market rests briefly then continues falling.',
+   tip_mm:'Bear Flag သည် ပြင်းထန်သော Downtrend တွင်နှင့် Gap-Down ဖွင့်ချိန်နောက်တွင် အဖြစ်များသည်。Short Selling Setup အယုံကြည်ရဆုံးတစ်ခုဖြစ်သည်。',
+   svg:svgBearFlag,diff:'beginner'},
+  {id:'cnh',type:'bullish',signal:'reversal',jp:'カップアンドハンドル',en:'Cup and Handle',
+   exp_en:'A rounded U-shaped base (cup) followed by a small downward drift (handle). The cup represents a base-building phase, the handle a final shakeout of weak holders. Breakout above the handle resistance is the buy signal.',
+   exp_mm:'U ပုံသဏ္ဍာန် Base (Cup) ပြီးနောက် အနည်းငယ် Pullback (Handle) ဖြစ်သည်。Cup သည် Base Building Phase ကိုကိုယ်စားပြုပြီး Handle သည် Weak Holder များကို ဆွဲထုတ်သည်。Handle Resistance ကျော်တက်သောအခါ ဝင်ဝယ်ပါ。',
+   how:'Buy breakout above the handle high with strong volume. Target = depth of cup projected upward from breakout. Stop below the handle low.',
+   tip_en:'Cup should be U-shaped (rounded bottom), not V-shaped. V-shaped cups fail more often. Handle should be no deeper than 1/3 the cup depth.',
+   tip_mm:'Cup သည် V ပုံမဟုတ်ဘဲ U ပုံသဏ္ဍာန် (Rounded Bottom) ဖြစ်သင့်သည်。V ပုံ Cup များသည် မကြာခဏ မအောင်မြင်ဘဲ。Handle သည် Cup ၏ Depth ၏ 1/3 ထက် ပိုနက်မသင့်ဘဲ。',
+   svg:svgCupHandle,diff:'intermediate'},
+  {id:'wedgeup',type:'bearish',signal:'reversal',jp:'ライジングウェッジ',en:'Rising Wedge',
+   exp_en:'Price rises within converging lines that both slope upward — but resistance is steeper than support. Despite the upward movement, momentum is weakening. Breakdown below support = bearish reversal or acceleration of existing downtrend.',
+   exp_mm:'နှစ်မျဉ်းစလုံး အပေါ်သို့ ဦးတည်သော်လည်း ကျဉ်းလာနေသော Channel ထဲတွင် ဈေးတက်သည်。တက်နေသော်လည်း Momentum ကုန်လာနေသည်。Support ကျော်ကျသောအခါ Bearish Reversal ဖြစ်သည်。',
+   how:'Sell when price breaks below the lower wedge support with volume. The breakdown is often sharp. Stop just above the breakdown candle.',
+   tip_en:'Rising wedge in a downtrend = very powerful bearish signal. Rising wedge in an uptrend = reversal warning. Context matters enormously.',
+   tip_mm:'Downtrend ထဲ Rising Wedge = ပြင်းထန်သော Bearish Signal。Uptrend ထဲ Rising Wedge = Reversal သတိပေးချက်。Context သည် အလွန်အရေးကြီးသည်。',
+   svg:svgWedgeUp,diff:'intermediate'},
+  {id:'wedgedown',type:'bullish',signal:'reversal',jp:'フォーリングウェッジ',en:'Falling Wedge',
+   exp_en:'Price falls within converging lines that both slope downward — but support is steeper than resistance. Momentum is weakening on the downside. Breakout above resistance = bullish reversal or continuation of uptrend.',
+   exp_mm:'နှစ်မျဉ်းစလုံး အောက်သို့ ဦးတည်သော်လည်း ကျဉ်းလာနေသော Channel ထဲတွင် ဈေးကျသည်。ကျမှု Momentum ကုန်လာနေသည်。Resistance ကျော်တက်သောအခါ Bullish Reversal ဖြစ်သည်。',
+   how:'Buy when price breaks above the upper wedge resistance with volume. Falling wedges tend to have explosive breakouts.',
+   tip_en:'Falling wedge breakouts are often explosive because short sellers are caught and must cover. Volume surge on breakout confirms the move.',
+   tip_mm:'Falling Wedge Breakout များသည် Short Seller များ Caught ဖြစ်ပြီး Cover လုပ်ရသောကြောင့် မကြာခဏ ပြင်းထန်သည်。Breakout တွင် Volume မြင့်သောအခါ Move ကို အတည်ပြုသည်。',
+   svg:svgWedgeDown,diff:'intermediate'},
+];
+
+// ── State ──────────────────────────────────────────────────
+var S={
+  filter:'all',
+  openId:null,
+  learned:JSON.parse(localStorage.getItem('cp_learned_'+(localStorage.getItem('slp_uid')||'guest'))||'{}'),
+  userId:localStorage.getItem('slp_uid')||'guest',
+};
+function save(){localStorage.setItem('cp_learned_'+S.userId,JSON.stringify(S.learned));}
+
+var GROUPS=[
+  {label:'Reversal patterns',items:null,signal:'reversal'},
+  {label:'Continuation patterns',items:null,signal:'continuation'},
+];
+
+function filtered(){
+  var p=PATTERNS;
+  var f=S.filter;
+  if(f==='all') return p;
+  if(f==='bullish'||f==='bearish'||f==='neutral') return p.filter(function(x){return x.type===f;});
+  return p.filter(function(x){return x.signal===f;});
+}
+
+function setF(f,btn){
+  S.filter=f; S.openId=null;
+  document.querySelectorAll('.fb').forEach(function(b){b.className='fb';});
+  var m={all:'fa',bullish:'fbull',bearish:'fbear',reversal:'frev',continuation:'fcont'};
+  if(btn) btn.className='fb '+(m[f]||'fa');
+  render();
+}
+
+function render(){
+  var fc=filtered();
+  var gs=[
+    {label:'Reversal patterns — signal a trend change',items:fc.filter(function(p){return p.signal==='reversal';})},
+    {label:'Continuation patterns — signal trend resumption',items:fc.filter(function(p){return p.signal==='continuation';})},
+  ].filter(function(g){return g.items.length;});
+
+  var html='';
+  gs.forEach(function(g,gi){
+    html+='<div class="sec-lbl">'+g.label+' ('+g.items.length+')</div>';
+    html+='<div class="drawer" id="dr-'+gi+'"></div>';
+    html+='<div class="grid">';
+    g.items.forEach(function(p){
+      var isL=!!S.learned[p.id];
+      var tc=p.type==='bullish'?'bull':p.type==='bearish'?'bear':'neutral';
+      var selC=p.type==='bullish'?'var(--g)':p.type==='bearish'?'var(--r)':'var(--a)';
+      var sel=S.openId===p.id?' selected':'';
+      var pb=p.type==='bullish'?'background:var(--g-bg);color:var(--g-t)':p.type==='bearish'?'background:var(--r-bg);color:var(--r-t)':'background:var(--a-bg);color:var(--a-t)';
+      html+='<div class="pat-card '+tc+sel+'" id="pc-'+p.id+'" onclick="openDrawer(\''+p.id+'\','+gi+')" style="--pc-sel:'+selC+';">'
+          +'<div class="pc-svg">'+p.svg()+'</div>'
+          +'<div class="pc-info">'
+          +  '<div class="pc-badges"><span class="pcb" style="'+pb+'">'+p.type+'</span><span class="pcb" style="background:var(--b-bg);color:var(--b-t);">'+p.signal+'</span></div>'
+          +  '<div class="pc-en">'+p.en+'</div>'
+          +  '<div class="pc-jp">'+p.jp+'</div>'
+          +  '<div class="pc-lrn '+(isL?'show':'')+'" >✓ learned</div>'
+          +'</div></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('body').innerHTML=html;
+}
+
+function openDrawer(id,gi){
+  var p=PATTERNS.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(S.openId===id){S.openId=null;closeAll();document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});return;}
+  S.openId=id;
+  closeAll();
+  document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});
+  var card=document.getElementById('pc-'+id);
+  if(card) card.classList.add('selected');
+  var isL=!!S.learned[id];
+  var sc=p.type==='bullish'?'var(--g)':p.type==='bearish'?'var(--r)':'var(--a)';
+  var pb=p.type==='bullish'?'background:var(--g-bg);color:var(--g-t)':p.type==='bearish'?'background:var(--r-bg);color:var(--r-t)':'background:var(--a-bg);color:var(--a-t)';
+  var dr=document.getElementById('dr-'+gi);
+  if(!dr) return;
+  dr.innerHTML=
+    '<div class="dw-vis">'+p.svg(1.4)+'<div class="dw-vis-lbl">'+p.jp+'</div></div>'
+   +'<div class="dw-body">'
+   +  '<button class="dw-close" onclick="closeAll(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
+   +  '<div class="dw-jp">'+p.jp+'</div>'
+   +  '<div class="dw-en" style="color:'+sc+'">'+p.en+'</div>'
+   +  '<div class="dw-badges"><span class="pcb" style="'+pb+'">'+p.type+'</span><span class="pcb" style="background:var(--b-bg);color:var(--b-t);">'+p.signal+'</span><span class="pcb" style="background:var(--bg);color:var(--text3);">'+p.diff+'</span></div>'
+   +  '<div class="dw-lbl">What this pattern means</div>'
+   +  '<div class="dw-exp">'+p.exp_en+'</div>'
+   +  '<div class="dw-mm">'+p.exp_mm+'</div>'
+   +  '<div class="dw-lbl">How to trade it</div>'
+   +  '<div class="dw-how">'+p.how+'</div>'
+   +  '<div class="dw-tip">'+p.tip_en+'</div>'
+   +  '<div class="dw-tip-mm">'+p.tip_mm+'</div>'
+   +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleL(event,\''+id+'\')">'
+   +    '<i class="ti '+(isL?'ti-circle-check':'ti-circle')+'" style="font-size:14px;" aria-hidden="true"></i>'
+   +    (isL?'Learned':'Mark as learned')
+   +  '</button>'
+   +'</div>';
+  dr.className='drawer open';
+  dr.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeAll(e){
+  if(e) e.stopPropagation();
+  S.openId=null;
+  document.querySelectorAll('.drawer').forEach(function(d){d.className='drawer';d.innerHTML='';});
+  document.querySelectorAll('.pat-card').forEach(function(c){c.classList.remove('selected');});
+}
+
+function toggleL(e,id){
+  e.stopPropagation();
+  S.learned[id]=!S.learned[id];
+  save();
+  render();
+  var p=PATTERNS.find(function(x){return x.id===id;});
+  if(p){
+    var fc=filtered();
+    var gs=[fc.filter(function(x){return x.signal==='reversal';}),fc.filter(function(x){return x.signal==='continuation';})].filter(function(g){return g.length;});
+    var gi=gs.findIndex(function(g){return g.find(function(x){return x.id===id;});});
+    if(gi>=0) setTimeout(function(){openDrawer(id,gi);},40);
+  }
+}
+
+render();
+</script>
+</body>
+</html>

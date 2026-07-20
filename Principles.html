@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investing Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1a1a2e;
+  --ink2:#2d2d4a;
+  --ink3:#3d3d5c;
+  --cream:#f0ead6;
+  --cream2:#e8e0c8;
+  --cream3:#d4c9a8;
+  --gold:#d4a843;
+  --gold-dim:rgba(212,168,67,0.15);
+  --green:#4a9572;
+  --green-dim:rgba(74,149,114,0.15);
+  --red:#c24b4b;
+  --red-dim:rgba(194,75,75,0.12);
+  --blue:#4a7db5;
+  --blue-dim:rgba(74,125,181,0.12);
+  --amber:#c47d2a;
+  --amber-dim:rgba(196,125,42,0.12);
+  --border:rgba(240,234,214,0.1);
+  --border2:rgba(240,234,214,0.18);
+  --radius:14px;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--ink);
+  color:var(--cream);
+  min-height:100vh;
+  line-height:1.6;
+}
+
+/* ── Topbar ── */
+.topbar{
+  background:rgba(26,26,46,0.95);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border2);
+  padding:0 20px;
+  height:54px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+.tb-back{
+  background:none;border:none;cursor:pointer;
+  font-size:19px;color:rgba(240,234,214,0.5);padding:4px;
+  border-radius:6px;line-height:1;display:flex;align-items:center;
+  transition:color .15s;
+}
+.tb-back:hover{color:var(--cream);}
+.tb-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--cream);flex:1;}
+.tb-count{font-size:11px;color:rgba(240,234,214,0.4);font-family:'DM Mono',monospace;}
+
+/* ── Hero ── */
+.hero{
+  padding:48px 24px 36px;
+  max-width:1000px;
+  margin:0 auto;
+  text-align:center;
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';width:40px;height:1px;background:var(--gold);opacity:.4;
+}
+.hero-title{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(28px,5vw,44px);
+  color:var(--cream);
+  line-height:1.15;
+  margin-bottom:14px;
+}
+.hero-title em{
+  font-style:italic;
+  color:var(--gold);
+}
+.hero-sub{
+  font-size:14px;
+  color:rgba(240,234,214,0.55);
+  max-width:480px;
+  margin:0 auto;
+  line-height:1.7;
+}
+
+/* ── Filter bar ── */
+.filter-bar{
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  flex-wrap:wrap;
+  padding:0 20px 28px;
+}
+.fb{
+  padding:5px 14px;
+  border-radius:20px;
+  border:1px solid var(--border2);
+  background:none;
+  font-size:12px;
+  color:rgba(240,234,214,0.5);
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.fb:hover{color:var(--cream);border-color:rgba(240,234,214,0.3);}
+.fb.active{color:var(--ink);font-weight:500;}
+.fb-all.active{background:var(--cream);border-color:var(--cream);}
+.fb-buffett.active{background:var(--gold);border-color:var(--gold);}
+.fb-risk.active{background:var(--red);border-color:var(--red);}
+.fb-mindset.active{background:var(--green);border-color:var(--green);}
+.fb-japan.active{background:var(--blue);border-color:var(--blue);}
+
+/* ── Grid ── */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:12px;
+  padding:0 20px 60px;
+  max-width:1040px;
+  margin:0 auto;
+}
+
+/* ── Principle card ── */
+.pc{
+  background:var(--ink2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  position:relative;
+}
+.pc:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  border-color:var(--border2);
+}
+.pc.open{
+  border-color:var(--pc-accent,var(--gold));
+  box-shadow:0 0 0 1px var(--pc-accent,var(--gold));
+}
+
+/* Card top stripe */
+.pc-stripe{
+  height:3px;
+  width:100%;
+}
+
+/* Card visual area */
+.pc-visual{
+  padding:20px 20px 0;
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+}
+.pc-number{
+  font-family:'DM Serif Display',serif;
+  font-size:48px;
+  line-height:1;
+  opacity:.12;
+  flex-shrink:0;
+  letter-spacing:-.02em;
+  user-select:none;
+}
+.pc-icon-wrap{
+  width:52px;height:52px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* Card content */
+.pc-content{padding:14px 18px 16px;}
+.pc-tag{
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:7px;
+  opacity:.6;
+}
+.pc-title{
+  font-family:'DM Serif Display',serif;
+  font-size:18px;
+  color:var(--cream);
+  line-height:1.25;
+  margin-bottom:8px;
+}
+.pc-quote{
+  font-size:12px;
+  color:rgba(240,234,214,0.45);
+  line-height:1.6;
+  font-style:italic;
+  padding-left:10px;
+  border-left:2px solid;
+  margin-bottom:10px;
+}
+.pc-mm-preview{
+  font-size:12px;
+  color:rgba(240,234,214,0.55);
+  line-height:1.55;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* Expanded drawer */
+.pc-drawer{
+  display:none;
+  border-top:1px solid var(--border);
+  padding:14px 18px 16px;
+  background:rgba(0,0,0,0.2);
+}
+.pc-drawer.open{display:block;}
+.pc-en{
+  font-size:13px;
+  color:rgba(240,234,214,0.75);
+  line-height:1.75;
+  margin-bottom:12px;
+}
+.pc-mm-full{
+  font-size:12px;
+  color:rgba(240,234,214,0.55);
+  line-height:1.7;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.04);
+  border-radius:8px;
+  margin-bottom:10px;
+}
+.pc-lesson{
+  font-size:12px;
+  line-height:1.65;
+  padding:9px 12px;
+  border-radius:0 8px 8px 0;
+  border-left:3px solid;
+}
+.pc-lesson-lbl{
+  font-size:9px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:4px;
+  opacity:.7;
+}
+.pc-chevron{
+  position:absolute;
+  bottom:14px;right:16px;
+  font-size:15px;
+  color:rgba(240,234,214,0.3);
+  transition:transform .2s;
+}
+.pc.open .pc-chevron{transform:rotate(180deg);}
+
+/* ── Mobile ── */
+@media(max-width:560px){
+  .grid{grid-template-columns:1fr;padding:0 14px 40px;}
+  .hero{padding:32px 14px 24px;}
+  .filter-bar{padding:0 14px 20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back">
+    <i class="ti ti-arrow-left"></i>
+  </button>
+  <div class="tb-title">Investing Principles</div>
+  <span class="tb-count" id="tb-count">— principles</span>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Timeless wisdom</div>
+  <h1 class="hero-title">Rules that survive<br><em>every market cycle</em></h1>
+  <p class="hero-sub">Buffett, Graham, and classic Japanese market wisdom — the principles behind every good decision.</p>
+</div>
+
+<div class="filter-bar">
+  <button class="fb fb-all active" onclick="filter('all',this)">All</button>
+  <button class="fb fb-buffett" onclick="filter('buffett',this)">Buffett</button>
+  <button class="fb fb-risk" onclick="filter('risk',this)">Risk</button>
+  <button class="fb fb-mindset" onclick="filter('mindset',this)">Mindset</button>
+  <button class="fb fb-japan" onclick="filter('japan',this)">Japan</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+var OPEN = null;
+
+// ── SVG illustrations ─────────────────────────────────────────
+function svgScale(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<line x1="16" y1="4" x2="16" y2="28" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<line x1="6" y1="8" x2="26" y2="8" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<ellipse cx="8" cy="15" rx="5" ry="3" stroke="#d4a843" stroke-width="1.2" fill="none"/>'
+    +'<ellipse cx="24" cy="15" rx="5" ry="3" stroke="#d4a843" stroke-width="1.2" fill="none"/>'
+    +'<line x1="6" y1="8" x2="3" y2="15" stroke="#d4a843" stroke-width="1.2"/>'
+    +'<line x1="10" y1="8" x2="13" y2="15" stroke="#d4a843" stroke-width="1.2"/>'
+    +'<line x1="22" y1="8" x2="19" y2="15" stroke="#d4a843" stroke-width="1.2"/>'
+    +'<line x1="26" y1="8" x2="29" y2="15" stroke="#d4a843" stroke-width="1.2"/>'
+    +'</svg>';
+}
+function svgTree(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<line x1="16" y1="28" x2="16" y2="18" stroke="#4a9572" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<polygon points="16,4 6,20 26,20" stroke="#4a9572" stroke-width="1.2" fill="rgba(74,149,114,0.15)"/>'
+    +'<polygon points="16,10 8,22 24,22" stroke="#4a9572" stroke-width="1.2" fill="rgba(74,149,114,0.2)"/>'
+    +'</svg>';
+}
+function svgShield(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M16 4 L28 8 L28 18 Q28 25 16 29 Q4 25 4 18 L4 8 Z" stroke="#c24b4b" stroke-width="1.3" fill="rgba(194,75,75,0.1)"/>'
+    +'<polyline points="10,16 14,20 22,12" stroke="#c24b4b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+    +'</svg>';
+}
+function svgGlass(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<circle cx="14" cy="14" r="8" stroke="#4a7db5" stroke-width="1.3" fill="rgba(74,125,181,0.1)"/>'
+    +'<line x1="20" y1="20" x2="28" y2="28" stroke="#4a7db5" stroke-width="2" stroke-linecap="round"/>'
+    +'<line x1="11" y1="14" x2="17" y2="14" stroke="#4a7db5" stroke-width="1.2" stroke-linecap="round"/>'
+    +'<line x1="14" y1="11" x2="14" y2="17" stroke="#4a7db5" stroke-width="1.2" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgClock(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<circle cx="16" cy="16" r="11" stroke="#4a9572" stroke-width="1.3" fill="rgba(74,149,114,0.08)"/>'
+    +'<line x1="16" y1="9" x2="16" y2="16" stroke="#4a9572" stroke-width="1.8" stroke-linecap="round"/>'
+    +'<line x1="16" y1="16" x2="21" y2="19" stroke="#d4a843" stroke-width="1.8" stroke-linecap="round"/>'
+    +'<circle cx="16" cy="16" r="1.5" fill="#4a9572"/>'
+    +'</svg>';
+}
+function svgBook(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M6 6 Q6 4 8 4 L16 4 L16 28 L8 28 Q6 28 6 26 Z" stroke="#d4a843" stroke-width="1.2" fill="rgba(212,168,67,0.1)"/>'
+    +'<path d="M16 4 L24 4 Q26 4 26 6 L26 26 Q26 28 24 28 L16 28 Z" stroke="#d4a843" stroke-width="1.2" fill="rgba(212,168,67,0.06)"/>'
+    +'<line x1="9" y1="10" x2="14" y2="10" stroke="#d4a843" stroke-width="1" stroke-linecap="round"/>'
+    +'<line x1="9" y1="13" x2="14" y2="13" stroke="#d4a843" stroke-width="1" stroke-linecap="round"/>'
+    +'<line x1="18" y1="10" x2="23" y2="10" stroke="#d4a843" stroke-width="1" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgMirror(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<ellipse cx="16" cy="13" rx="8" ry="9" stroke="#c47d2a" stroke-width="1.3" fill="rgba(196,125,42,0.1)"/>'
+    +'<line x1="16" y1="22" x2="16" y2="28" stroke="#c47d2a" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<line x1="11" y1="28" x2="21" y2="28" stroke="#c47d2a" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<line x1="12" y1="11" x2="14" y2="13" stroke="#c47d2a" stroke-width="1.2" stroke-linecap="round"/>'
+    +'<line x1="14" y1="13" x2="20" y2="9" stroke="#c47d2a" stroke-width="1.2" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgCastle(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<rect x="7" y="14" width="18" height="14" stroke="#4a7db5" stroke-width="1.2" fill="rgba(74,125,181,0.1)"/>'
+    +'<rect x="7" y="10" width="4" height="6" stroke="#4a7db5" stroke-width="1.2" fill="rgba(74,125,181,0.1)"/>'
+    +'<rect x="14" y="10" width="4" height="6" stroke="#4a7db5" stroke-width="1.2" fill="rgba(74,125,181,0.1)"/>'
+    +'<rect x="21" y="10" width="4" height="6" stroke="#4a7db5" stroke-width="1.2" fill="rgba(74,125,181,0.1)"/>'
+    +'<rect x="13" y="20" width="6" height="8" stroke="#4a7db5" stroke-width="1.2" fill="none"/>'
+    +'<line x1="8" y1="4" x2="8" y2="10" stroke="#4a7db5" stroke-width="1.2" stroke-linecap="round"/>'
+    +'<line x1="24" y1="4" x2="24" y2="10" stroke="#4a7db5" stroke-width="1.2" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgWave(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M3 18 Q7 10 12 18 Q17 26 22 18 Q27 10 29 14" stroke="#4a9572" stroke-width="1.5" fill="none" stroke-linecap="round"/>'
+    +'<path d="M3 22 Q7 14 12 22 Q17 30 22 22 Q27 14 29 18" stroke="rgba(74,149,114,0.4)" stroke-width="1" fill="none" stroke-linecap="round"/>'
+    +'<circle cx="16" cy="10" r="3" stroke="#d4a843" stroke-width="1.2" fill="rgba(212,168,67,0.15)"/>'
+    +'<line x1="16" y1="4" x2="16" y2="7" stroke="#d4a843" stroke-width="1.2" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgSeed(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M16 28 Q16 14 8 8 Q16 6 24 12 Q26 18 16 28 Z" stroke="#4a9572" stroke-width="1.2" fill="rgba(74,149,114,0.15)"/>'
+    +'<line x1="16" y1="28" x2="16" y2="16" stroke="#4a9572" stroke-width="1.2" stroke-linecap="round"/>'
+    +'<line x1="16" y1="20" x2="12" y2="16" stroke="#4a9572" stroke-width="1" stroke-linecap="round"/>'
+    +'</svg>';
+}
+function svgBridge(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<line x1="3" y1="22" x2="29" y2="22" stroke="#c24b4b" stroke-width="1.5" stroke-linecap="round"/>'
+    +'<path d="M3 22 Q8 10 16 8 Q24 10 29 22" stroke="#c24b4b" stroke-width="1.3" fill="none"/>'
+    +'<line x1="10" y1="22" x2="12" y2="14" stroke="#c24b4b" stroke-width="1" opacity=".5"/>'
+    +'<line x1="16" y1="22" x2="16" y2="11" stroke="#c24b4b" stroke-width="1" opacity=".5"/>'
+    +'<line x1="22" y1="22" x2="20" y2="14" stroke="#c24b4b" stroke-width="1" opacity=".5"/>'
+    +'</svg>';
+}
+function svgFear(){
+  return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="M16 4 L29 26 L3 26 Z" stroke="#d4a843" stroke-width="1.3" fill="rgba(212,168,67,0.08)"/>'
+    +'<line x1="16" y1="12" x2="16" y2="19" stroke="#d4a843" stroke-width="2" stroke-linecap="round"/>'
+    +'<circle cx="16" cy="22" r="1.5" fill="#d4a843"/>'
+    +'</svg>';
+}
+
+// ── Principles data ───────────────────────────────────────────
+var PRINCIPLES = [
+  {
+    id:'p01', tag:'buffett', num:'01',
+    accent:'#d4a843', accentDim:'rgba(212,168,67,0.15)',
+    icon: svgScale(),
+    title:'Never Lose Money',
+    quote:'"Rule No. 1: Never lose money. Rule No. 2: Never forget Rule No. 1." — Warren Buffett',
+    mm_preview:'ငွေဆုံးရှုံးခြင်းသည် အမြတ်ရရှိရန်ထက် နှစ်ဆ ပိုခဲယဉ်းသော ကာယကံဖြစ်သည်။',
+    exp_en:'This is not about avoiding all losses — it is about the asymmetry of loss and gain. A 50% loss requires a 100% gain just to break even. Protecting capital is always more important than chasing returns. Every decision should start with "how much can I lose?" not "how much can I make?"',
+    exp_mm:'ဆုံးရှုံးမှု 50% ဆိုပါက ပြန်ကောင်းရန် 100% တက်ရမည်ဖြစ်သောကြောင့် ငွေကိုကာကွယ်ခြင်းသည် အမြတ်ကိုမျှော်လင့်ခြင်းထက် အမြဲအဓိကဖြစ်သည်။ ဆုံးဖြတ်ချက်တိုင်း "ဘယ်လောက် ဆုံးနိုင်သလဲ" မှ စတင်ပါ — "ဘယ်လောက် ရနိုင်သလဲ" မဟုတ်ဘဲ။',
+    lesson:'Before every trade, calculate your maximum possible loss first. If you cannot accept that loss, do not enter.',
+    lesson_mm:'Trade မဝင်မီ အမြင့်ဆုံးဆုံးရှုံးနိုင်မှုကို ဦးစွာတွက်ပါ။ ထိုဆုံးရှုံးမှုကို မနှောင်မညှဉ်းနိုင်ပါက မဝင်ပါနှင့်။'
+  },
+  {
+    id:'p02', tag:'buffett', num:'02',
+    accent:'#4a9572', accentDim:'rgba(74,149,114,0.15)',
+    icon: svgTree(),
+    title:'Compounding is the Eighth Wonder',
+    quote:'"Compound interest is the eighth wonder of the world. He who understands it, earns it; he who doesn\'t, pays it." — attributed to Einstein',
+    mm_preview:'ငွေသည် အချိန်ကြာလေ အမြတ်ကတိတိ ပွားလေ — ဒါသည် ဓနဥစ္စာ တည်ဆောက်ခြင်း၏ မူလနိယာမဖြစ်သည်။',
+    exp_en:'¥1,000,000 invested at 10% annually becomes ¥1,100,000 after year 1. After 30 years it becomes ¥17,449,402 — without adding a single yen more. Time is the most powerful variable in investing. Starting earlier, even with less money, almost always beats starting later with more.',
+    exp_mm:'နှစ်တိုင်း 10% ဖြင့် ¥1,000,000 ရင်းနှီးမြှုပ်နှံပါက နှစ် 30 ကြာသောအခါ ¥17,449,402 ဖြစ်လာသည် — တစ်ပြားမှ မထပ်ဖြည့်ဘဲ။ နောက်ပိုင်းတွင် ငွေပိုများစွာနှင့် စတင်သည်ထက် ပိုငယ်ငယ်ကတည်းက နည်းနည်းနှင့် စတင်ခြင်း အမြဲနီးပါး ပိုကောင်းသည်။',
+    lesson:'The best time to start was 10 years ago. The second best time is today. Even small regular investments compound dramatically over decades.',
+    lesson_mm:'စတင်ရမည့် အကောင်းဆုံးအချိန်သည် ၁၀ နှစ်အရင်ဖြစ်သည်။ ဒုတိယအကောင်းဆုံးမှာ ယနေ့ဖြစ်သည်။ သေးငယ်သော ပုံမှန်ရင်းနှီးမြှုပ်နှံမှုများသည် ဆယ်စုနှစ်ကျော်ကြာပါက ကြီးမားစွာ ကြီးထွားသည်။'
+  },
+  {
+    id:'p03', tag:'risk', num:'03',
+    accent:'#c24b4b', accentDim:'rgba(194,75,75,0.12)',
+    icon: svgShield(),
+    title:'Risk Comes from Not Knowing',
+    quote:'"Risk comes from not knowing what you are doing." — Warren Buffett',
+    mm_preview:'ဈေးကွက်သည် မသိနားမလည်သောသူများထံမှ သိနားလည်သောသူများသို့ ငွေကြေးလွှဲပြောင်းပေးသည့် ကိရိယာဖြစ်သည်။',
+    exp_en:'Volatility is not risk. A stock that drops 30% in a business you understand deeply is an opportunity. A stock that drops 5% in a business you know nothing about is a risk. The solution to risk is not diversification — it is knowledge. Only invest in what you genuinely understand.',
+    exp_mm:'ဈေးနှုန်းလှုပ်ရှားမှုသည် Risk မဟုတ်ဘဲ။ ကျွမ်းကျင်စွာ နားလည်သောလုပ်ငန်း 30% ကျဆင်းသောအခါ ဝင်ရောက်ရမည့် အခွင့်အရေးဖြစ်သည်။ ဘာမှမသိသော ကုမ္ပဏီ 5% ကျဆင်းသောအခါ စစ်မှန်သော Risk ဖြစ်သည်။ Risk ၏ ဖြေရှင်းချက်မှာ Diversification မဟုတ်ဘဲ — Knowledge ဖြစ်သည်။',
+    lesson:'Before buying any stock, answer: What does this company sell? How does it make money? Who are its competitors? If you cannot answer clearly — do not buy.',
+    lesson_mm:'မည်သည့်စတော့မဆို ဝင်ဝယ်မတိုင်မီ ဤမေးခွန်းများကို ဖြေပါ — ဤကုမ္ပဏီ ဘာရောင်းသလဲ၊ ဘယ်လိုငွေရှာသလဲ၊ ပြိုင်ဘက်ဘယ်သူတွေဆိုသည်ကို ရှင်းလင်းစွာ မဖြေနိုင်ပါက မဝင်ဝယ်ပါနှင့်။'
+  },
+  {
+    id:'p04', tag:'buffett', num:'04',
+    accent:'#4a7db5', accentDim:'rgba(74,125,181,0.12)',
+    icon: svgGlass(),
+    title:'Price vs Value',
+    quote:'"Price is what you pay. Value is what you get." — Warren Buffett',
+    mm_preview:'စတော့ဈေး သည် ဈေးကွက်၏ ခံစားချက်ဖြစ်သည်— တန်ဖိုးမဟုတ်ဘဲ။ ကွာဟချက်ကို ရှာဖွေတွေ့ရှိသူသည် အနိုင်ရသောသူဖြစ်သည်။',
+    exp_en:'A stock\'s price is simply what the market feels like paying today. A stock\'s value is what the underlying business is actually worth. When price falls below value — that is the buying opportunity. When price far exceeds value — that is the danger zone. Charts show price. Research reveals value.',
+    exp_mm:'စတော့ဈေးသည် ဈေးကွက်သည် ယနေ့ ပေးချင်သောပမာဏသာဖြစ်သည်။ စတော့တန်ဖိုးမှာ အသားတင်လုပ်ငန်း တကယ်တန်ဖိုးဖြစ်သည်။ ဈေး < တန်ဖိုး ဆိုသောအခါ ဝင်ဝယ်ရမည့် အခွင့်အရေးဖြစ်သည်။ Chart သည် ဈေးပြသည်— သုတေသနနှင့် တန်ဖိုးကိုရှာပါ။',
+    lesson:'Technical analysis tells you WHEN to buy. Fundamental analysis tells you WHAT to buy. Both matter. Neither alone is enough.',
+    lesson_mm:'Technical Analysis သည် ဘယ်အချိန် ဝင်ဝယ်ရမည်ကိုပြသည်။ Fundamental Analysis သည် ဘာကိုဝင်ဝယ်ရမည်ကိုပြသည်။ နှစ်ခုစလုံး လိုအပ်သည် — တစ်ခုတည်း မလုံလောက်ဘဲ။'
+  },
+  {
+    id:'p05', tag:'buffett', num:'05',
+    accent:'#4a9572', accentDim:'rgba(74,149,114,0.15)',
+    icon: svgClock(),
+    title:'Time in Market Beats Timing',
+    quote:'"Our favourite holding period is forever." — Warren Buffett',
+    mm_preview:'ကောင်းသောကုမ္ပဏီတစ်ခုတွင် ကြာရှည် ရင်းနှီးမြှုပ်နှံနေခြင်းသည် ဈေးကွက် Timing ကြည့်ရန် ကြိုးစားသည်ထက် အနိုင်ရနိုင်ချေ အမြဲ ပိုများသည်။',
+    exp_en:'The best investors in history did not succeed by predicting markets — they succeeded by owning great businesses and holding them for decades. Missing just the 10 best trading days in a decade can halve your returns. The market always rewards patience over cleverness.',
+    exp_mm:'သမိုင်းထဲတွင် အကောင်းဆုံး ရင်းနှီးမြှုပ်နှံသူများသည် ဈေးကွက် Timing ကြည့်ပြီး မအောင်မြင်ကြဘဲ — ကောင်းသောလုပ်ငန်းများ ဆယ်စုနှစ်ကြာ ကိုင်ထားခြင်းဖြင့် အောင်မြင်ကြသည်။ ဈေးကွက်သည် ဉာဏ်ကောင်းခြင်းထက် ဓမ္မဓိဋ္ဌာန်ကျကျ ကြာရှည်ကိုင်ထားသောသူကို အမြဲ ဆုပေးသည်။',
+    lesson:'Stop checking your portfolio every day. Every time you look, you create an opportunity to make an emotional decision. Monthly reviews are enough for long-term investors.',
+    lesson_mm:'Portfolio ကို နေ့တိုင်းကြည့်ခြင်းကို ရပ်ပါ။ ကြည့်တိုင်း Emotional ဆုံးဖြတ်ချက် ချနိုင်သောအခွင့် ဖန်တီးနေသည်။ ရေရှည် Investor များအတွက် လစဉ် Review သာ လုံလောက်သည်။'
+  },
+  {
+    id:'p06', tag:'mindset', num:'06',
+    accent:'#d4a843', accentDim:'rgba(212,168,67,0.15)',
+    icon: svgBook(),
+    title:'Know What You Own',
+    quote:'"Never invest in a business you cannot understand." — Warren Buffett',
+    mm_preview:'မိမိ ကိုင်ထားသောစတော့ကို ပညာရှိတစ်ဦးအား ၅ မိနစ်အတွင်း ရှင်းပြနိုင်မပါက ထိုကုမ္ပဏီကို သင် နားမလည်ဘဲ ကိုင်ထားသည်ဟု ဆိုနိုင်သည်။',
+    exp_en:'The Cocktail Party test — if you cannot explain a stock to someone in plain language in 60 seconds, you do not understand it well enough to own it. Business models do not need to be complex. The best investments are often in simple businesses doing one thing exceptionally well.',
+    exp_mm:'Cocktail Party Test — 60 စက္ကန့်အတွင်း ရိုးရှင်းသောဘာသာစကားဖြင့် မည်သူမဆိုကို ရှင်းပြနိုင်မပါက ထိုစတော့ကို ကိုင်ထားလောက်အောင် နားလည်မှုမရှိသေးဘဲ။ အကောင်းဆုံး ရင်းနှီးမြှုပ်နှံမှုများသည် မကြာခဏ တစ်ခုကိုသာ ထူးချွန်စွာ လုပ်ဆောင်သောရိုးရှင်းသောလုပ်ငန်းများတွင် ဖြစ်သည်။',
+    lesson:'For every stock you own: write in one sentence what the company does and why customers choose it over competitors. If you cannot — research more or sell.',
+    lesson_mm:'မိမိ ကိုင်ထားသောစတော့တိုင်းအတွက် — ဤကုမ္ပဏီ ဘာလုပ်ကြောင်းနှင့် ဘာကြောင့် ဖောက်သည်များ ပြိုင်ဘက်ထက် ဦးစားပေးကြောင်းကို ဝါကျတစ်ကြောင်းဖြင့် ရေးပါ။ မရေးနိုင်ပါက — ပိုလေ့လာပါ သို့မဟုတ် ရောင်းပါ။'
+  },
+  {
+    id:'p07', tag:'mindset', num:'07',
+    accent:'#c47d2a', accentDim:'rgba(196,125,42,0.12)',
+    icon: svgMirror(),
+    title:'Mr Market is Your Servant',
+    quote:'"Mr Market is there to serve you, not to guide you." — Benjamin Graham',
+    mm_preview:'ဈေးကွက်သည် မနည်းသောနေ့ ဈေးကောင်းကောင်းဖြင့် ဝင်ဝယ်ရန် ကမ်းလှမ်းသည်၊ တခါတရံ အလွန်မြင့်သောဈေးဖြင့်ကမ်းလှမ်းသည်— မင်းဆုံးဖြတ်ရမည်မှာ ဘယ်ကမ်းလှမ်းချက်ကို လက်ခံမည်ဆိုသည်သာဖြစ်သည်။',
+    exp_en:'Benjamin Graham invented the metaphor of Mr Market — an emotionally unstable business partner who shows up daily offering to buy your shares or sell you his. When he is depressed and offers to sell cheap — buy. When he is manic and offers to buy expensive — sell. His mood swings are your opportunity.',
+    exp_mm:'Benjamin Graham ၏ Mr Market မှာ နေ့တိုင်း မင်း၏ ရှယ်ယာများ ဝင်ဝယ်မည် သို့မဟုတ် သူ၏ ရှယ်ယာများ ရောင်းမည်ဟု ကမ်းလှမ်းသော စိတ်မတည်ငြိမ်သော လုပ်ဖော်ကိုင်ဖက်တစ်ဦးဖြစ်သည်။ စိတ်ဓာတ်ကျကြောင်းကျဆင်းသောဈေးဖြင့် ရောင်းချင်သောအခါ — ဝင်ဝယ်ပါ။ ဝမ်းသာသောအခါ ဈေးကြီးကြီးဖြင့် ဝင်ဝယ်လာသောအခါ — ရောင်းပါ။',
+    lesson:'When everyone is talking about a stock at a party or on social media — that is usually Mr Market in manic phase. When nobody wants to discuss stocks — that is usually his depressed phase.',
+    lesson_mm:'လူတိုင်း ပါတီများတွင် သို့မဟုတ် Social Media တွင် တစ်ခုတည်းသောစတော့ကို ပြောနေသောအခါ — Mr Market Manic Phase ဖြစ်တတ်သည်။ မည်သူမျှ စတော့ပြောချင်မသောအခါ — Mr Market Depressed Phase ဖြစ်သည်။'
+  },
+  {
+    id:'p08', tag:'risk', num:'08',
+    accent:'#4a7db5', accentDim:'rgba(74,125,181,0.12)',
+    icon: svgCastle(),
+    title:'The Economic Moat',
+    quote:'"The key to investing is determining the competitive advantage of any given company, and above all the durability of that advantage." — Warren Buffett',
+    mm_preview:'ကုမ္ပဏီတစ်ခု၏ Moat (ကာကွယ်ရေးကြော်ငြာ) သည် ပြိုင်ဘက်များ ဝင်ရောက်ရန် ခဲယဉ်းစေသော အရာဖြစ်ပြီး — ရေရှည် အမြတ်ဖြစ်ထွန်းမှုကို ဖိတ်ဆောင်သည်။',
+    exp_en:'An economic moat is a durable competitive advantage — a reason why customers keep choosing this company over cheaper or newer rivals. Types of moat: brand power (Coca-Cola), switching costs (Microsoft Office), network effects (Visa), cost advantage (Costco), regulatory license (banks). No moat = profits will eventually be competed away.',
+    exp_mm:'Economic Moat ဆိုသည်မှာ ဖောက်သည်များ ပိုပေါသော သို့မဟုတ် အသစ်သောပြိုင်ဘက်များထက် ဤကုမ္ပဏီကိုသာ ဆက်ရွေးချယ်ကြသောအကြောင်းပြချက်ဖြစ်သည်။ Brand Power (Coca-Cola)၊ Switching Cost (Microsoft)၊ Network Effect (Visa)၊ ကုန်ကျစရိတ်သာသာ (Costco)၊ ဥပဒေလိုင်စင် (ဘဏ်) တို့သည် Moat အမျိုးအစားများဖြစ်သည်။',
+    lesson:'For every company you research, ask: "What would stop me from switching to a competitor today?" If you cannot think of a strong answer, the moat is weak.',
+    lesson_mm:'စစ်ဆေးနေသောကုမ္ပဏီတိုင်းအတွက် — "ယနေ့ ပြိုင်ဘက်တစ်ဦးဆီ ကူးမသွားစေသောအရာ ဘာဆိုသလဲ" ဟု မေးပါ။ ပြင်းထန်သောဖြေကြားချက် မတွေ့ပါက Moat အားနည်းသည်ဟု ဆိုနိုင်သည်။'
+  },
+  {
+    id:'p09', tag:'mindset', num:'09',
+    accent:'#4a9572', accentDim:'rgba(74,149,114,0.15)',
+    icon: svgWave(),
+    title:'Be Fearful When Others Are Greedy',
+    quote:'"Be fearful when others are greedy, and greedy when others are fearful." — Warren Buffett',
+    mm_preview:'ဈေးကွက် သတင်းကောင်းသာ ပြောနေသောအချိန် ထွက်ရန်ပြင်ဆင်ပါ — ဈေးကွက် ဗေဒင်ဆိုးသောအချိန် ဝင်ဝယ်ရန်ပြင်ဆင်ပါ။',
+    exp_en:'This sounds simple but is psychologically nearly impossible to execute. When markets are crashing and everyone is selling — every instinct tells you to sell too. That is exactly when Buffett buys. The best investments often feel uncomfortable at the time of purchase.',
+    exp_mm:'ဒါသည် ရိုးရှင်းပုံပေါ်သော်လည်း စိတ်ပညာအရ လုပ်ဆောင်ရန် အလွန်ခဲယဉ်းသည်။ ဈေးကွက် ပျက်ကျနေပြီး လူတိုင်း ရောင်းနေသောအခါ — ရင်ဆိုင်မှုတိုင်း မင်းကိုလည်း ရောင်းရန် ပြောနေသည်။ ထိုအချိန်ကျမှ Buffett ဝင်ဝယ်သည်။ အကောင်းဆုံး ရင်းနှီးမြှုပ်နှံမှုများသည် ဝင်ဝယ်ချိန်တွင် မကောင်းမြောက်ဟု ခံစားရတတ်သည်။',
+    lesson:'Keep a watchlist of high-quality companies at fair or better prices. When the market crashes and panic surrounds you — that list is where you look, not the exit.',
+    lesson_mm:'တန်ဖိုးကောင်းသောဈေးဖြင့် ဝင်ဝယ်နိုင်သောကုမ္ပဏီကောင်းများ Watchlist ထားပါ။ ဈေးကွက်ပျက်ကျပြီး Panic ဝန်းရံသောအခါ — ထို List ကိုကြည့်ပါ — ထွက်ပေါက်ကိုမဟုတ်ဘဲ။'
+  },
+  {
+    id:'p10', tag:'risk', num:'10',
+    accent:'#c24b4b', accentDim:'rgba(194,75,75,0.12)',
+    icon: svgBridge(),
+    title:'Margin of Safety',
+    quote:'"The three most important words in investing are margin of safety." — Benjamin Graham',
+    mm_preview:'တန်ဖိုးထက် သိသိသာသာ ပေါသောဈေးဖြင့်သာ ဝင်ဝယ်ပါ — ဆုံးရှုံးမှုကို ကာကွယ်သော ဘေးကင်းအကွာအဝေးထားပါ။',
+    exp_en:'If you calculate a stock is worth ¥1,000, do not buy it at ¥900 — buy it at ¥600 or ¥700. The gap between what you pay and what it is worth is your margin of safety. It protects you when your analysis is wrong (and it sometimes will be). The larger the margin, the safer the investment.',
+    exp_mm:'စတော့တစ်ခုတန်ဖိုးကို ¥1,000 ဟုတွက်ထားပါက ¥900 ဖြင့် မဝင်ဝယ်ဘဲ — ¥600 သို့မဟုတ် ¥700 ဖြင့်သာ ဝင်ဝယ်ပါ။ မင်းပေးသောဈေးနှင့် စစ်မှန်တန်ဖိုး ၏ ကွာဟချက်သည် မင်း၏ Safety Net ဖြစ်သည်။ မိမိ ခွဲခြမ်းစိတ်ဖြာမှုမှားသောအခါ ကာကွယ်ပေးသည်။',
+    lesson:'Never pay full price for a stock you believe is fairly valued. A "fair" price leaves no room for error. Always demand a discount.',
+    lesson_mm:'သင်ဟုတ်မှန်ဟုထင်သောကုမ္ပဏီကိုပင် တန်ကြေးပြည့်ပြည့် မပေးဝယ်ပါနှင့်။ "ဈေးတန်" ဆိုသောဈေးသည် အမှားများအတွက် နေရာချန်ထားမည်မဟုတ်ဘဲ။ အမြဲ လျှော့ဈေးတောင်းပါ။'
+  },
+  {
+    id:'p11', tag:'japan', num:'11',
+    accent:'#d4a843', accentDim:'rgba(212,168,67,0.15)',
+    icon: svgFear(),
+    title:'噂で買って事実で売れ',
+    quote:'"Buy the rumor, sell the news." — Classic market principle',
+    mm_preview:'ကောင်းသောသတင်း မထွက်မီ ဈေးသည် မကြာခဏ တက်ပြီး သတင်းအတည်ပြုချိန်တွင် ပြန်ကျသည် — အကြောင်းမှာ မျှော်လင့်ချက်ပြည့်ဝသွားသောကြောင့်ဖြစ်သည်။',
+    exp_en:'Markets are forward-looking. By the time good news is confirmed, it is already priced in — because smart money bought in anticipation weeks or months earlier. The announcement becomes the exit trigger for those who positioned early. This is why stocks often fall on "good news."',
+    exp_mm:'ဈေးကွက်သည် အနာဂတ်ကြည့်သောကိရိယာဖြစ်သည်။ ကောင်းသောသတင်း အတည်ဖြစ်သောအချိန်ဆိုလျှင် ၎င်းသည် ဈေးထဲ အကြိုပါဝင်ပြီးသားဖြစ်သည် — ဉာဏ်ကောင်းသောငွေများ ရက်သတ္တပတ် သို့မဟုတ် လများ ကြိုတင်ဝင်ဝယ်ထားပြီးဖြစ်သောကြောင့်ဖြစ်သည်။ ကြေညာချက်သည် ကြိုတင်ပြင်ဆင်ထားသောသူများအတွက် ထွက်ချိန် Signal ဖြစ်ပါသည်။',
+    lesson:'When you feel excited about upcoming news for a stock you own — prepare your exit plan, not your add-more plan.',
+    lesson_mm:'မိမိ ကိုင်ထားသောစတော့အတွက် လာမည့်သတင်းကြောင့် ဝမ်းသာနေပါက — ထပ်ဝင်ဝယ်ရမည်မဟုတ်ဘဲ ထွက်ရမည့် Plan ကို ပြင်ဆင်ပါ။'
+  },
+  {
+    id:'p12', tag:'japan', num:'12',
+    accent:'#4a9572', accentDim:'rgba(74,149,114,0.15)',
+    icon: svgSeed(),
+    title:'塩漬けにしない — Cut Before You Pickle',
+    quote:'"The first loss is the best loss." — Trading maxim',
+    mm_preview:'塩漬け株 (ဆားချဉ်ပိုး) ဖြစ်နေသောစတော့ — ဝယ်ဈေးပြန်ရသည်အထိ ဆိုင်းငံ့ထားသောကြောင့် ထာဝရ ကြာနေနိုင်သောစတော့ — သည် ငွေကြေးမြင်နိုင်သော အဆိုးဆုံး နေရာဖြစ်သည်။',
+    exp_en:'A 塩漬け stock is one where you are waiting for a price that may never return. While that capital sits frozen in a losing position, it cannot be deployed into a winning one. The opportunity cost compounds just like interest — except in reverse. The discipline of cutting losses is what separates professionals from amateurs.',
+    exp_mm:'塩漬け Stock တွင် ထားသောငွေသည် ပြန်မလာနိုင်သောဈေးကိုစောင့်နေသောကြောင့် — အနိုင်ရနိုင်သောနေရာသို့ မသုံးနိုင်ဘဲ ရှိနေသောငွေဖြစ်သည်။ Opportunity Cost သည် အတိုးကဲ့သို့ ပွားနေသည် — သို့သော် ဆန့်ကျင်ဘက်ဦးတည်ချက်ဖြင့်ဖြစ်သည်။ အရှုံးဖြတ်နိုင်သောစည်းကျပ်မှုသည် Professional ကို Amateur နှင့် ခွဲခြားစေသောအရာဖြစ်သည်။',
+    lesson:'Every month review your losing positions with one question: "Would I buy this at today\'s price if I had the cash?" No → sell. This removes anchoring bias from the decision.',
+    lesson_mm:'လစဉ် အရှုံးပြနေသော Position များကို "ငွေရှိပါက ဒီနေ့ ဒီဈေးဖြင့် ဝင်ဝယ်မလား" ဟု မေးကာ ပြန်သုံးသပ်ပါ။ မဝယ်ဘူးဆိုပါက → ရောင်းပါ။ ဤနည်းသည် Anchoring Bias ကို ဆုံးဖြတ်ချက်မှ ဖယ်ရှားသည်။'
+  }
+];
+
+// ── Filter & render ───────────────────────────────────────────
+var activeTag = 'all';
+
+function filter(tag, btn){
+  activeTag = tag;
+  document.querySelectorAll('.fb').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  render();
+}
+
+function render(){
+  var items = activeTag === 'all'
+    ? PRINCIPLES
+    : PRINCIPLES.filter(function(p){ return p.tag === activeTag; });
+
+  document.getElementById('tb-count').textContent = items.length + ' principles';
+
+  var html = '';
+  items.forEach(function(p){
+    var isOpen = OPEN === p.id;
+    html += '<div class="pc'+(isOpen?' open':'')+'" id="pc-'+p.id+'" onclick="toggle(\''+p.id+'\')" style="--pc-accent:'+p.accent+';">'
+          + '<div class="pc-stripe" style="background:'+p.accent+';"></div>'
+          + '<div class="pc-visual">'
+          +   '<div class="pc-number" style="color:'+p.accent+'">'+p.num+'</div>'
+          +   '<div class="pc-icon-wrap" style="background:'+p.accentDim+';">'+p.icon+'</div>'
+          + '</div>'
+          + '<div class="pc-content">'
+          +   '<div class="pc-tag" style="color:'+p.accent+'">'+p.tag+' principle</div>'
+          +   '<div class="pc-title">'+p.title+'</div>'
+          +   '<div class="pc-quote" style="border-color:'+p.accent+';">'+p.quote+'</div>'
+          +   '<div class="pc-mm-preview">'+p.mm_preview+'</div>'
+          + '</div>'
+          + '<div class="pc-drawer'+(isOpen?' open':'')+'">'
+          +   '<div class="pc-en">'+p.exp_en+'</div>'
+          +   '<div class="pc-mm-full">'+p.exp_mm+'</div>'
+          +   '<div class="pc-lesson" style="background:'+p.accentDim+';border-color:'+p.accent+';color:'+p.accent+';">'
+          +     '<div class="pc-lesson-lbl">Action / Lesson</div>'
+          +     p.lesson+'<br><br>'
+          +     '<span style="opacity:.7;font-style:italic;font-size:11px;">'+p.lesson_mm+'</span>'
+          +   '</div>'
+          + '</div>'
+          + '<i class="ti ti-chevron-down pc-chevron'+(isOpen?' open':'')+'" aria-hidden="true"></i>'
+          + '</div>';
+  });
+  document.getElementById('grid').innerHTML = html;
+}
+
+function toggle(id){
+  OPEN = (OPEN === id) ? null : id;
+  render();
+  if(OPEN){
+    var el = document.getElementById('pc-'+id);
+    if(el) setTimeout(function(){ el.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 50);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

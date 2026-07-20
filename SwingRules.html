@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swing Trading Rules</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1a1a2e;--ink2:#252540;--ink3:#32324e;
+  --cream:#f0ead6;--cream2:#e8e0c8;--cream3:#c8bfa0;
+  --gold:#d4a843;--gold-dim:rgba(212,168,67,0.12);
+  --g:#4a9572;--g-dim:rgba(74,149,114,0.12);
+  --r:#c24b4b;--r-dim:rgba(194,75,75,0.1);
+  --a:#c47d2a;--a-dim:rgba(196,125,42,0.1);
+  --b:#4a7db5;--b-dim:rgba(74,125,181,0.1);
+  --border:rgba(240,234,214,0.08);--border2:rgba(240,234,214,0.16);
+  --radius:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--ink);color:var(--cream);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:rgba(26,26,46,0.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border2);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:rgba(240,234,214,0.5);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:color .15s;}
+.tb-back:hover{color:var(--cream);}
+.tb-title{font-size:15px;font-weight:600;color:var(--cream);flex:1;}
+.tb-sub{font-size:11px;color:rgba(240,234,214,0.4);}
+
+/* ── Hero ── */
+.hero{padding:40px 20px 28px;max-width:920px;margin:0 auto;text-align:center;}
+.hero-eyebrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:var(--gold);opacity:.4;}
+.hero-title{font-size:clamp(26px,5vw,40px);font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:12px;}
+.hero-title em{font-style:italic;color:var(--gold);}
+.hero-sub{font-size:13px;color:rgba(240,234,214,0.55);max-width:480px;margin:0 auto;line-height:1.7;}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:0;max-width:920px;margin:0 auto 0;padding:0 20px;border-bottom:1px solid var(--border2);}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:rgba(240,234,214,0.45);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.tab:hover{color:var(--cream);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── Pages ── */
+.tab-page{display:none;max-width:920px;margin:0 auto;padding:20px 20px 48px;}
+.tab-page.active{display:block;}
+
+/* ── Section header ── */
+.section-hd{margin-bottom:14px;margin-top:28px;}
+.section-hd:first-child{margin-top:0;}
+.sh-eyebrow{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream3);margin-bottom:6px;}
+.sh-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px;}
+
+/* ── Rule cards ── */
+.rules-grid{display:flex;flex-direction:column;gap:8px;}
+.rule-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+.rule-card:hover{border-color:var(--border2);}
+.rule-card.open{border-color:var(--rc-accent);box-shadow:0 0 0 1px var(--rc-accent);}
+.rc-head{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+.rc-num{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rc-title{font-size:14px;font-weight:600;color:var(--cream);flex:1;line-height:1.3;}
+.rc-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;flex-shrink:0;}
+.rc-chev{font-size:14px;color:rgba(240,234,214,0.3);transition:transform .2s;flex-shrink:0;}
+.rc-chev.open{transform:rotate(180deg);}
+.rc-body{display:none;padding:0 16px 14px 52px;}
+.rc-body.open{display:block;}
+.rc-en{font-size:13px;color:rgba(240,234,214,0.75);line-height:1.75;margin-bottom:8px;}
+.rc-mm{font-size:12px;color:rgba(240,234,214,0.45);line-height:1.7;background:rgba(255,255,255,0.04);border-radius:7px;padding:8px 10px;margin-bottom:8px;font-style:italic;}
+.rc-why{font-size:12px;line-height:1.65;padding:8px 11px;border-radius:0 7px 7px 0;border-left:3px solid;}
+
+/* ── Requirements tab ── */
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.req-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.req-icon{font-size:22px;margin-bottom:10px;}
+.req-name{font-size:14px;font-weight:600;color:var(--cream);margin-bottom:8px;}
+.req-items{display:flex;flex-direction:column;gap:5px;}
+.req-item{font-size:12px;color:rgba(240,234,214,0.65);line-height:1.55;display:flex;align-items:flex-start;gap:6px;}
+.req-item::before{content:'—';color:rgba(240,234,214,0.25);flex-shrink:0;margin-top:1px;}
+.req-mm{font-size:11px;color:rgba(240,234,214,0.35);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);line-height:1.6;}
+
+/* ── Mindset tab ── */
+.trap-grid{display:flex;flex-direction:column;gap:10px;}
+.trap-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.trap-num{font-size:32px;font-weight:700;opacity:.1;float:right;line-height:1;margin:-4px -4px 0 0;}
+.trap-name{font-size:15px;font-weight:700;color:var(--cream);margin-bottom:6px;}
+.trap-en{font-size:13px;color:rgba(240,234,214,0.7);line-height:1.7;margin-bottom:8px;}
+.trap-mm{font-size:12px;color:rgba(240,234,214,0.4);line-height:1.65;font-style:italic;background:rgba(255,255,255,0.04);padding:8px 10px;border-radius:7px;}
+
+/* ── Score widget on Rules tab ── */
+.score-bar{background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.score-main{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+.score-lbl{font-size:11px;color:rgba(240,234,214,0.4);margin-top:2px;}
+.score-pct-bar{flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;min-width:80px;}
+.score-pct-fill{height:100%;border-radius:3px;transition:width .6s;}
+.score-reset{margin-left:auto;padding:6px 12px;border-radius:7px;border:1px solid var(--border2);background:none;font-size:12px;color:rgba(240,234,214,0.4);cursor:pointer;transition:all .15s;}
+.score-reset:hover{color:var(--cream);border-color:var(--border2);}
+
+@media(max-width:600px){
+  .req-grid{grid-template-columns:1fr;}
+  .tab-page{padding:16px 14px 40px;}
+  .hero{padding:28px 14px 20px;}
+  .tab-bar{padding:0 14px;}
+  .rc-body{padding:0 14px 12px 48px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Swing Trading Rules</div>
+    <div class="tb-sub">Capital gain swing trading — rules, requirements, mental focus</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Mindset Lab</div>
+  <h1 class="hero-title">The rules that protect<br>your <em>capital and clarity</em></h1>
+  <p class="hero-sub">Read these before you open your broker. These are not suggestions. Breaking any of them is not swing trading — it is gambling with extra steps.</p>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('rules',this)">15 Rules</div>
+  <div class="tab" onclick="switchTab('requirements',this)">Requirements</div>
+  <div class="tab" onclick="switchTab('mindset',this)">5 Mental Traps</div>
+</div>
+
+<!-- ══ RULES TAB ══ -->
+<div class="tab-page active" id="tab-rules">
+
+  <div class="score-bar">
+    <div>
+      <div class="score-main" id="score-val">0 / 15</div>
+      <div class="score-lbl">rules memorized</div>
+    </div>
+    <div class="score-pct-bar"><div class="score-pct-fill" id="score-fill" style="width:0%;background:var(--g);"></div></div>
+    <button class="score-reset" onclick="resetMem()"><i class="ti ti-refresh" style="font-size:12px;" aria-hidden="true"></i> Reset</button>
+  </div>
+
+  <div id="rules-body"></div>
+</div>
+
+<!-- ══ REQUIREMENTS TAB ══ -->
+<div class="tab-page" id="tab-requirements">
+  <div class="req-grid" id="req-body"></div>
+</div>
+
+<!-- ══ MINDSET TAB ══ -->
+<div class="tab-page" id="tab-mindset">
+  <div class="trap-grid" id="mindset-body"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════
+var RULE_GROUPS = [
+  {
+    label:'Before you enter',
+    eyebrow:'Pre-entry checklist',
+    color:'var(--g)',
+    rules:[
+      {
+        num:1,
+        title:'There must be a defined trend on the daily chart',
+        badge:'Trend',
+        en:'You need to know which direction the daily chart is trending before any setup is valid. An uptrend (series of higher highs and higher lows) for long trades. A downtrend for shorts. Sideways noise is not a trend — it is a waiting room. Do not enter in a waiting room.',
+        mm:'Setup မမြင်မီ Daily Chart ၏ Trend လမ်းကြောင်းကို သိရမည်ဖြစ်သည်。Uptrend (Higher High, Higher Low) = Long Trade ။ Sideways = Waiting Room — Waiting Room တွင် မဝင်ပါနှင့်။',
+        why:'Trading against or without a trend puts the probability math against you from the first second.',
+        wc:'var(--g-dim)',wb:'var(--g)',
+      },
+      {
+        num:2,
+        title:'The setup must match one of your learned patterns',
+        badge:'Pattern',
+        en:'The reason to enter must be a specific named pattern — Hammer at support, Bullish Engulfing, Pullback to MA20, Golden Cross confirmed. "It looks good" and "I feel like it will go up" are not setups. If you cannot name the pattern, you cannot enter.',
+        mm:'ဝင်ရမည့် အကြောင်းရင်းသည် တိကျသော Pattern တစ်ခု ဖြစ်ရမည်ဖြစ်သည် — Hammer at Support, Bullish Engulfing, MA20 Pullback ။ "ကောင်းပုံပေါ်သည်" ဟူသည် Setup မဟုတ်ဘဲ Feeling ဖြစ်သည်။',
+        why:'Pattern-based entries have historical probability behind them. Feeling-based entries have nothing.',
+        wc:'var(--g-dim)',wb:'var(--g)',
+      },
+      {
+        num:3,
+        title:'Stop-loss must be set before entry — a specific price',
+        badge:'Stop-Loss',
+        en:'Not "somewhere below here." A specific price — ¥3,580, not "around support." Your stop-loss is the price at which your analysis is proven wrong. It must exist before you click buy, not after you see red.',
+        mm:'Stop-Loss သည် "ဒီနားပတ်ဝန်းကျင်" မဟုတ်ဘဲ တိကျသော ¥3,580 ကဲ့သို့ ဈေးနှုန်းတစ်ခု ဖြစ်ရမည်ဖြစ်သည်။ Analysis မှားကြောင်း သက်သေပြသော ဈေးနှုန်းဖြစ်သည်။',
+        why:'A vague stop is not a stop — it is permission to hold a loser indefinitely.',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+      {
+        num:4,
+        title:'Risk/reward must be at minimum 1:2',
+        badge:'R/R Ratio',
+        en:'Your target must be at least twice as far from entry as your stop-loss. If the nearest resistance is only 1× away while your stop is 1× below — skip the trade. A 1:2 ratio means you only need to be right 34% of the time to be profitable long-term.',
+        mm:'Target သည် Entry မှ Stop-Loss ထက် အနည်းဆုံး 2 ဆ ဝေးရမည်ဖြစ်သည်。1:2 Ratio သည် 34% သာ မှန်ကန်ပါက ရေရှည်အမြတ်ဖြစ်ကြောင်း ဆိုလိုသည်。',
+        why:'Without minimum R/R you are structurally losing money even with a 50% win rate.',
+        wc:'var(--b-dim)',wb:'var(--b)',
+      },
+      {
+        num:5,
+        title:'Position size must be calculated — never guessed',
+        badge:'Position Size',
+        en:'Use your calculator: account size × risk % ÷ stop distance = shares. Round down to the nearest lot. Never decide "I will buy 200 shares" based on feel. Your position size is the only variable you fully control before entering — use it correctly.',
+        mm:'Calculator သုံးပါ — Account × Risk% ÷ Stop Distance = Shares ။ Lot ပြည့်အောင် ပြန်လျှော့ပါ။ "200 Shares ဝယ်မည်" ဟု Feel ဖြင့် ဆုံးဖြတ်ခြင်းမပြုပါနှင့်。',
+        why:'Position sizing is the difference between a controlled loss and a catastrophic one.',
+        wc:'var(--b-dim)',wb:'var(--b)',
+      },
+      {
+        num:6,
+        title:'Write why you are entering — one sentence',
+        badge:'Clarity',
+        en:'Before clicking buy, write one sentence in your trade journal: "Entering 7203 at ¥3,850 — Hammer at MA50 support with RSI at 32, targeting ¥4,200, stop ¥3,600." If you cannot write the sentence, you are not ready to enter.',
+        mm:'ဝင်မတိုင်မီ Journal တွင် တစ်ကြောင်းသာ ရေးပါ — "7203 ¥3,850 တွင် ဝင်ကာ MA50 Support ၌ Hammer + RSI 32, Target ¥4,200, Stop ¥3,600 ။" ရေးမနိုင်ပါက ဝင်ရန် မသင့်သေးဘဲ。',
+        why:'Clarity before entry prevents emotional decision-making during the trade.',
+        wc:'var(--gold-dim)',wb:'var(--gold)',
+      },
+    ]
+  },
+  {
+    label:'During the trade',
+    eyebrow:'Trade management',
+    color:'var(--a)',
+    rules:[
+      {
+        num:7,
+        title:'Never move your stop-loss lower',
+        badge:'Non-Negotiable',
+        en:'You may trail your stop upward as price moves in your favor. You may never move it downward. Moving a stop lower is not "giving the trade room" — it is deleting your risk management because your emotions are uncomfortable. The stop was set when you were rational. Trust it.',
+        mm:'Stop-Loss ကို တက်လာချိန် အပေါ်သို့ Trailing လုပ်နိုင်သည်။ ဘယ်တော့မှ အောက်သို့ မရွှေ့ပါနှင့်。 Stop ကို အောက်ရွှေ့ခြင်းသည် Emotion ၏ ဖိအားကြောင့် Risk Management ကို ဖျက်ဆီးနေခြင်းဖြစ်သည်。',
+        why:'Every catastrophic loss begins with "I will just move my stop a little lower this once."',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+      {
+        num:8,
+        title:'Never add to a losing position',
+        badge:'No ナンピン',
+        en:'ナンピン (averaging down) is an investor tool used over months or years in fundamentally sound businesses. It is not a swing trading tool. Adding to a losing swing trade doubles your risk in a trade that the market is already telling you is wrong. Exit and reassess.',
+        mm:'ナンピン (Averaging Down) သည် Investor ၏ ကိရိယာဖြစ်ပြီး Swing Trader ၏ ကိရိယာမဟုတ်ဘဲ。 ဈေးကွက်က မင်းမှားကြောင်း ပြနေသောအချိန် Position ထပ်ထည့်ခြင်းသည် Risk ကို နှစ်ဆတိုးနေကြောင်းဖြစ်သည်。',
+        why:'Swing traders cut losers. Investors average down. Confusing the two is expensive.',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+      {
+        num:9,
+        title:'If price hits your stop, exit immediately at market',
+        badge:'Execution',
+        en:'Not "I will wait and see if it bounces." Not "I will give it five more minutes." At market. Now. The market has proven your analysis wrong. Every second of hesitation after your stop is hit is pure gambling — you have no reason to be in the trade anymore.',
+        mm:'Stop Price ကိုရောက်ချိန် Market Order ဖြင့် ချက်ချင်းထွက်ပါ。 "Bounce ဆိုင်မလားကြည့်မည်" ဟု မစောင့်ပါနှင့်。 Stop ရောက်ပြီးနောက် တစ်စက္ကန့်တိုင်း Market ငြင်းဆန်ပြီးသောကြောင့် မသင့်တော်ဘဲ ရှိနေကြောင်းဆိုလိုသည်。',
+        why:'Hesitation after a stop is hit is the single most expensive habit in trading.',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+      {
+        num:10,
+        title:'Time stop — exit if nothing happens in 10 trading days',
+        badge:'Time Stop',
+        en:'If the trade has gone nowhere after 10 trading days, exit. Dead money sitting in a flat position has an opportunity cost — that capital could be in a setup that is actually working. Patience in a trade is different from tolerance for stagnation.',
+        mm:'Trade 10 ရက်ကြာပြီး ဘာမှ မဖြစ်ပါက ထွက်ပါ。 Flat Position ထဲ ငွေပိတ်မိနေခြင်းတွင် Opportunity Cost ရှိသည် — ထို Capital ကို တကယ် အလုပ်ဖြစ်နေသော Setup ထဲ ထည့်နိုင်သည်。',
+        why:'Time is capital. A trade that does nothing for two weeks is costing you opportunity.',
+        wc:'var(--a-dim)',wb:'var(--a)',
+      },
+    ]
+  },
+  {
+    label:'At exit',
+    eyebrow:'Closing the trade',
+    color:'var(--b)',
+    rules:[
+      {
+        num:11,
+        title:'Take at least partial profit when price hits your target',
+        badge:'Profit Taking',
+        en:'When price reaches your target, sell at least 50% of your position. You may hold the remainder with a trailed stop to let the trade run. But do not move the target higher out of greed. A planned exit is always better than a greedy one.',
+        mm:'Ⅼ Target ကိုရောက်ချိန် Position ၏ 50% အနည်းဆုံး ရောင်းပါ。 Greed ကြောင့် Target ကို ပိုမြင့်အောင် မရွှေ့ပါနှင့်。 Plan ချထားသော Exit သည် Greedy Exit ထက် အမြဲ ပိုကောင်းသည်。',
+        why:'Letting a winning trade turn into a loser because you moved the goalposts is one of the most demoralizing experiences in trading.',
+        wc:'var(--b-dim)',wb:'var(--b)',
+      },
+      {
+        num:12,
+        title:'Write your reflection within 24 hours',
+        badge:'Journal',
+        en:'What was the setup. What went right. What went wrong. What you will do differently. One paragraph each — do not write a novel. The reflection while the trade is fresh is the most valuable learning you can extract. A trade without a reflection is a lesson wasted.',
+        mm:'Setup ဘာဆိုသည်。 ဘာ ကောင်းသည်。 ဘာ မကောင်းသည်。 နောက်ဘာ ပြောင်းမည်ဆိုသည်ကို ပြန်ရေးပါ。 Trade လတ်တလော ဖြစ်နေချိန် Reflection သည် ထုတ်နိုင်သော အဖိုးတန်ဆုံး သင်ခန်းစာဖြစ်သည်。',
+        why:'You do not learn from trading. You learn from reflecting on trading.',
+        wc:'var(--gold-dim)',wb:'var(--gold)',
+      },
+    ]
+  },
+  {
+    label:'Risk rules',
+    eyebrow:'Capital protection — non-negotiable',
+    color:'var(--r)',
+    rules:[
+      {
+        num:13,
+        title:'Never risk more than 2% of account on a single trade',
+        badge:'Max Risk',
+        en:'On a ¥1,000,000 account that is ¥20,000 maximum loss per trade. This means even 10 consecutive losing trades only costs 20% of your account — you survive. Without this rule, five bad trades can end your trading career.',
+        mm:'¥1,000,000 Account တွင် Trade တစ်ကြိမ်တွင် ¥20,000 သာ အများဆုံး ဆုံးနိုင်သည်。 ဆက်တိုက် 10 ကြိမ် ရှုံးသော်လည်း Account ၏ 20% သာ ဆုံးသောကြောင့် ဆက်လက် ကုန်သွယ်နိုင်သည်。',
+        why:'Compounding works both ways. A single 30% loss requires a 43% gain just to break even.',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+      {
+        num:14,
+        title:'Never hold more than 3 swing positions simultaneously',
+        badge:'Focus',
+        en:'Attention is finite. Three positions means you can monitor each properly, check news for each, and make clear-headed decisions about each. Five or more positions and they start blurring — you stop managing and start hoping.',
+        mm:'Attention ကန့်သတ်ချက်ရှိသည်。 Position သုံးခုဆိုပါက တစ်ခုစီကို သေချာ Monitor လုပ်ကာ ရှင်းလင်းသော ဆုံးဖြတ်ချက် ချနိုင်သည်。 ငါးခုနှင့်အထက် ဆိုပါက Position များ ဝင်ဝင်ရောနေပြီး Managing မဟုတ်ဘဲ Hoping ဖြစ်လာသည်。',
+        why:'More positions does not mean more profit — it means divided attention and more mistakes.',
+        wc:'var(--a-dim)',wb:'var(--a)',
+      },
+      {
+        num:15,
+        title:'If down 6% on the month — stop trading until next month',
+        badge:'Monthly Stop',
+        en:'Six percent drawdown means three trades at maximum risk all lost. Something is wrong — your analysis, your emotion, the market conditions. Stop. Review your last three trades in detail. Do not trade again until the next calendar month begins. Recovery comes from clarity, not activity.',
+        mm:'6% Drawdown = 3 ကြိမ် Maximum Risk ဖြင့် ဆုံးရှုံးခဲ့သည်ဆိုလိုသည်。 တစ်ခုခု မှားနေသည် — Analysis၊ Emotion သို့မဟုတ် ဈေးကွက် ။ ရပ်ပါ။ Review လုပ်ပါ။ နောက် Calendar Month မတိုင်မီ မကုန်သွယ်ပါနှင့်。 ပြန်ကောင်းမှုသည် Activity မဟုတ်ဘဲ Clarity မှ လာသည်。',
+        why:'Trying to recover losses immediately is how small drawdowns become large ones.',
+        wc:'var(--r-dim)',wb:'var(--r)',
+      },
+    ]
+  },
+];
+
+var REQUIREMENTS = [
+  {
+    icon:'ti-coin',iconColor:'var(--gold)',
+    name:'Capital',
+    items:[
+      'Minimum ¥500,000–¥1,000,000 to size positions properly',
+      'Below ¥300,000 — lot constraints make 1% risk nearly impossible',
+      'Start smaller in paper trading until process is consistent',
+    ],
+    mm:'ポジションサイズを正しく計算するための最低資本。少なすぎると1%リスクルールが機能しない。'
+  },
+  {
+    icon:'ti-clock',iconColor:'var(--b)',
+    name:'Time',
+    items:[
+      '30–60 minutes per day minimum',
+      'Market open window: 9:00–9:30 (most important)',
+      'Market close window: 15:00–15:30',
+      'Mid-session optional — stop checking every hour',
+    ],
+    mm:'最低限必要な時間。寄り付き・引けの2つの時間帯が最重要。日中は都度確認不要。'
+  },
+  {
+    icon:'ti-tools',iconColor:'var(--g)',
+    name:'Tools',
+    items:[
+      'Broker with 逆指値 (stop-loss orders) capability',
+      'Charting: daily candles + volume as minimum',
+      'MA20 and MA50 on every chart',
+      'One momentum indicator: RSI or MACD',
+      'This portal — rules, calculator, journal',
+    ],
+    mm:'逆指値注文対応の証券会社。日足チャート・出来高・移動平均・モメンタム指標。'
+  },
+  {
+    icon:'ti-brain',iconColor:'var(--a)',
+    name:'Knowledge baseline',
+    items:[
+      'Can identify trend on daily chart in under 30 seconds',
+      'Can name the setup pattern before entering',
+      'Knows nearest support and resistance levels',
+      'Can calculate position size without a calculator',
+      'Has read all 15 rules and can recall them',
+    ],
+    mm:'入場前に答えられるべき5つの質問。30秒以上かかるなら、まだ準備ができていない。'
+  },
+];
+
+var TRAPS = [
+  {
+    num:'01',color:'var(--r)',
+    name:'Holding through your stop',
+    en:'"It will bounce." One in five times it does — which teaches the wrong lesson. The other four times you turn a ¥50,000 loss into ¥200,000. Your stop was written before your emotions got involved. It is the most rational version of yourself. Honor it.',
+    mm:'「反発する」と思い込む。5回に1回は反発し、それが間違った教訓を与える。残りの4回は5万円の損失が20万円になる。'
+  },
+  {
+    num:'02',color:'var(--a)',
+    name:'Moving the target because you got scared',
+    en:'Price is heading toward your ¥4,200 target and you sell at ¥4,000 out of fear. You just cut your risk/reward ratio in half for no analytical reason. Fear is not a trading signal. Stick to the plan.',
+    mm:'目標に向かっているのに怖くなって早期利食い。リスクリワード比を半分にする。恐怖はトレードシグナルではない。'
+  },
+  {
+    num:'03',color:'var(--r)',
+    name:'Revenge trading',
+    en:'You lost. You immediately look for another trade to "get it back." This trade was not on your watchlist, was not part of your process, and was entered with emotional urgency. Mandatory rule: 24-hour cooldown after any loss before the next trade.',
+    mm:'損失後すぐに「取り返そう」とする。これはウォッチリストにない、プロセス外のトレード。損失後は24時間クールダウン必須。'
+  },
+  {
+    num:'04',color:'var(--a)',
+    name:'Overtrading — doing something every day',
+    en:'Swing trading is about waiting for high-probability setups and acting decisively when they appear. Most days there is no trade that meets your criteria. The best traders are bored most of the time. The urge to "do something" is the market taking money from impatient people.',
+    mm:'毎日何かしようとする。スウィングトレードは高確率のセットアップを待ち、現れたら果断に行動するもの。優秀なトレーダーはほとんどの時間退屈している。'
+  },
+  {
+    num:'05',color:'var(--b)',
+    name:'Ignoring sector and market context',
+    en:'A perfect setup in a sector rotating out of favor, in a market under broad selling pressure, before a BOJ meeting — is not a perfect setup. Your chart does not exist in isolation. Always check: what is the Nikkei doing? What is the sector doing? Is there major news risk this week?',
+    mm:'セクターやマーケット全体を無視する。チャートは孤立して存在しない。日経・セクタートレンド・主要ニュースリスクを常に確認。'
+  },
+];
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+var MEM_KEY = 'swrules_mem_' + (localStorage.getItem('slp_uid')||'guest');
+var OPEN_KEY = 'swrules_open';
+var mem = JSON.parse(localStorage.getItem(MEM_KEY)||'{}');
+var openId = null;
+
+function saveMem(){ localStorage.setItem(MEM_KEY, JSON.stringify(mem)); }
+function resetMem(){ mem={}; saveMem(); renderRules(); }
+
+// ════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════
+function switchTab(id, el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active');});
+  if(el) el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+//  RULES
+// ════════════════════════════════════════════════
+function toggleRule(id){
+  openId = openId===id ? null : id;
+  renderRules();
+}
+function markMem(e, id){
+  e.stopPropagation();
+  mem[id] = !mem[id];
+  saveMem();
+  updateScore();
+  renderRules();
+}
+
+function updateScore(){
+  var count = Object.values(mem).filter(Boolean).length;
+  var pct = Math.round(count/15*100);
+  document.getElementById('score-val').textContent = count + ' / 15';
+  document.getElementById('score-fill').style.width = pct + '%';
+  document.getElementById('score-fill').style.background = pct===100?'var(--gold)':pct>60?'var(--g)':'var(--b)';
+}
+
+function renderRules(){
+  var html='';
+  RULE_GROUPS.forEach(function(g){
+    html += '<div class="section-hd">'
+          + '<div class="sh-eyebrow">'+g.eyebrow+'</div>'
+          + '<div class="sh-title" style="color:'+g.color+';">'
+          + '<i class="ti ti-circle-dot" style="font-size:15px;" aria-hidden="true"></i>'+g.label
+          + '</div></div>';
+    html += '<div class="rules-grid">';
+    g.rules.forEach(function(r){
+      var isOpen = openId===r.num;
+      var isM = !!mem[r.num];
+      html += '<div class="rule-card'+(isOpen?' open':'')+'" id="rc-'+r.num+'" onclick="toggleRule('+r.num+')" style="--rc-accent:'+g.color+';">'
+            + '<div class="rc-head">'
+            + '<div class="rc-num" style="background:'+g.color+';background:'+g.color.replace('var(','').replace(')','')+'22;color:'+g.color+';">'+r.num+'</div>'
+            + '<div class="rc-title">'+r.title+'</div>'
+            + '<span class="rc-badge" style="background:'+r.wc+';color:'+r.wb+';">'+r.badge+'</span>'
+            + '<i class="ti ti-chevron-down rc-chev'+(isOpen?' open':'')+'" aria-hidden="true"></i>'
+            + '</div>'
+            + '<div class="rc-body'+(isOpen?' open':'')+'">'
+            + '<p class="rc-en">'+r.en+'</p>'
+            + '<p class="rc-mm">'+r.mm+'</p>'
+            + '<div class="rc-why" style="background:'+r.wc+';border-color:'+r.wb+';color:'+r.wb+';"><strong>Why this matters:</strong> '+r.why+'</div>'
+            + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;">'
+            + '<button onclick="markMem(event,'+r.num+')" style="padding:6px 12px;border-radius:7px;border:1px solid '+(isM?'rgba(74,149,114,0.4)':'rgba(240,234,214,0.15)')+';background:'+(isM?'var(--g-dim)':'none')+';font-size:12px;cursor:pointer;color:'+(isM?'var(--g)':'rgba(240,234,214,0.45)')+';display:flex;align-items:center;gap:5px;">'
+            + '<i class="ti '+(isM?'ti-circle-check':'ti-circle')+'" style="font-size:13px;" aria-hidden="true"></i>'+(isM?'Memorized':'Mark as memorized')+'</button>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('rules-body').innerHTML = html;
+  updateScore();
+}
+
+// ════════════════════════════════════════════════
+//  REQUIREMENTS
+// ════════════════════════════════════════════════
+function renderRequirements(){
+  var html = REQUIREMENTS.map(function(r){
+    return '<div class="req-card">'
+      + '<div class="req-icon"><i class="ti '+r.icon+'" style="color:'+r.iconColor+';" aria-hidden="true"></i></div>'
+      + '<div class="req-name">'+r.name+'</div>'
+      + '<div class="req-items">'+r.items.map(function(i){return'<div class="req-item">'+i+'</div>';}).join('')+'</div>'
+      + '<div class="req-mm">'+r.mm+'</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('req-body').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════
+//  MENTAL TRAPS
+// ════════════════════════════════════════════════
+function renderMindset(){
+  var html = TRAPS.map(function(t){
+    return '<div class="trap-card" style="border-left:3px solid '+t.color+';">'
+      + '<div class="trap-num" style="color:'+t.color+';">'+t.num+'</div>'
+      + '<div class="trap-name" style="color:'+t.color+';">'+t.name+'</div>'
+      + '<div class="trap-en">'+t.en+'</div>'
+      + '<div class="trap-mm">'+t.mm+'</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('mindset-body').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+renderRules();
+renderRequirements();
+renderMindset();
+</script>
+</body>
+</html>
