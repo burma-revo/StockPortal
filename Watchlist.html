@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watchlist</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text2:#555;--text3:#999;--radius:12px;
+  --g:#3B6D11;--g-bg:#EAF3DE;--g-t:#27500A;
+  --r:#A32D2D;--r-bg:#FCEBEB;--r-t:#791F1F;
+  --a:#854F0B;--a-bg:#FAEEDA;--a-t:#633806;
+  --b:#185FA5;--b-bg:#E6F1FB;--b-t:#0C447C;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;border-radius:6px;line-height:1;display:flex;align-items:center;transition:background .15s;}
+.tb-back:hover{background:var(--bg);}
+.tb-title{font-size:15px;font-weight:600;flex:1;}
+.tb-sub{font-size:11px;color:var(--text3);}
+
+.wrap{max-width:720px;margin:0 auto;padding:18px 18px 48px;}
+
+/* ── Add form panel ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.ph{padding:12px 16px;border-bottom:1px solid var(--border);}
+.pt{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.ps{font-size:11px;color:var(--text3);margin-top:2px;}
+.pb{padding:14px 16px;}
+.fg{margin-bottom:14px;}
+.fg:last-child{margin-bottom:0;}
+.fg-lbl{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.fg-hint{font-size:10px;color:var(--text3);font-weight:400;}
+.fg-in{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:14px;color:var(--text);outline:none;background:var(--bg);font-family:inherit;transition:border .2s;}
+.fg-in:focus{border-color:rgba(0,0,0,.25);background:var(--surface);}
+.fg-in::placeholder{color:var(--text3);}
+.fg-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.save-bar{display:flex;gap:8px;margin-top:2px;}
+.save-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--g-bg);font-size:13px;font-weight:500;cursor:pointer;color:var(--g-t);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
+.save-btn:hover{background:rgba(59,109,17,.2);}
+.save-btn:disabled{opacity:.6;cursor:default;}
+
+/* ── Section divider ── */
+.sdiv{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:4px 0 8px;margin-top:4px;display:flex;align-items:center;gap:6px;}
+
+/* ── Watchlist rows ── */
+.ref-list{display:grid;gap:8px;}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:box-shadow .15s;}
+.ref-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.rc-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);}
+.rc-code{font-size:15px;font-weight:600;font-family:monospace;}
+.rc-dates{font-size:11px;color:var(--text3);margin-top:2px;}
+.rc-result{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;margin-left:auto;white-space:nowrap;}
+.rc-body{padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.6;}
+.rc-expand{padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--b);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.rc-expand:hover{background:var(--bg);}
+.chart-wrap{position:relative;height:220px;padding:14px;border-top:1px solid var(--border);}
+.w-remove{width:100%;padding:8px;border:none;border-top:1px solid var(--border);background:none;font-size:12px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;}
+.w-remove:hover{background:var(--r-bg);color:var(--r-t);}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.empty i{font-size:32px;display:block;margin-bottom:10px;}
+.empty p{font-size:13px;line-height:1.6;}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--text3);gap:10px;}
+.loading i{font-size:26px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Success message ── */
+.success-msg{background:var(--g-bg);border:1px solid rgba(59,109,17,.15);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--g-t);}
+
+@media(max-width:600px){
+  .fg-split{grid-template-columns:1fr;}
+  .wrap{padding:14px 14px 40px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+  <div>
+    <div class="tb-title">Watchlist</div>
+    <div class="tb-sub">候補銘柄 — Track stocks before you buy, with weekly price history</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="success-box"></div>
+
+  <div class="panel">
+    <div class="ph"><div class="pt"><i class="ti ti-eye" style="font-size:16px;color:var(--b);" aria-hidden="true"></i> Add to watchlist</div><div class="ps">候補銘柄を追加</div></div>
+    <div class="pb">
+      <div class="fg-split">
+        <div class="fg"><div class="fg-lbl">Stock code 銘柄コード<span class="fg-hint">4 chars</span></div><input class="fg-in" id="watch_code" type="text" placeholder="e.g. 7203" maxlength="4" style="text-transform:uppercase;"></div>
+        <div class="fg"><div class="fg-lbl">Notice price 気づいた時の価格<span class="fg-hint">円</span></div><input class="fg-in" id="watch_notice_price" type="number" placeholder="e.g. 3850" step="any" min="0"></div>
+      </div>
+      <div class="fg-split">
+        <div class="fg"><div class="fg-lbl">Notice date 気づいた日</div><input class="fg-in" id="watch_notice_date" type="date"></div>
+        <div class="fg"><div class="fg-lbl">Notes メモ<span class="fg-hint">optional</span></div><input class="fg-in" id="watch_notes" type="text" placeholder="e.g. waiting for pullback"></div>
+      </div>
+      <div class="save-bar">
+        <button class="save-btn" onclick="addWatchlistItem()"><i class="ti ti-plus" style="font-size:15px;" aria-hidden="true"></i> Add to watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sdiv"><i class="ti ti-list" style="font-size:13px;" aria-hidden="true"></i> Watching (<span id="watch-count">0</span>)</div>
+
+  <div class="loading" id="loading"><i class="ti ti-loader-2"></i><span>Loading your watchlist...</span></div>
+  <div class="ref-list" id="watch-list" style="display:none;"></div>
+</div>
+
+<script>
+var S = { watchlist: [], priceMap: {}, history: [], charts: {} };
+
+function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function fmtNum(n){ if(n==null||isNaN(n)) return '—'; return Number(n).toLocaleString('en-US',{maximumFractionDigits:1}); }
+
+// ════════════════════════════════════════════════
+//  LOAD
+// ════════════════════════════════════════════════
+function init(){
+  document.getElementById('watch_notice_date').valueAsDate = new Date();
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('watch-list').style.display='none';
+  google.script.run
+    .withSuccessHandler(function(data){
+      S.watchlist = data||[];
+      loadPricesAndHistory();
+    })
+    .withFailureHandler(function(e){ showListError(e.message); })
+    .getAllWatchlist();
+}
+
+function loadPricesAndHistory(){
+  var symbols = S.watchlist.map(function(w){ return w.symbol; });
+  google.script.run
+    .withSuccessHandler(function(prices){
+      S.priceMap = prices||{};
+      google.script.run
+        .withSuccessHandler(function(hist){
+          S.history = hist||[];
+          finishLoad();
+        })
+        .withFailureHandler(function(){ S.history=[]; finishLoad(); })
+        .getWatchlistHistory();
+    })
+    .withFailureHandler(function(){
+      S.priceMap = {};
+      google.script.run
+        .withSuccessHandler(function(hist){ S.history = hist||[]; finishLoad(); })
+        .withFailureHandler(function(){ S.history=[]; finishLoad(); })
+        .getWatchlistHistory();
+    })
+    .fetchAllPrices(symbols);
+}
+
+function finishLoad(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('watch-list').style.display='grid';
+  renderWatchRows();
+}
+
+function showListError(msg){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('watch-list').style.display='grid';
+  document.getElementById('watch-list').innerHTML='<div class="empty"><i class="ti ti-alert-circle" aria-hidden="true"></i><p>'+esc(msg)+'</p></div>';
+}
+
+// ════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════
+function renderWatchRows(){
+  var list=document.getElementById('watch-list');
+  document.getElementById('watch-count').textContent=S.watchlist.length;
+
+  if(!S.watchlist.length){
+    list.innerHTML='<div class="empty"><i class="ti ti-eye" aria-hidden="true"></i><p>No stocks on your watchlist yet.<br>Add one above.</p></div>';
+    return;
+  }
+
+  var html='';
+  S.watchlist.forEach(function(w,i){
+    var price=S.priceMap[w.symbol];
+    var change=(price!=null && w.noticePrice>0)?((price-w.noticePrice)/w.noticePrice)*100:null;
+    var chColor = change==null?'background:var(--bg);color:var(--text3)':change>0?'background:var(--g-bg);color:var(--g-t)':change<0?'background:var(--r-bg);color:var(--r-t)':'background:var(--bg);color:var(--text2)';
+    var chLabel = change==null?'—':(change>=0?'+':'')+change.toFixed(1)+'%';
+    var codeShort = (w.symbol||'').replace('.T','');
+
+    html+='<div class="ref-card">'
+        +'<div class="rc-head" style="cursor:pointer;" onclick="toggleChart('+i+')">'
+        +  '<div><div class="rc-code">'+esc(codeShort)+(w.name?' <span style="font-weight:400;color:var(--text2);">'+esc(w.name)+'</span>':'')+'</div>'
+        +  '<div class="rc-dates">Noticed at ¥'+fmtNum(w.noticePrice)+' on '+esc(w.noticeDate||'—')+'</div></div>'
+        +  '<span class="rc-result" style="'+chColor+'">'+chLabel+'</span>'
+        +'</div>'
+        +'<div class="rc-body">Now: '+(price!=null?'¥'+fmtNum(price):'—')+(w.notes?' · '+esc(w.notes):'')+'</div>'
+        +'<div class="rc-expand" id="chart-toggle-'+i+'" onclick="toggleChart('+i+')"><i class="ti ti-chart-line" aria-hidden="true"></i> Weekly price chart</div>'
+        +'<div class="chart-wrap" id="chart-wrap-'+i+'" style="display:none;"></div>'
+        +'<button class="w-remove" onclick="deleteWatchlistItem('+i+')"><i class="ti ti-trash" aria-hidden="true"></i> Remove</button>'
+        +'</div>';
+  });
+  list.innerHTML=html;
+}
+
+function toggleChart(i){
+  var wrap=document.getElementById('chart-wrap-'+i);
+  var toggle=document.getElementById('chart-toggle-'+i);
+  var isOpen = wrap.style.display==='block';
+  if(isOpen){
+    wrap.style.display='none';
+    toggle.innerHTML='<i class="ti ti-chart-line" aria-hidden="true"></i> Weekly price chart';
+    return;
+  }
+  wrap.style.display='block';
+  toggle.innerHTML='<i class="ti ti-chevron-up" aria-hidden="true"></i> Hide chart';
+  renderChart(i);
+}
+
+function renderChart(i){
+  var w=S.watchlist[i];
+  var wrap=document.getElementById('chart-wrap-'+i);
+  var rows=S.history.filter(function(r){return r.symbol===w.symbol;}).sort(function(a,b){return a.date<b.date?-1:1;});
+
+  if(S.charts[i]){ S.charts[i].destroy(); delete S.charts[i]; }
+
+  if(!rows.length){
+    wrap.innerHTML='<div class="empty" style="padding:16px 0;"><i class="ti ti-chart-line" aria-hidden="true"></i><p>No weekly snapshots recorded yet.<br>A weekly trigger for recordWatchlistPrices needs to be set up once in the Apps Script editor.</p></div>';
+    return;
+  }
+
+  wrap.innerHTML='<canvas id="chart-'+i+'"></canvas>';
+  var labels=rows.map(function(r){return r.date.slice(5);});
+  var prices=rows.map(function(r){return r.price;});
+  var noticeLine=rows.map(function(){return w.noticePrice;});
+
+  S.charts[i]=new Chart(document.getElementById('chart-'+i).getContext('2d'),{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'Price',data:prices,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.08)',borderWidth:2,pointRadius:rows.length<=12?3:0,pointHoverRadius:5,tension:.25,fill:true},
+        {label:'Notice price',data:noticeLine,borderColor:'#854F0B',backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{ label:function(ctx){ return (ctx.datasetIndex===0?'Price: ¥':'Notice: ¥')+ctx.parsed.y.toLocaleString(); } }
+        }
+      },
+      scales:{
+        x:{ ticks:{maxTicksLimit:8,maxRotation:0,color:'#999'}, grid:{color:'rgba(0,0,0,0.05)'} },
+        y:{ ticks:{color:'#999',callback:function(v){return '¥'+v.toLocaleString();}}, grid:{color:'rgba(0,0,0,0.05)'} }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════
+//  ADD / REMOVE
+// ════════════════════════════════════════════════
+function addWatchlistItem(){
+  var code=document.getElementById('watch_code').value.trim().toUpperCase();
+  var price=parseFloat(document.getElementById('watch_notice_price').value);
+  var date=document.getElementById('watch_notice_date').value;
+  var notes=document.getElementById('watch_notes').value.trim();
+
+  // TSE codes are normally 4 digits, but new-listing (IPO) codes can mix
+  // in a trailing letter, e.g. 278A. Accept any 4-char alphanumeric code.
+  if(!/^[0-9A-Z]{4}$/.test(code)){ alert('Enter a valid 4-character stock code (e.g. 7203 or 278A).'); return; }
+  if(!price||price<=0){ alert('Enter a valid notice price.'); return; }
+  var symbol=code+'.T';
+
+  var btn=document.querySelector('.save-btn');
+  btn.innerHTML='<i class="ti ti-loader-2" style="font-size:15px;animation:spin 1s linear infinite;" aria-hidden="true"></i> Adding...';
+  btn.disabled=true;
+
+  google.script.run
+    .withSuccessHandler(function(quote){
+      var name = quote && quote.name ? quote.name : symbol;
+      google.script.run
+        .withSuccessHandler(function(list){
+          S.watchlist=list;
+          clearAddForm();
+          showSuccess('Added to watchlist.');
+          resetSaveBtn(btn);
+          loadPricesAndHistory();
+        })
+        .withFailureHandler(function(e){ alert('Error: '+e.message); resetSaveBtn(btn); })
+        .addWatchlistItem({symbol:symbol,name:name,noticePrice:price,noticeDate:date,notes:notes});
+    })
+    .withFailureHandler(function(e){ alert('Error: '+e.message); resetSaveBtn(btn); })
+    .fetchYahooQuote(symbol);
+}
+
+function resetSaveBtn(btn){
+  btn.innerHTML='<i class="ti ti-plus" style="font-size:15px;" aria-hidden="true"></i> Add to watchlist';
+  btn.disabled=false;
+}
+
+function clearAddForm(){
+  document.getElementById('watch_code').value='';
+  document.getElementById('watch_notice_price').value='';
+  document.getElementById('watch_notice_date').valueAsDate=new Date();
+  document.getElementById('watch_notes').value='';
+}
+
+function showSuccess(msg){
+  var box=document.getElementById('success-box');
+  box.innerHTML='<div class="success-msg"><i class="ti ti-circle-check" style="font-size:16px;" aria-hidden="true"></i><span>'+esc(msg)+'</span></div>';
+  setTimeout(function(){ box.innerHTML=''; }, 4000);
+}
+
+function deleteWatchlistItem(i){
+  var w=S.watchlist[i];
+  if(!confirm('Remove '+(w.name||w.symbol)+' from watchlist?')) return;
+  google.script.run
+    .withSuccessHandler(function(list){
+      if(S.charts[i]){ S.charts[i].destroy(); delete S.charts[i]; }
+      S.watchlist=list;
+      loadPricesAndHistory();
+    })
+    .withFailureHandler(function(e){ alert('Error: '+e.message); })
+    .deleteWatchlistItem(i);
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

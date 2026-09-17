@@ -68,6 +68,13 @@ function doGet(e) {
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
 
+  if (page === 'watchlist') {
+    return HtmlService.createHtmlOutputFromFile('Watchlist')
+      .setTitle('Watchlist — Stock Learning Portal')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+
   // Main portal — inject the real URL so tiles can open other pages correctly
   var template = HtmlService.createTemplateFromFile('Index');
   template.baseUrl = execUrl;
@@ -244,5 +251,187 @@ function getReflections() {
     return JSON.stringify({ reflections: reflections });
   } catch (e) {
     return JSON.stringify({ reflections: [], error: e.message });
+  }
+}
+
+
+// ============================================================
+//  WATCHLIST FUNCTIONS
+// ============================================================
+
+var TTL_PRICE = 300; // current price cache — 5 minutes
+
+function formatDate_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(value);
+}
+
+function getWatchlistSheet() {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName('Watchlist');
+  if (!sheet) {
+    sheet = ss.insertSheet('Watchlist');
+    sheet.appendRow(['symbol','name','noticePrice','noticeDate','notes']);
+    sheet.getRange(1,1,1,5).setFontWeight('bold').setBackground('#E6F1FB');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function getAllWatchlist() {
+  var sheet = getWatchlistSheet();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return [];
+  return sheet.getRange(2, 1, lastRow - 1, 5).getValues().map(function(row) {
+    return {
+      symbol:      row[0] || '',
+      name:        row[1] || '',
+      noticePrice: Number(row[2]) || 0,
+      noticeDate:  row[3] ? formatDate_(row[3]) : '',
+      notes:       row[4] || ''
+    };
+  });
+}
+
+function addWatchlistItem(item) {
+  var existing = getAllWatchlist();
+  for (var i = 0; i < existing.length; i++) {
+    if (existing[i].symbol === item.symbol) throw new Error(item.symbol + ' is already on your watchlist');
+  }
+  getWatchlistSheet().appendRow([
+    item.symbol || '',
+    item.name || '',
+    item.noticePrice || 0,
+    item.noticeDate || formatDate_(new Date()),
+    item.notes || ''
+  ]);
+  return getAllWatchlist();
+}
+
+function deleteWatchlistItem(index) {
+  var sheet = getWatchlistSheet();
+  var row = index + 2;
+  if (row < 2 || row > sheet.getLastRow()) throw new Error('Invalid index: ' + index);
+  sheet.deleteRow(row);
+  return getAllWatchlist();
+}
+
+// ── Weekly price history ──────────────────────────────────────
+
+function getWatchlistHistorySheet() {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName('WatchlistHistory');
+  if (!sheet) {
+    sheet = ss.insertSheet('WatchlistHistory');
+    sheet.appendRow(['date','symbol','name','price','noticePrice','changePct']);
+    sheet.getRange(1,1,1,6).setFontWeight('bold').setBackground('#E6F1FB');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+// Attach to a weekly time trigger (Apps Script editor -> Triggers -> + Add
+// Trigger -> Function: recordWatchlistPrices -> Time-driven -> Week timer).
+function recordWatchlistPrices() {
+  var watchlist = getAllWatchlist();
+  if (watchlist.length === 0) return;
+
+  var symbols = watchlist.map(function(w) { return w.symbol; });
+  var priceMap = fetchAllPrices(symbols);
+  var today = formatDate_(new Date());
+  var sheet = getWatchlistHistorySheet();
+
+  watchlist.forEach(function(w) {
+    var price = priceMap[w.symbol];
+    if (!price) return;
+    var changePct = w.noticePrice > 0 ? Math.round(((price - w.noticePrice) / w.noticePrice) * 10000) / 100 : 0;
+    sheet.appendRow([today, w.symbol, w.name, price, w.noticePrice, changePct]);
+  });
+}
+
+function getWatchlistHistory() {
+  var sheet = getWatchlistHistorySheet();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return [];
+  return sheet.getRange(2, 1, lastRow - 1, 6).getValues().map(function(row) {
+    return {
+      date:        row[0] ? formatDate_(row[0]) : '',
+      symbol:      row[1] || '',
+      name:        row[2] || '',
+      price:       Number(row[3]) || 0,
+      noticePrice: Number(row[4]) || 0,
+      changePct:   Number(row[5]) || 0
+    };
+  });
+}
+
+// ── Yahoo Finance helpers ─────────────────────────────────────
+
+// Fetches current price for each symbol in one batched call (via
+// UrlFetchApp.fetchAll), with a short cache to avoid refetching on
+// every page load.
+function fetchAllPrices(symbols) {
+  if (!symbols || symbols.length === 0) return {};
+
+  var cache = CacheService.getScriptCache();
+  var results = {};
+  var toFetch = [];
+
+  symbols.forEach(function(sym) {
+    var cached = cache.get('yf_price_' + sym);
+    if (cached) {
+      results[sym] = Number(cached);
+    } else {
+      toFetch.push(sym);
+    }
+  });
+
+  if (toFetch.length > 0) {
+    var requests = toFetch.map(function(sym) {
+      return {
+        url: 'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=1d',
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+        muteHttpExceptions: true
+      };
+    });
+
+    var responses = UrlFetchApp.fetchAll(requests);
+    responses.forEach(function(res, i) {
+      var sym = toFetch[i];
+      try {
+        if (res.getResponseCode() === 200) {
+          var data = JSON.parse(res.getContentText());
+          var price = data.chart && data.chart.result && data.chart.result[0] &&
+                      data.chart.result[0].meta && data.chart.result[0].meta.regularMarketPrice;
+          if (price) {
+            results[sym] = price;
+            try { cache.put('yf_price_' + sym, String(price), TTL_PRICE); } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    });
+  }
+
+  return results;
+}
+
+// Looks up a symbol's display name (used when adding a new watchlist item
+// so the user only has to type the stock code, not the full name).
+function fetchYahooQuote(symbol) {
+  var url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + symbol + '?interval=1d&range=1d';
+  try {
+    var res = UrlFetchApp.fetch(url, {
+      muteHttpExceptions: true,
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
+    });
+    if (res.getResponseCode() !== 200) return { name: symbol };
+    var data = JSON.parse(res.getContentText());
+    var meta = data.chart && data.chart.result && data.chart.result[0] && data.chart.result[0].meta;
+    var name = meta ? (meta.longName || meta.shortName || symbol) : symbol;
+    return { name: name };
+  } catch (e) {
+    return { name: symbol };
   }
 }

@@ -445,6 +445,7 @@ function renderHome(){
   bucket.mindset.push(tileHTML('openSwingRules()','#c24b4b','#FCEBEB','ti-shield-check','#c24b4b','Swing Trading Rules','15 rules · Requirements · Mental traps','15 rules'));
 
   bucket.toolkit.push(tileHTML('openSectorMap()','#993C1D','#FAECE7','ti-map-2','#993C1D','TSE Sector Map','東証セクターマップ','14 sectors · 4 phases'));
+  bucket.toolkit.push(tileHTML('openWatchlist()','#0C447C','#E6F1FB','ti-eye','#185FA5','Watchlist','候補銘柄','Track before you buy'));
 
   bucket.journal.push(tileHTML('openCalculator()','#534AB7','#EEEDFE','ti-math-function','#534AB7','Trade Calculator','ポジションサイズ・リスクリワード','Position size · R/R'));
   bucket.journal.push(tileHTML('openReflection()','#993C1D','#FAECE7','ti-notebook','#993C1D','Trade Reflection','取引の振り返り','Learn from every trade'));
@@ -879,6 +880,10 @@ function openSwingRules(){
 
 function openPrinciples(){
   window.open(BASE_URL+'?page=principles', '_blank');
+}
+
+function openWatchlist(){
+  window.open(BASE_URL+'?page=watchlist', '_blank');
 }
 
 // ════════════════════════════════════════════════
