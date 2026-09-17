@@ -129,7 +129,7 @@ function svgHS(){
     +pl(price,CO,1.8)
     +lb(42,27,'L Shoulder',CO,'middle',7)
     +lb(66,22,'Head',CO,'middle',7)
-    +lb(90,52,'R Shoulder',CO,'middle',7)
+    +lb(102,39,'R Shoulder',CO,'middle',7)
     +lb(80,neckY+9,'Neckline',CB,'middle',7)
     +arr(130,72,false)
   ,160,90);
@@ -142,7 +142,7 @@ function svgIHS(){
     +pl(price,CG,1.8)
     +lb(42,66,'L Shoulder',CG,'middle',7)
     +lb(66,79,'Head',CG,'middle',7)
-    +lb(90,54,'R Shoulder',CG,'middle',7)
+    +lb(102,54,'R Shoulder',CG,'middle',7)
     +lb(80,neckY-5,'Neckline',CB,'middle',7)
     +arr(130,20,true)
   ,160,90);
@@ -243,8 +243,8 @@ function svgCupHandle(){
 function svgWedgeUp(){
   var price=[[6,65],[18,52],[30,42],[42,34],[54,28],[66,24],[78,20],[90,28],[102,34],[114,42],[126,52],[138,62],[150,75]];
   return svgW(
-    pl([[6,65],[90,18]],CR,1.2,'4,2')
-    +pl([[6,80],[90,38]],CR,1.2,'4,2')
+    pl([[6,60],[90,20]],CR,1.2,'4,2')
+    +pl([[6,80],[90,26]],CR,1.2,'4,2')
     +pl(price,CO,1.8)
     +lb(50,14,'Rising wedge (bearish)',CR,'middle',7)
     +arr(145,75,false)
@@ -253,8 +253,8 @@ function svgWedgeUp(){
 function svgWedgeDown(){
   var price=[[6,25],[18,38],[30,48],[42,55],[54,60],[66,64],[78,68],[90,60],[102,52],[114,42],[126,30],[138,18],[150,8]];
   return svgW(
-    pl([[6,25],[90,72]],CG,1.2,'4,2')
-    +pl([[6,10],[90,52]],CG,1.2,'4,2')
+    pl([[6,15],[90,60]],CG,1.2,'4,2')
+    +pl([[6,30],[90,66]],CG,1.2,'4,2')
     +pl(price,CO,1.8)
     +lb(50,78,'Falling wedge (bullish)',CG,'middle',7)
     +arr(145,8,true)
@@ -360,22 +360,22 @@ var PATTERNS=[
    tip_en:'Bear flags are common in strong downtrends and after gap-down opens. They are one of the most reliable short-selling setups — the market rests briefly then continues falling.',
    tip_mm:'Bear Flag သည် ပြင်းထန်သော Downtrend တွင်နှင့် Gap-Down ဖွင့်ချိန်နောက်တွင် အဖြစ်များသည်。Short Selling Setup အယုံကြည်ရဆုံးတစ်ခုဖြစ်သည်。',
    svg:svgBearFlag,diff:'beginner'},
-  {id:'cnh',type:'bullish',signal:'reversal',jp:'カップアンドハンドル',en:'Cup and Handle',
+  {id:'cnh',type:'bullish',signal:'continuation',jp:'カップアンドハンドル',en:'Cup and Handle',
    exp_en:'A rounded U-shaped base (cup) followed by a small downward drift (handle). The cup represents a base-building phase, the handle a final shakeout of weak holders. Breakout above the handle resistance is the buy signal.',
    exp_mm:'U ပုံသဏ္ဍာန် Base (Cup) ပြီးနောက် အနည်းငယ် Pullback (Handle) ဖြစ်သည်。Cup သည် Base Building Phase ကိုကိုယ်စားပြုပြီး Handle သည် Weak Holder များကို ဆွဲထုတ်သည်。Handle Resistance ကျော်တက်သောအခါ ဝင်ဝယ်ပါ。',
    how:'Buy breakout above the handle high with strong volume. Target = depth of cup projected upward from breakout. Stop below the handle low.',
    tip_en:'Cup should be U-shaped (rounded bottom), not V-shaped. V-shaped cups fail more often. Handle should be no deeper than 1/3 the cup depth.',
    tip_mm:'Cup သည် V ပုံမဟုတ်ဘဲ U ပုံသဏ္ဍာန် (Rounded Bottom) ဖြစ်သင့်သည်。V ပုံ Cup များသည် မကြာခဏ မအောင်မြင်ဘဲ。Handle သည် Cup ၏ Depth ၏ 1/3 ထက် ပိုနက်မသင့်ဘဲ。',
    svg:svgCupHandle,diff:'intermediate'},
-  {id:'wedgeup',type:'bearish',signal:'reversal',jp:'ライジングウェッジ',en:'Rising Wedge',
-   exp_en:'Price rises within converging lines that both slope upward — but resistance is steeper than support. Despite the upward movement, momentum is weakening. Breakdown below support = bearish reversal or acceleration of existing downtrend.',
+  {id:'wedgeup',type:'bearish',signal:'continuation',jp:'ライジングウェッジ',en:'Rising Wedge',
+   exp_en:'Price rises within converging lines that both slope upward — but support is steeper than resistance. Despite the upward movement, momentum is weakening. Breakdown below support = bearish reversal or acceleration of existing downtrend.',
    exp_mm:'နှစ်မျဉ်းစလုံး အပေါ်သို့ ဦးတည်သော်လည်း ကျဉ်းလာနေသော Channel ထဲတွင် ဈေးတက်သည်。တက်နေသော်လည်း Momentum ကုန်လာနေသည်。Support ကျော်ကျသောအခါ Bearish Reversal ဖြစ်သည်。',
    how:'Sell when price breaks below the lower wedge support with volume. The breakdown is often sharp. Stop just above the breakdown candle.',
    tip_en:'Rising wedge in a downtrend = very powerful bearish signal. Rising wedge in an uptrend = reversal warning. Context matters enormously.',
    tip_mm:'Downtrend ထဲ Rising Wedge = ပြင်းထန်သော Bearish Signal。Uptrend ထဲ Rising Wedge = Reversal သတိပေးချက်。Context သည် အလွန်အရေးကြီးသည်。',
    svg:svgWedgeUp,diff:'intermediate'},
-  {id:'wedgedown',type:'bullish',signal:'reversal',jp:'フォーリングウェッジ',en:'Falling Wedge',
-   exp_en:'Price falls within converging lines that both slope downward — but support is steeper than resistance. Momentum is weakening on the downside. Breakout above resistance = bullish reversal or continuation of uptrend.',
+  {id:'wedgedown',type:'bullish',signal:'continuation',jp:'フォーリングウェッジ',en:'Falling Wedge',
+   exp_en:'Price falls within converging lines that both slope downward — but resistance is steeper than support. Momentum is weakening on the downside. Breakout above resistance = bullish reversal or continuation of uptrend.',
    exp_mm:'နှစ်မျဉ်းစလုံး အောက်သို့ ဦးတည်သော်လည်း ကျဉ်းလာနေသော Channel ထဲတွင် ဈေးကျသည်。ကျမှု Momentum ကုန်လာနေသည်。Resistance ကျော်တက်သောအခါ Bullish Reversal ဖြစ်သည်。',
    how:'Buy when price breaks above the upper wedge resistance with volume. Falling wedges tend to have explosive breakouts.',
    tip_en:'Falling wedge breakouts are often explosive because short sellers are caught and must cover. Volume surge on breakout confirms the move.',

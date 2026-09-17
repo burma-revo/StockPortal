@@ -330,7 +330,7 @@ var REQUIREMENTS = [
       'Below ¥300,000 — lot constraints make 1% risk nearly impossible',
       'Start smaller in paper trading until process is consistent',
     ],
-    mm:'ポジションサイズを正しく計算するための最低資本。少なすぎると1%リスクルールが機能しない。'
+    mm:'Position size ကို မှန်ကန်စွာ တွက်ချက်ရန် လိုအပ်သော အနည်းဆုံး Capital ဖြစ်သည်။ Capital နည်းလွန်းပါက 1% Risk စည်းမျဉ်း အလုပ်မလုပ်နိုင်ပါ။'
   },
   {
     icon:'ti-clock',iconColor:'var(--b)',
@@ -341,7 +341,7 @@ var REQUIREMENTS = [
       'Market close window: 15:00–15:30',
       'Mid-session optional — stop checking every hour',
     ],
-    mm:'最低限必要な時間。寄り付き・引けの2つの時間帯が最重要。日中は都度確認不要。'
+    mm:'အနည်းဆုံး လိုအပ်သော အချိန်ပမာဏ ဖြစ်သည်။ Market Open (9:00–9:30) နှင့် Close (15:00–15:30) အချိန်နှစ်ခုသည် အရေးကြီးဆုံးဖြစ်သည်။ နေ့လယ်ပိုင်းတွင် အခါခါ စစ်ဆေးရန် မလိုအပ်ပါ။'
   },
   {
     icon:'ti-tools',iconColor:'var(--g)',
@@ -353,7 +353,7 @@ var REQUIREMENTS = [
       'One momentum indicator: RSI or MACD',
       'This portal — rules, calculator, journal',
     ],
-    mm:'逆指値注文対応の証券会社。日足チャート・出来高・移動平均・モメンタム指標。'
+    mm:'Stop-Loss Order ပံ့ပိုးပေးသော ကုမ္ပဏီ။ နေ့စဉ် Candle Chart၊ Volume၊ Moving Average နှင့် Momentum Indicator တစ်ခု လိုအပ်သည်။'
   },
   {
     icon:'ti-brain',iconColor:'var(--a)',
@@ -365,7 +365,7 @@ var REQUIREMENTS = [
       'Can calculate position size without a calculator',
       'Has read all 15 rules and can recall them',
     ],
-    mm:'入場前に答えられるべき5つの質問。30秒以上かかるなら、まだ準備ができていない。'
+    mm:'ဝင်ရောက်မီ ဖြေဆိုနိုင်ရမည့် အချက် ၅ ချက်။ ၃၀ စက္ကန့်ထက် ကြာပါက အဆင်သင့် မဖြစ်သေးပါ။'
   },
 ];
 
@@ -374,31 +374,31 @@ var TRAPS = [
     num:'01',color:'var(--r)',
     name:'Holding through your stop',
     en:'"It will bounce." One in five times it does — which teaches the wrong lesson. The other four times you turn a ¥50,000 loss into ¥200,000. Your stop was written before your emotions got involved. It is the most rational version of yourself. Honor it.',
-    mm:'「反発する」と思い込む。5回に1回は反発し、それが間違った教訓を与える。残りの4回は5万円の損失が20万円になる。'
+    mm:'「ပြန်တက်လိမ့်မည်」ဟု ထင်မှတ်ခြင်း။ ၅ ကြိမ်တွင် ၁ ကြိမ်သာ ပြန်တက်ပြီး ထိုအကြောင်းက မှားယွင်းသော သင်ခန်းစာကို ပေးသည်။ ကျန် ၄ ကြိမ်တွင် ယန်း ၅၀,၀၀၀ အရှုံးသည် ယန်း ၂၀၀,၀၀၀ အထိ ကြီးလာနိုင်သည်။'
   },
   {
     num:'02',color:'var(--a)',
     name:'Moving the target because you got scared',
     en:'Price is heading toward your ¥4,200 target and you sell at ¥4,000 out of fear. You just cut your risk/reward ratio in half for no analytical reason. Fear is not a trading signal. Stick to the plan.',
-    mm:'目標に向かっているのに怖くなって早期利食い。リスクリワード比を半分にする。恐怖はトレードシグナルではない。'
+    mm:'Target ဆီ ရောက်လုနီးတွင် ကြောက်ရွံ့ပြီး စောစီးစွာ ရောင်းချခြင်း။ Risk/Reward Ratio ကို တစ်ဝက် ကျစေသည်။ ကြောက်ရွံ့မှုသည် Trading Signal မဟုတ်ပါ။'
   },
   {
     num:'03',color:'var(--r)',
     name:'Revenge trading',
     en:'You lost. You immediately look for another trade to "get it back." This trade was not on your watchlist, was not part of your process, and was entered with emotional urgency. Mandatory rule: 24-hour cooldown after any loss before the next trade.',
-    mm:'損失後すぐに「取り返そう」とする。これはウォッチリストにない、プロセス外のトレード。損失後は24時間クールダウン必須。'
+    mm:'အရှုံးပြီးနောက် 「ပြန်ရအောင်」ဟု ချက်ချင်း ကြိုးစားခြင်း။ ဤ Trade သည် Watchlist တွင် မရှိဘဲ Process ပြင်ပမှ ဖြစ်သည်။ အရှုံးပြီးနောက် ၂၄ နာရီ Cooldown လိုအပ်သည်။'
   },
   {
     num:'04',color:'var(--a)',
     name:'Overtrading — doing something every day',
     en:'Swing trading is about waiting for high-probability setups and acting decisively when they appear. Most days there is no trade that meets your criteria. The best traders are bored most of the time. The urge to "do something" is the market taking money from impatient people.',
-    mm:'毎日何かしようとする。スウィングトレードは高確率のセットアップを待ち、現れたら果断に行動するもの。優秀なトレーダーはほとんどの時間退屈している。'
+    mm:'နေ့စဉ် တစ်ခုခု လုပ်ရန် ကြိုးစားခြင်း။ Swing Trading သည် High-Probability Setup များကို စောင့်ဆိုင်းပြီး ပေါ်လာသောအခါ ချက်ချင်း လုပ်ဆောင်ရမည့် အလုပ်ဖြစ်သည်။ ကျွမ်းကျင်သော Trader များသည် အချိန်အများစုတွင် ငြီးငွေ့နေတတ်သည်။'
   },
   {
     num:'05',color:'var(--b)',
     name:'Ignoring sector and market context',
     en:'A perfect setup in a sector rotating out of favor, in a market under broad selling pressure, before a BOJ meeting — is not a perfect setup. Your chart does not exist in isolation. Always check: what is the Nikkei doing? What is the sector doing? Is there major news risk this week?',
-    mm:'セクターやマーケット全体を無視する。チャートは孤立して存在しない。日経・セクタートレンド・主要ニュースリスクを常に確認。'
+    mm:'Sector နှင့် Market အခြေအနေ တစ်ခုလုံးကို လျစ်လျူရှုခြင်း။ Chart သည် တစ်ခုတည်း သီးသန့် မရှိနိုင်ပါ။ Nikkei၊ Sector Trend နှင့် အရေးကြီး News Risk များကို အမြဲ စစ်ဆေးပါ။'
   },
 ];
 
@@ -460,7 +460,7 @@ function renderRules(){
       var isM = !!mem[r.num];
       html += '<div class="rule-card'+(isOpen?' open':'')+'" id="rc-'+r.num+'" onclick="toggleRule('+r.num+')" style="--rc-accent:'+g.color+';">'
             + '<div class="rc-head">'
-            + '<div class="rc-num" style="background:'+g.color+';background:'+g.color.replace('var(','').replace(')','')+'22;color:'+g.color+';">'+r.num+'</div>'
+            + '<div class="rc-num" style="background:'+g.color.replace(')','-dim)')+';color:'+g.color+';">'+r.num+'</div>'
             + '<div class="rc-title">'+r.title+'</div>'
             + '<span class="rc-badge" style="background:'+r.wc+';color:'+r.wb+';">'+r.badge+'</span>'
             + '<i class="ti ti-chevron-down rc-chev'+(isOpen?' open':'')+'" aria-hidden="true"></i>'

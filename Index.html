@@ -157,7 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 // ════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════
-var RATIOS_URL = '<?= ratiosUrl ?>';
+var BASE_URL = '<?= baseUrl ?>';
 var S={
   terms:[],cats:[],
   currentCat:null,       // name_en of open category
@@ -358,8 +358,18 @@ function loadData(){
       S.terms=data.terms||[];
       S.cats=data.categories||[];
       S.progress=JSON.parse(localStorage.getItem('slp_prog_'+S.userId)||'{}');
-      renderHome();
-      updateProg();
+      google.script.run
+        .withSuccessHandler(function(serverProg){
+          Object.keys(serverProg||{}).forEach(function(k){ S.progress[k]=serverProg[k]; });
+          save();
+          renderHome();
+          updateProg();
+        })
+        .withFailureHandler(function(){
+          renderHome();
+          updateProg();
+        })
+        .getProgress(S.userId);
     })
     .withFailureHandler(function(e){showLoadErr(e.message);})
     .getAllData();
@@ -395,8 +405,8 @@ var SECTIONS = [
 function tileHTML(onclick, borderColor, iconBg, icon, iconColor, name, mm, count, progPct, progColor){
   return '<div class="cat-tile" onclick="'+onclick+'" style="border-top:3px solid '+borderColor+';">'
       +'<div class="ct-icon" style="background:'+iconBg+'"><i class="ti '+icon+'" style="font-size:20px;color:'+iconColor+';" aria-hidden="true"></i></div>'
-      +'<div class="ct-name">'+name+'</div>'
-      +'<div class="ct-mm">'+mm+'</div>'
+      +'<div class="ct-name">'+esc(name)+'</div>'
+      +'<div class="ct-mm">'+esc(mm)+'</div>'
       +'<div class="ct-foot"><span class="ct-count">'+count+'</span>'
       +'<i class="ti ti-chevron-right" style="font-size:15px;color:var(--text3);" aria-hidden="true"></i></div>'
       +'<div class="ct-prog"><div class="ct-prog-fill" style="width:'+(progPct||0)+'%;background:'+(progColor||borderColor)+';"></div></div>'
@@ -430,7 +440,6 @@ function renderHome(){
   // Static feature tiles — assigned to their section
   bucket.knowledge.push(tileHTML('openIndicators()','#185FA5','#E6F1FB','ti-chart-line','#185FA5','Technical Indicators','テクニカル指標','11 indicators'));
   bucket.knowledge.push(tileHTML('openChartPatterns()','#3B6D11','#EAF3DE','ti-trending-up','#3B6D11','Chart Patterns','チャートパターン','14 patterns'));
-  bucket.knowledge.push(tileHTML('openRatioCalc()','#7F77DD','#EEEDFE','ti-calculator','#534AB7','Ratio Calculator','ROE・ROA・PER・PBR','8 ratios + 割安/割高'));
 
   bucket.mindset.push(tileHTML('openPrinciples()','#D4A843','#FAEEDA','ti-award','#854F0B','Investing Principles','投資の原則','12 principles'));
   bucket.mindset.push(tileHTML('openSwingRules()','#c24b4b','#FCEBEB','ti-shield-check','#c24b4b','Swing Trading Rules','15 rules · Requirements · Mental traps','15 rules'));
@@ -464,8 +473,7 @@ function renderHome(){
 function openGallery(catName){
   // Candle Patterns opens dedicated Candles page
   if(catName==='Candlestick Patterns'){
-    var url = RATIOS_URL.replace('?page=ratios','?page=candles');
-    window.open(url, '_blank');
+    window.open(BASE_URL+'?page=candles', '_blank');
     return;
   }
   S.currentCat=catName;
@@ -574,8 +582,8 @@ function renderTermGallery(col){
         +'</div>'
         +'<div class="item-footer">'
         +  '<div class="item-jp">'+(t.term_jp||'')+'</div>'
-        +  '<div class="item-en">'+(t.term_en||'')+'</div>'
-        +  '<div class="item-mm">'+(t.explanation_mm||'').substring(0,40)+'…</div>'
+        +  '<div class="item-en">'+esc(t.term_en)+'</div>'
+        +  '<div class="item-mm">'+esc((t.explanation_mm||'').substring(0,40))+'…</div>'
         +  '<div class="item-lrn '+(isL?'show':'')+'" >✓ learned</div>'
         +'</div>'
         +'</div>';
@@ -708,26 +716,26 @@ function buildTermDrawer(t){
   var tags=(t.tags||[]);
   var tipHtml='';
   if(t.tip_en||t.tip_mm){
-    if(t.tip_en) tipHtml+='<div class="d-tip">'+t.tip_en+'</div>';
-    if(t.tip_mm) tipHtml+='<div class="d-tip-mm">'+t.tip_mm+'</div>';
+    if(t.tip_en) tipHtml+='<div class="d-tip">'+esc(t.tip_en)+'</div>';
+    if(t.tip_mm) tipHtml+='<div class="d-tip-mm">'+esc(t.tip_mm)+'</div>';
   }
-  var tagsHtml=tags.length?'<div class="d-tags">'+tags.map(function(tg){return'<span class="d-tag">'+tg+'</span>';}).join('')+'</div>':'';
+  var tagsHtml=tags.length?'<div class="d-tags">'+tags.map(function(tg){return'<span class="d-tag">'+esc(tg)+'</span>';}).join('')+'</div>':'';
   return '<div class="drawer-vis term-dvis">'
     +  '<i class="ti '+(getCatIcon(S.currentCat)||'ti-book')+'" style="font-size:52px;color:'+col.prog+';" aria-hidden="true"></i>'
-    +  '<div style="font-size:12px;font-weight:600;color:'+col.text+';margin-top:10px;text-align:center;">'+( t.term_en||'')+'</div>'
-    +  '<div style="font-size:11px;color:var(--text3);margin-top:3px;text-align:center;">'+( t.term_jp||'')+'</div>'
+    +  '<div style="font-size:12px;font-weight:600;color:'+col.text+';margin-top:10px;text-align:center;">'+esc(t.term_en)+'</div>'
+    +  '<div style="font-size:11px;color:var(--text3);margin-top:3px;text-align:center;">'+esc(t.term_jp)+'</div>'
     +'</div>'
     +'<div class="drawer-body">'
     +  '<button class="drawer-close" onclick="closeDrawer(event)" aria-label="Close"><i class="ti ti-x"></i></button>'
-    +  '<div class="d-jp">'+( t.term_jp||'')+'</div>'
-    +  '<div class="d-en">'+( t.term_en||'')+'</div>'
+    +  '<div class="d-jp">'+esc(t.term_jp)+'</div>'
+    +  '<div class="d-en">'+esc(t.term_en)+'</div>'
     +  '<div class="d-badges">'
-    +    '<span class="dbadge" style="background:'+col.bg+';color:'+col.text+';">'+( t.category||'')+'</span>'
-    +    '<span class="dbadge" style="background:'+(DB[diff]||'#eee')+';color:'+(DC[diff]||'#555')+';">'+diff+'</span>'
+    +    '<span class="dbadge" style="background:'+col.bg+';color:'+col.text+';">'+esc(t.category)+'</span>'
+    +    '<span class="dbadge" style="background:'+(DB[diff]||'#eee')+';color:'+(DC[diff]||'#555')+';">'+esc(diff)+'</span>'
     +  '</div>'
     +  '<div class="d-lbl">Explanation</div>'
-    +  '<div class="d-exp">'+( t.explanation_en||'')+'</div>'
-    +  (t.explanation_mm?'<div class="d-exp-mm">'+t.explanation_mm+'</div>':'')
+    +  '<div class="d-exp">'+esc(t.explanation_en)+'</div>'
+    +  (t.explanation_mm?'<div class="d-exp-mm">'+esc(t.explanation_mm)+'</div>':'')
     +  (tipHtml?'<div class="d-lbl">Tip</div>'+tipHtml:'')
     +  tagsHtml
     +  '<button class="mark-btn '+(isL?'on':'')+'" onclick="toggleTermLearned(event,\''+t.id+'\')">'
@@ -740,12 +748,23 @@ function buildTermDrawer(t){
 // ════════════════════════════════════════════════
 //  MARK LEARNED
 // ════════════════════════════════════════════════
+function persistProgress(key){
+  var val=S.progress[key]||'';
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.error) console.error('Progress save failed:',res.error);
+    })
+    .withFailureHandler(function(e){ console.error('Progress save failed:',e.message); })
+    .saveProgress(S.userId,key,val);
+}
+
 function toggleCandleLearned(e,id){
   e.stopPropagation();
   var key='cg_'+id;
   S.progress[key]=S.progress[key]==='learned'?'':'learned';
   if(!S.progress[key]) delete S.progress[key];
   save();
+  persistProgress(key);
   var prev=S.openItemId;
   var p=CANDLES.find(function(x){return x.id===id;});
   renderGallery();
@@ -761,11 +780,11 @@ function toggleTermLearned(e,id){
   S.progress[id]=S.progress[id]==='learned'?'':'learned';
   if(!S.progress[id]) delete S.progress[id];
   save();
+  persistProgress(id);
   var prev=S.openItemId;
   renderGallery();
   if(prev) setTimeout(function(){openItemDrawer(id,'term',0);},40);
   renderHome();
-  google.script.run.saveProgress(S.userId,id,S.progress[id]||'');
 }
 
 function getGroupIdx(p){
@@ -822,6 +841,7 @@ function getCatIcon(name){
   return cat?cat.icon:'ti-book';
 }
 function escQ(s){return(s||'').replace(/'/g,"\\'");}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
 
 // ════════════════════════════════════════════════
@@ -834,42 +854,31 @@ function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
 //  RATIO CALCULATOR — opens as separate page
 // ════════════════════════════════════════════════
 function openCalculator(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=calculator');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=calculator', '_blank');
 }
 
 function openReflection(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=reflection');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=reflection', '_blank');
 }
 
 function openSectorMap(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=sectors');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=sectors', '_blank');
 }
 
 function openChartPatterns(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=chartpatterns');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=chartpatterns', '_blank');
 }
 
 function openIndicators(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=indicators');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=indicators', '_blank');
 }
 
 function openSwingRules(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=swingrules');
-  window.open(url, '_blank');
+  window.open(BASE_URL+'?page=swingrules', '_blank');
 }
 
 function openPrinciples(){
-  var url = RATIOS_URL.replace('?page=ratios','?page=principles');
-  window.open(url, '_blank');
-}
-
-function openRatioCalc(){
-  window.open(RATIOS_URL, '_blank');
+  window.open(BASE_URL+'?page=principles', '_blank');
 }
 
 // ════════════════════════════════════════════════

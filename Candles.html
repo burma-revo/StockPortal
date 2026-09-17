@@ -284,22 +284,6 @@ var BEAR = { high:30, open:100, close:220, low:290, color:'red'   };
 
 function getCandleDef(){ return A.type==='bull'?BULL:BEAR; }
 
-// Hit regions for each part
-function getHitRegions(cd, cxLeft, cw){
-  var cx = cxLeft + cw/2;
-  var bT = Math.min(cd.open,cd.close);
-  var bB = Math.max(cd.open,cd.close);
-  return {
-    high:       {x:cx-20,y:cd.high-20,   w:40, h:bT-cd.high+20},
-    low:        {x:cx-20,y:bB,           w:40, h:cd.low-bB+20},
-    body:       {x:cxLeft-4,y:bT,        w:cw+8,h:bB-bT},
-    upper_wick: {x:cx-20,y:cd.high-10,   w:40, h:bT-cd.high+10},
-    lower_wick: {x:cx-20,y:bB,           w:40, h:cd.low-bB+10},
-    open:       {x:cxLeft-30,y:(A.type==='bull'?bB:bT)-12, w:26,h:24},
-    close:      {x:cxLeft-30,y:(A.type==='bull'?bT:bB)-12, w:26,h:24},
-  };
-}
-
 function buildAnatomySVG(){
   var cd = getCandleDef();
   var cxLeft = 90, cw = 40;
@@ -369,6 +353,8 @@ function buildAnatomySVG(){
    +'<rect x="'+(cxLeft-6)+'" y="'+bT+'" width="'+(cw+12)+'" height="'+(bB-bT)+'" fill="'+highlight('body')+'" stroke="'+strokeH('body')+'" stroke-width="1.5" rx="3" onclick="clickPart(\'body\')" style="cursor:pointer;"/>'
    +'<rect x="'+(cx-22)+'" y="'+(cd.high-14)+'" width="44" height="24" fill="'+highlight('high')+'" stroke="'+strokeH('high')+'" stroke-width="1" rx="3" onclick="clickPart(\'high\')" style="cursor:pointer;"/>'
    +'<rect x="'+(cx-22)+'" y="'+(cd.low-10)+'" width="44" height="24" fill="'+highlight('low')+'"  stroke="'+strokeH('low')+'"  stroke-width="1" rx="3" onclick="clickPart(\'low\')"  style="cursor:pointer;"/>'
+   +'<circle cx="'+dotR+'" cy="'+openLineY+'"  r="8" fill="'+(ap==='open'?partColor('open'):'rgba(0,0,0,0.15)')+'"  stroke="'+(ap==='open'?partColor('open'):'none')+'"  stroke-width="1.5" onclick="clickPart(\'open\')"  style="cursor:pointer;"/>'
+   +'<circle cx="'+dotR+'" cy="'+closeLineY+'" r="8" fill="'+(ap==='close'?partColor('close'):'rgba(0,0,0,0.15)')+'" stroke="'+(ap==='close'?partColor('close'):'none')+'" stroke-width="1.5" onclick="clickPart(\'close\')" style="cursor:pointer;"/>'
 
     // Labels — right side
    +labelLine(dotR,cd.high,     labelR,cd.high,      'high')

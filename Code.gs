@@ -12,13 +12,6 @@ function doGet(e) {
   // Get the real deployed exec URL (works in both dev and production)
   var execUrl = ScriptApp.getService().getUrl();
 
-  if (page === 'ratios') {
-    return HtmlService.createHtmlOutputFromFile('Ratios')
-      .setTitle('Ratio Calculator — Stock Learning Portal')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  }
-
   if (page === 'calculator') {
     return HtmlService.createHtmlOutputFromFile('Calculator')
       .setTitle('Trade Calculator — Stock Learning Portal')
@@ -75,9 +68,9 @@ function doGet(e) {
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
 
-  // Main portal — inject the real URL so the tile can open Ratios correctly
+  // Main portal — inject the real URL so tiles can open other pages correctly
   var template = HtmlService.createTemplateFromFile('Index');
-  template.ratiosUrl = execUrl + '?page=ratios';
+  template.baseUrl = execUrl;
   return template.evaluate()
     .setTitle('Stock Learning Portal')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)

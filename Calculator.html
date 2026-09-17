@@ -208,22 +208,22 @@ function calc(){
 
   // ── Position sizing ──
   var riskYen = account ? account * riskPct / 100 : null;
-  var exactShares = riskYen ? riskYen / stopDist : null;
-  var lots = exactShares ? Math.floor(exactShares / lot) : null;
-  var roundedShares = lots ? lots * lot : null;
-  var actualRisk = roundedShares ? roundedShares * stopDist : null;
-  var actualRiskPct = (actualRisk && account) ? (actualRisk / account * 100) : null;
-  var capitalNeeded = roundedShares ? roundedShares * entry + comm * 2 : null;
-  var capitalPct = (capitalNeeded && account) ? (capitalNeeded / account * 100) : null;
+  var exactShares = riskYen !== null ? riskYen / stopDist : null;
+  var lots = exactShares !== null ? Math.floor(exactShares / lot) : null;
+  var roundedShares = lots !== null ? lots * lot : null;
+  var actualRisk = roundedShares !== null ? roundedShares * stopDist : null;
+  var actualRiskPct = (actualRisk !== null && account) ? (actualRisk / account * 100) : null;
+  var capitalNeeded = roundedShares !== null ? roundedShares * entry + comm * 2 : null;
+  var capitalPct = (capitalNeeded !== null && account) ? (capitalNeeded / account * 100) : null;
 
   // ── Stop-loss metrics ──
   var stopPct = (stopDist / entry) * 100;
 
   // ── Risk/reward ──
   var reward = target ? Math.abs(target - entry) : null;
-  var rrRatio = (reward && stopDist) ? reward / stopDist : null;
-  var maxGain = (reward && roundedShares) ? reward * roundedShares - comm * 2 : null;
-  var maxLoss = actualRisk ? -(actualRisk + comm * 2) : null;
+  var rrRatio = (reward !== null && stopDist) ? reward / stopDist : null;
+  var maxGain = (reward !== null && roundedShares !== null) ? reward * roundedShares - comm * 2 : null;
+  var maxLoss = actualRisk !== null ? -(actualRisk + comm * 2) : null;
   var targetPct = target ? ((target - entry) / entry * 100) : null;
 
   // ── Verdict logic ──
@@ -236,7 +236,14 @@ function calc(){
   html += '<div class="results-grid">';
 
   // Position size card
-  if(roundedShares !== null){
+  if(roundedShares === 0){
+    html += '<div class="result-card" style="--rc-color:var(--r);">'
+          + '<div class="rc-label">Position size</div>'
+          + '<div class="rc-value" style="color:var(--r);">0</div>'
+          + '<div class="rc-sub">Rounds down to 0 shares at this risk %</div>'
+          + '<div class="rc-note">Increase account size or risk %, or use a smaller lot size to get a tradeable position.</div>'
+          + '</div>';
+  } else if(roundedShares !== null){
     var sizeColor = capitalPct > 50 ? 'var(--r)' : capitalPct > 30 ? 'var(--a)' : 'var(--g)';
     html += '<div class="result-card highlight" style="--rc-color:'+sizeColor+';">'
           + '<div class="rc-label">Position size</div>'
@@ -318,6 +325,14 @@ function buildVerdict(rr, stopPct, riskPct, capitalPct, isLong, entry, stop, tar
   var issues = [];
   var goods  = [];
   var overall = 'g';
+
+  if(target){
+    var validDirection = isLong ? target > entry : target < entry;
+    if(!validDirection){
+      issues.push('Target is on the wrong side of entry for a '+(isLong?'long':'short')+' trade — target should be '+(isLong?'above':'below')+' entry. This setup is not valid; the stop would trigger before this target could ever be hit.');
+      overall = 'r';
+    }
+  }
 
   if(stopPct > 10){ issues.push('Stop-loss is '+stopPct.toFixed(1)+'% away — very wide. Consider a tighter entry or smaller position.'); overall='r'; }
   else if(stopPct > 5){ issues.push('Stop-loss is '+stopPct.toFixed(1)+'% away — fairly wide. Make sure the level is technically justified.'); if(overall==='g')overall='a'; }
