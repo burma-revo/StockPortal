@@ -273,9 +273,12 @@ function getWatchlistSheet() {
   var sheet = ss.getSheetByName('Watchlist');
   if (!sheet) {
     sheet = ss.insertSheet('Watchlist');
-    sheet.appendRow(['symbol','name','noticePrice','noticeDate','notes']);
-    sheet.getRange(1,1,1,5).setFontWeight('bold').setBackground('#E6F1FB');
+    sheet.appendRow(['symbol','name','noticePrice','noticeDate','notes','tag']);
+    sheet.getRange(1,1,1,6).setFontWeight('bold').setBackground('#E6F1FB');
     sheet.setFrozenRows(1);
+  } else if (sheet.getRange(1,6).getValue() !== 'tag') {
+    // Migrate sheets created before the "tag" column existed.
+    sheet.getRange(1,6).setValue('tag').setFontWeight('bold').setBackground('#E6F1FB');
   }
   return sheet;
 }
@@ -284,13 +287,14 @@ function getAllWatchlist() {
   var sheet = getWatchlistSheet();
   var lastRow = sheet.getLastRow();
   if (lastRow <= 1) return [];
-  return sheet.getRange(2, 1, lastRow - 1, 5).getValues().map(function(row) {
+  return sheet.getRange(2, 1, lastRow - 1, 6).getValues().map(function(row) {
     return {
       symbol:      row[0] || '',
       name:        row[1] || '',
       noticePrice: Number(row[2]) || 0,
       noticeDate:  row[3] ? formatDate_(row[3]) : '',
-      notes:       row[4] || ''
+      notes:       row[4] || '',
+      tag:         row[5] || ''
     };
   });
 }
@@ -305,7 +309,8 @@ function addWatchlistItem(item) {
     item.name || '',
     item.noticePrice || 0,
     item.noticeDate || formatDate_(new Date()),
-    item.notes || ''
+    item.notes || '',
+    item.tag || ''
   ]);
   return getAllWatchlist();
 }
