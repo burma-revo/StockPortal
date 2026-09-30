@@ -68,8 +68,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tag-chip:hover{border-color:var(--b);color:var(--b);}
 .tag-chip.active{background:var(--b);border-color:var(--b);color:#fff;font-weight:600;}
 
-/* ── Per-card tag chip ── */
-.w-tag-row{padding:9px 14px;border-bottom:1px solid var(--border);}
+/* ── Per-card tag chips ── */
+.w-tag-row{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
 .w-tag{display:inline-flex;font-size:11px;background:var(--b-bg);color:var(--b-t);padding:3px 10px;border-radius:12px;font-weight:600;}
 
 /* ── Watchlist rows ── */
@@ -89,6 +89,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .w-stat:last-child{border-right:none;}
 .w-stat-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;}
 .w-stat-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;}
+.w-stat-val.up{color:var(--g-t);}
+.w-stat-val.down{color:var(--r-t);}
 .w-stat-sub{font-size:11px;color:var(--text3);margin-top:3px;}
 .w-stat-sub.up{color:var(--g-t);}
 .w-stat-sub.down{color:var(--r-t);}
@@ -140,7 +142,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div class="fg-split">
         <div class="fg"><div class="fg-lbl">Notice date 気づいた日</div><input class="fg-in" id="watch_notice_date" type="date"></div>
-        <div class="fg"><div class="fg-lbl">Tag タグ<span class="fg-hint">optional — for grouping later</span></div><input class="fg-in" id="watch_tag" type="text" placeholder="e.g. growth, self, friend-tip"></div>
+        <div class="fg"><div class="fg-lbl">Tags タグ<span class="fg-hint">optional — comma separated</span></div><input class="fg-in" id="watch_tag" type="text" placeholder="e.g. growth, self, friend-tip"></div>
       </div>
       <div class="fg">
         <div class="fg-lbl">Notes メモ<span class="fg-hint">optional</span></div>
@@ -245,7 +247,7 @@ function renderTagFilterRow(){
   var row=document.getElementById('tag-filter-row');
   var counts={};
   S.watchlist.forEach(function(w){
-    if(w.tag) counts[w.tag]=(counts[w.tag]||0)+1;
+    (w.tags||[]).forEach(function(t){ counts[t]=(counts[t]||0)+1; });
   });
   var tags=Object.keys(counts).sort();
   if(!tags.length){ row.innerHTML=''; return; }
@@ -329,11 +331,12 @@ function renderWatchRows(){
     var change=(price!=null && haveNotice)?((price-w.noticePrice)/w.noticePrice)*100:null;
     return {w:w,i:i,price:price,change:change};
   }).filter(function(entry){
-    var matchesTag = S.currentTag==='all' || entry.w.tag===S.currentTag;
+    var tags = entry.w.tags||[];
+    var matchesTag = S.currentTag==='all' || tags.indexOf(S.currentTag)!==-1;
     var matchesSearch = !q
       || (entry.w.symbol||'').toLowerCase().indexOf(q)!==-1
       || (entry.w.name||'').toLowerCase().indexOf(q)!==-1
-      || (entry.w.tag||'').toLowerCase().indexOf(q)!==-1;
+      || tags.some(function(t){ return t.indexOf(q)!==-1; });
     return matchesTag && matchesSearch;
   });
 
@@ -385,9 +388,9 @@ function renderWatchRows(){
         +'</div>'
         +'<div class="w-stats">'
         +  '<div class="w-stat"><div class="w-stat-lbl">Notice price</div><div class="w-stat-val">¥'+fmtNum(w.noticePrice)+'</div><div class="w-stat-sub">on '+esc(w.noticeDate||'—')+'</div></div>'
-        +  '<div class="w-stat"><div class="w-stat-lbl">Current price</div><div class="w-stat-val">'+(price!=null?'¥'+fmtNum(price):'—')+'</div><div class="w-stat-sub '+curSubClass+'">'+curSub+'</div></div>'
+        +  '<div class="w-stat"><div class="w-stat-lbl">Current price</div><div class="w-stat-val '+curSubClass+'">'+(price!=null?'¥'+fmtNum(price):'—')+'</div><div class="w-stat-sub '+curSubClass+'">'+curSub+'</div></div>'
         +'</div>'
-        +(w.tag?'<div class="w-tag-row"><span class="w-tag">#'+esc(w.tag)+'</span></div>':'')
+        +((w.tags&&w.tags.length)?'<div class="w-tag-row">'+w.tags.map(function(t){return'<span class="w-tag">#'+esc(t)+'</span>';}).join('')+'</div>':'')
         +(w.notes?'<div class="w-notes"><i class="ti ti-note" aria-hidden="true"></i><span>'+esc(w.notes)+'</span></div>':'')
         +'<div class="rc-expand" id="chart-toggle-'+i+'" onclick="toggleChart('+i+')"><i class="ti ti-chart-line" aria-hidden="true"></i> Weekly price chart</div>'
         +'<div class="chart-wrap" id="chart-wrap-'+i+'" style="display:none;"></div>'
@@ -461,7 +464,9 @@ function addWatchlistItem(){
   var code=document.getElementById('watch_code').value.trim().toUpperCase();
   var price=parseFloat(document.getElementById('watch_notice_price').value);
   var date=document.getElementById('watch_notice_date').value;
-  var tag=document.getElementById('watch_tag').value.trim().toLowerCase();
+  var tags=document.getElementById('watch_tag').value.split(',')
+    .map(function(t){ return t.trim().toLowerCase(); })
+    .filter(function(t){ return t; });
   var notes=document.getElementById('watch_notes').value.trim();
 
   // TSE codes are normally 4 digits, but new-listing (IPO) codes can mix
@@ -487,7 +492,7 @@ function addWatchlistItem(){
           loadPricesAndHistory();
         })
         .withFailureHandler(function(e){ alert('Error: '+e.message); resetSaveBtn(btn); })
-        .addWatchlistItem({symbol:symbol,name:name,noticePrice:price,noticeDate:date,tag:tag,notes:notes});
+        .addWatchlistItem({symbol:symbol,name:name,noticePrice:price,noticeDate:date,tags:tags,notes:notes});
     })
     .withFailureHandler(function(e){ alert('Error: '+e.message); resetSaveBtn(btn); })
     .fetchYahooQuote(symbol);

@@ -294,7 +294,7 @@ function getAllWatchlist() {
       noticePrice: Number(row[2]) || 0,
       noticeDate:  row[3] ? formatDate_(row[3]) : '',
       notes:       row[4] || '',
-      tag:         row[5] || ''
+      tags: row[5] ? String(row[5]).split(',').map(function(t) { return t.trim(); }).filter(function(t) { return t; }) : []
     };
   });
 }
@@ -304,13 +304,14 @@ function addWatchlistItem(item) {
   for (var i = 0; i < existing.length; i++) {
     if (existing[i].symbol === item.symbol) throw new Error(item.symbol + ' is already on your watchlist');
   }
+  var tags = Array.isArray(item.tags) ? item.tags : (item.tags ? [item.tags] : []);
   getWatchlistSheet().appendRow([
     item.symbol || '',
     item.name || '',
     item.noticePrice || 0,
     item.noticeDate || formatDate_(new Date()),
     item.notes || '',
-    item.tag || ''
+    tags.join(',')
   ]);
   return getAllWatchlist();
 }
