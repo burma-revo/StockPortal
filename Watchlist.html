@@ -49,6 +49,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* ── Section divider ── */
 .sdiv{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:4px 0 8px;margin-top:4px;display:flex;align-items:center;gap:6px;}
 
+/* ── Duplicate hint ── */
+.dup-hint{font-size:11px;color:var(--r-t);margin-top:5px;display:flex;align-items:center;gap:4px;}
+
+/* ── Search + sort controls ── */
+.list-controls{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.search-box{flex:1;min-width:160px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:0 10px;background:var(--surface);}
+.search-box i{color:var(--text3);font-size:14px;flex-shrink:0;}
+.search-box input{border:none;outline:none;background:none;padding:8px 0;font-size:13px;flex:1;font-family:inherit;color:var(--text);min-width:0;}
+.search-box input::placeholder{color:var(--text3);}
+.search-clear{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;display:flex;align-items:center;flex-shrink:0;}
+.search-clear:hover{color:var(--text);}
+.sort-select{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--surface);color:var(--text2);font-family:inherit;cursor:pointer;outline:none;}
+
 /* ── Tag filter chips ── */
 .tag-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
 .tag-chip{background:var(--surface);border:1px solid var(--border);border-radius:16px;color:var(--text2);cursor:pointer;padding:5px 12px;font-size:12px;transition:all .15s;}
@@ -122,7 +135,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ph"><div class="pt"><i class="ti ti-eye" style="font-size:16px;color:var(--b);" aria-hidden="true"></i> Add to watchlist</div><div class="ps">候補銘柄を追加</div></div>
     <div class="pb">
       <div class="fg-split">
-        <div class="fg"><div class="fg-lbl">Stock code 銘柄コード<span class="fg-hint">4 chars</span></div><input class="fg-in" id="watch_code" type="text" placeholder="e.g. 7203" maxlength="4" style="text-transform:uppercase;"></div>
+        <div class="fg"><div class="fg-lbl">Stock code 銘柄コード<span class="fg-hint">4 chars</span></div><input class="fg-in" id="watch_code" type="text" placeholder="e.g. 7203" maxlength="4" style="text-transform:uppercase;" oninput="checkDuplicateCode()"><div class="dup-hint" id="dup-hint" style="display:none;"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Already on your watchlist</div></div>
         <div class="fg"><div class="fg-lbl">Notice price 気づいた時の価格<span class="fg-hint">円</span></div><input class="fg-in" id="watch_notice_price" type="number" placeholder="e.g. 3850" step="any" min="0"></div>
       </div>
       <div class="fg-split">
@@ -141,6 +154,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="sdiv"><i class="ti ti-list" style="font-size:13px;" aria-hidden="true"></i> Watching (<span id="watch-count">0</span>)</div>
 
+  <div class="list-controls">
+    <div class="search-box">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input type="text" id="watch_search" placeholder="Search code, name or tag..." oninput="onSearchInput()">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;" aria-label="Clear search"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <select class="sort-select" id="watch_sort" onchange="onSortChange()">
+      <option value="added_desc">Newest added</option>
+      <option value="change_desc">% change: high → low</option>
+      <option value="change_asc">% change: low → high</option>
+      <option value="code_asc">Code: A → Z</option>
+    </select>
+  </div>
+
   <div class="tag-filter-row" id="tag-filter-row"></div>
 
   <div class="loading" id="loading"><i class="ti ti-loader-2"></i><span>Loading your watchlist...</span></div>
@@ -148,7 +175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-var S = { watchlist: [], priceMap: {}, history: [], charts: {}, currentTag: 'all' };
+var S = { watchlist: [], priceMap: {}, history: [], charts: {}, currentTag: 'all', searchQuery: '', sortBy: 'added_desc' };
 
 function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 function fmtNum(n){ if(n==null||isNaN(n)) return '—'; return Number(n).toLocaleString('en-US',{maximumFractionDigits:1}); }
@@ -238,6 +265,51 @@ function renderTagFilterRow(){
 }
 
 // ════════════════════════════════════════════════
+//  SEARCH + SORT
+// ════════════════════════════════════════════════
+function onSearchInput(){
+  S.searchQuery = document.getElementById('watch_search').value;
+  document.getElementById('search-clear').style.display = S.searchQuery ? 'flex' : 'none';
+  renderWatchRows();
+}
+function clearSearch(){
+  document.getElementById('watch_search').value='';
+  S.searchQuery='';
+  document.getElementById('search-clear').style.display='none';
+  renderWatchRows();
+}
+function onSortChange(){
+  S.sortBy = document.getElementById('watch_sort').value;
+  renderWatchRows();
+}
+function sortEntries(entries){
+  var copy=entries.slice();
+  if(S.sortBy==='change_desc'){
+    copy.sort(function(a,b){ return (b.change==null?-Infinity:b.change)-(a.change==null?-Infinity:a.change); });
+  } else if(S.sortBy==='change_asc'){
+    copy.sort(function(a,b){ return (a.change==null?Infinity:a.change)-(b.change==null?Infinity:b.change); });
+  } else if(S.sortBy==='code_asc'){
+    copy.sort(function(a,b){ return (a.w.symbol||'').localeCompare(b.w.symbol||''); });
+  } else {
+    // added_desc: watchlist array is oldest-first (sheet append order), so
+    // reverse it to show the most recently added stock at the top.
+    copy.reverse();
+  }
+  return copy;
+}
+
+// ════════════════════════════════════════════════
+//  DUPLICATE CHECK (live, while typing the add form)
+// ════════════════════════════════════════════════
+function checkDuplicateCode(){
+  var code=document.getElementById('watch_code').value.trim().toUpperCase();
+  var hint=document.getElementById('dup-hint');
+  var symbol=code+'.T';
+  var isDup = code.length===4 && S.watchlist.some(function(w){ return w.symbol===symbol; });
+  hint.style.display = isDup ? 'flex' : 'none';
+}
+
+// ════════════════════════════════════════════════
 //  RENDER
 // ════════════════════════════════════════════════
 function renderWatchRows(){
@@ -250,21 +322,32 @@ function renderWatchRows(){
     return;
   }
 
-  var visible = S.watchlist
-    .map(function(w,i){ return {w:w,i:i}; })
-    .filter(function(entry){ return S.currentTag==='all' || entry.w.tag===S.currentTag; });
+  var q = (S.searchQuery||'').trim().toLowerCase();
+  var entries = S.watchlist.map(function(w,i){
+    var price=S.priceMap[w.symbol];
+    var haveNotice = w.noticePrice>0;
+    var change=(price!=null && haveNotice)?((price-w.noticePrice)/w.noticePrice)*100:null;
+    return {w:w,i:i,price:price,change:change};
+  }).filter(function(entry){
+    var matchesTag = S.currentTag==='all' || entry.w.tag===S.currentTag;
+    var matchesSearch = !q
+      || (entry.w.symbol||'').toLowerCase().indexOf(q)!==-1
+      || (entry.w.name||'').toLowerCase().indexOf(q)!==-1
+      || (entry.w.tag||'').toLowerCase().indexOf(q)!==-1;
+    return matchesTag && matchesSearch;
+  });
 
-  if(!visible.length){
-    list.innerHTML='<div class="empty"><i class="ti ti-tag" aria-hidden="true"></i><p>No stocks tagged #'+esc(S.currentTag)+'.</p></div>';
+  entries = sortEntries(entries);
+
+  if(!entries.length){
+    list.innerHTML='<div class="empty"><i class="ti ti-search-off" aria-hidden="true"></i><p>No stocks match'+(q?' "'+esc(S.searchQuery)+'"':'')+(S.currentTag!=='all'?' with tag #'+esc(S.currentTag):'')+'.</p></div>';
     return;
   }
 
   var html='';
-  visible.forEach(function(entry){
-    var w=entry.w, i=entry.i;
-    var price=S.priceMap[w.symbol];
+  entries.forEach(function(entry){
+    var w=entry.w, i=entry.i, price=entry.price, change=entry.change;
     var haveNotice = w.noticePrice>0;
-    var change=(price!=null && haveNotice)?((price-w.noticePrice)/w.noticePrice)*100:null;
     var changeYen=(price!=null && haveNotice)?(price-w.noticePrice):null;
     var codeShort = (w.symbol||'').replace('.T','');
     var days=daysSince(w.noticeDate);
@@ -386,6 +469,7 @@ function addWatchlistItem(){
   if(!/^[0-9A-Z]{4}$/.test(code)){ alert('Enter a valid 4-character stock code (e.g. 7203 or 278A).'); return; }
   if(!price||price<=0){ alert('Enter a valid notice price.'); return; }
   var symbol=code+'.T';
+  if(S.watchlist.some(function(w){ return w.symbol===symbol; })){ alert(code+' is already on your watchlist.'); return; }
 
   var btn=document.querySelector('.save-btn');
   btn.innerHTML='<i class="ti ti-loader-2" style="font-size:15px;animation:spin 1s linear infinite;" aria-hidden="true"></i> Adding...';
@@ -420,6 +504,7 @@ function clearAddForm(){
   document.getElementById('watch_notice_date').valueAsDate=new Date();
   document.getElementById('watch_tag').value='';
   document.getElementById('watch_notes').value='';
+  document.getElementById('dup-hint').style.display='none';
 }
 
 function showSuccess(msg){
